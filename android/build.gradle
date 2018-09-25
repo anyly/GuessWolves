@@ -47,7 +47,7 @@ repositories {
 }
 
 dependencies {
-    compile(name: 'crosswalk-23.53.589.4', ext: 'aar')
+    //compile(name: 'crosswalk-23.53.589.4', ext: 'aar')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'org.java-websocket:Java-WebSocket:1.3.9'
     compile 'com.android.support:appcompat-v7:24.+'
