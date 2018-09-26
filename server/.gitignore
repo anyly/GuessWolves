@@ -1,0 +1,8 @@
+/.idea
+/gen
+/.gradle
+/gradle
+gradlew
+gradlew.bat
+/build
+*.iml
