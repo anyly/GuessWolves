@@ -1,22 +1,14 @@
 package org.idear.android;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
-import android.net.http.SslError;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.webkit.*;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import org.idear.android.jsbridge.WebSocketBridge;
-import org.java_websocket.WebSocket;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.xwalk.core.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Created by idear on 2018/9/23.
