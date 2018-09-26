@@ -137,10 +137,12 @@
             if (!isSupport()) {
                 return this;
             }
-            websocket.onclose = callback;
-            if (!isSupport()) {
-                return this;
-            }
+            websocket.onclose = function (code, reason , wasClean) {
+                callback(code, reason , wasClean);
+                httplistener = {};
+                messagelistener = {};
+            };
+            return this;
         };
 
         /**
@@ -294,7 +296,11 @@
             if (!isSupport()) {
                 return this;
             }
-            window.__WEBSOCKET_CALLBACK[id].onclose = callback;
+            window.__WEBSOCKET_CALLBACK[id].onclose = function (code, reason , wasClean) {
+                callback(code, reason , wasClean);
+                httplistener = {};
+                messagelistener = {};
+            };
             WebSocketBridge.onclose(id, 'window.__WEBSOCKET_CALLBACK['+id+'].onclose');
             return this;
         };
@@ -315,8 +321,6 @@
             if (!isSupport()) {
                 return this;
             }
-            httplistener = {};
-            messagelistener = {};
             WebSocketBridge.connect(id, ws);
             if (!id) {
                 alert('当前浏览器 Not support service');

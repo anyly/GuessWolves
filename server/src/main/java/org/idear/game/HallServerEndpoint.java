@@ -1,5 +1,6 @@
 package org.idear.game;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.idear.game.entity.GameSetting;
 import org.idear.service.UserService;
@@ -16,7 +17,6 @@ import java.util.Map;
 @ServerEndpoint("/hall")
 public class HallServerEndpoint extends UserService {
     public static Map<Integer, GameSetting> settingMap = new LinkedHashMap<>();
-    //private UserService userService = UserService.instance();
 
     private static int noSeed = 1000;
 
@@ -24,9 +24,13 @@ public class HallServerEndpoint extends UserService {
         return ++noSeed;
     }
 
-    public void onNewGame(Session session, JSONObject data) {
+    public JSONObject onNewGame(Session session, JSONObject data) {
         GameSetting gameSetting = data.toJavaObject(GameSetting.class);
-        settingMap.put(nextNo(), gameSetting);
+        Integer no = nextNo();
+        settingMap.put(no, gameSetting);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("no", no);
+        return jsonObject;
     }
 
     public void onDeleteGame(Session session, JSONObject data) {

@@ -354,21 +354,59 @@
         },
         login: function () {
             var param = formData('loginForm');
-            websocket.http("login", param, Guide.home);
+            websocket.http("login", param, function() {
+                setUser(param);
+                Guide.home();
+            });
             Guide.current = 'login';
         },
         home: function () {
-            $('#img_bar').attr('src', $('#img').val());
-            $('#user_bar').html($('#user').val());
+            var img = $('#img').val();
+            var user = $('#user').val();
+            $('#img_bar').attr('src', img);
+            $('#user_bar').html(user);
+            //
+            //
             fadePage('home', 400);
             Guide.current = 'home';
         },
-        newGame : function () {
-
+        newGame : function (data) {
+            var no = data.no;
+            window.location = 'game.html#'+no;
         } 
-    }
+    };
     function loadStory() {
+        var step = window.location.hash;
+        if (step && step!='') {
+            loadUser();
+            if (step in Guide) {
+                Guide.current = step;
+            }
+        }
         Guide[Guide.current]();
+    }
+    function setUser(data) {
+        if (data['img']) {
+            window.localStorage.setItem('img', data['img']);
+        } else {
+            window.localStorage.removeItem('img');
+        }
+        if (data['user']) {
+            window.localStorage.setItem('user', data['user']);
+        } else {
+            window.localStorage.removeItem('user');
+        }
+
+    }
+    function loadUser() {
+        var img = window.localStorage.getItem('img');
+        if (img) {
+            $('#img').val(img);
+        }
+        var user = window.localStorage.getItem('user');
+        if (user) {
+            $('#user').val(user);
+        }
     }
 </script>
 <script>
@@ -386,10 +424,12 @@
     $('.wrap>*').click(function (event) {
         event.stopPropagation();// 阻止父节点拿到事件
     });
+    $('#img').chang(function () {
+        $('#imgbtn').attr("src", this.value);
+    });
     $('.choiceimg input[type=radio]').change(function (event) {
         var img = this.value;
         $('#img').val(img);
-        $('#imgbtn').attr("src", img);
         $(this).parents('.mwin').fadeOut(400);
         if (Guide.current == 'home') {
             Guide.login();// 修改图片

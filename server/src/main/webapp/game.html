@@ -330,5 +330,12 @@ end {
         <button type="button">放弃发言</button>
     </action>
 </page>
+<script>
+    var no = window.location.hash;
+    if (!no || no=='') {
+        alert('房间号无效！');
+        window.location = 'index.html';
+    }
+</script>
 </body>
 </html>
