@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, user-scalable=no"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Title</title>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <!--<script src="js/jquery.mobile-1.4.5.min.js"></script>-->
+    <script src="js/websocket-client.js"></script>
+    <!-- <script src="js/fastclick.js"></script> -->
+    <script src="js/util.js"></script>
+<style>
+* {
+    padding: 0;
+    margin: 0;
+}
+body {
+    background-color: black;
+}
+.background {
+    background: url('img/logo.jpg') no-repeat;
+    background-position: center;
+    background-size: 100%;
+    z-index: 0;
+}
+.background, .page, .mwin, .dialog {
+    position: absolute;
+    left: 0;
+    top:0;
+    right: 0;
+    bottom: 0;
+    width:100%;
+    height: 100%;
+}
+.page {
+    z-index: 100;
+}
+.page>.wrap {
+
+}
+.wrap {
+    position: relative;
+    left: 0;
+    top: 0;
+    width:100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.inputUser {
+    width: 331px;
+    height: 180px;
+    background-color: aliceblue;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.inputUser>p {
+    margin-top: 10px;
+}
+.choiceimg .content {
+    width: 290px;
+    padding: 14px 4px 6px 8px;
+    border-radius: 6px;
+    position: absolute;
+    background-color: lightgrey;
+}
+#imgbtn, .choiceimg input[type=radio] {
+    width: 60px;
+    height: 60px;
+}
+.choiceimg input[type=radio] {
+    background-size: 100%;
+    -webkit-appearance: none;
+    margin-right: 4px;
+    margin-bottom: 4px;
+}
+.choiceimg input[type=radio]:checked {
+    outline: dodgerblue auto 5px;
+}
+.img0 {
+    background: url("img/img0.jpg") no-repeat;
+}
+.img1 {
+    background: url("img/img1.jpg") no-repeat;
+}
+.img2 {
+    background: url("img/img2.jpg") no-repeat;
+}
+.img3 {
+    background: url("img/img3.jpg") no-repeat;
+}
+.img4 {
+    background: url("img/img4.jpg") no-repeat;
+}
+.img5 {
+    background: url("img/img5.jpg") no-repeat;
+}
+.img6 {
+    background: url("img/img6.jpg") no-repeat;
+}
+.img7 {
+    background: url("img/img7.jpg") no-repeat;
+}
+.img8 {
+    background: url("img/img8.jpg") no-repeat;
+}
+.img9 {
+    background: url("img/img9.jpg") no-repeat;
+}
+.img10 {
+    background: url("img/img10.jpg") no-repeat;
+}
+.img11 {
+    background: url("img/img11.jpg") no-repeat;
+}
+.img12 {
+    background: url("img/img12.jpg") no-repeat;
+}
+.img13 {
+    background: url("img/img13.jpg") no-repeat;
+}
+.img14 {
+    background: url("img/img14.jpg") no-repeat;
+}
+.img15 {
+    background: url("img/img15.jpg") no-repeat;
+}
+.img16 {
+    background: url("img/img16.jpg") no-repeat;
+}
+.img17 {
+    background: url("img/img17.jpg") no-repeat;
+}
+.img18 {
+    background: url("img/img18.jpg") no-repeat;
+}
+.img19 {
+    background: url("img/img19.jpg") no-repeat;
+}
+.img20 {
+    background: url("img/img20.jpg") no-repeat;
+}
+.home {
+
+}
+.home .bar {
+    margin-top: 20px;
+}
+button {
+    width: 85px;
+    height: 45px;
+    border-radius: 8px;
+    margin-right: 5px;
+    background-color: brown;
+    color: yellow;
+    font-weight: bold;
+}
+.mwin, .dialog {
+    text-align: center;
+    z-index: 1000;
+}
+.inputRoom {
+    width: 331px;
+    height: 100px;
+    background-color: aliceblue;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+.inputUser>p>*, .inputRoom>* {
+    margin-right: 4px;
+}
+#img_bar {
+    width: 100px;
+}
+#user_bar {
+    color: yellowgreen;
+}
+.hide {
+    display: none;
+}
+.gameSetting .content {
+    min-width: 320px;
+    padding: 14px 4px 6px 8px;
+    border-radius: 6px;
+    position: absolute;
+    top: 0;
+    background-color: lightgrey;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+
+}
+.gameSetting input[type=checkbox] {
+    width: 99px;
+    height: 134px;
+
+    background-size: 100%;
+    -webkit-appearance: none;
+    margin-right: 4px;
+    margin-bottom: 4px;
+}
+.gameSetting input[type=checkbox]:checked {
+    outline: red auto 5px;
+    border: 2px red solid;
+    background-position: center;
+}
+.gameSetting input[type=checkbox][value=化身幽灵] {
+    background: url('img/化身幽灵.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=狼人] {
+    background: url('img/狼人.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=爪牙] {
+    background: url('img/爪牙.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=守夜人] {
+    background: url('img/守夜人.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=预言家] {
+    background: url('img/预言家.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=强盗] {
+    background: url('img/强盗.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=捣蛋鬼] {
+    background: url('img/捣蛋鬼.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=酒鬼] {
+    background: url('img/酒鬼.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=失眠者] {
+    background: url('img/失眠者.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=猎人] {
+    background: url('img/猎人.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=皮匠] {
+    background: url('img/皮匠.png') no-repeat;
+}
+.gameSetting input[type=checkbox][value=村民] {
+    background: url('img/村民.png') no-repeat;
+}
+.gameSetting .content p {
+    width: 100%;
+    text-align: center;
+    color: black;
+}
+#playerNumber{
+    color: dodgerblue;
+    font-weight: bold;
+}
+#gameSettingForm{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+
+</style>
+</head>
+<body>
+<div class="background">
+</div>
+<div class="login page">
+    <div class="wrap">
+        <form id="loginForm">
+        <div class="inputUser">
+            <p><img id="imgbtn" src="img/img0.jpg"/><input type="hidden" id="img" name="img" value="img/img0.jpg"/></p>
+            <p><label>昵称</label><input id="user" name="user" type="text" placeholder="请输入姓名"/></p>
+            <p id="loginbtn"><button type="button">登录</button></p>
+        </div>
+        </form>
+    </div>
+</div>
+<div class="home page">
+    <div class="wrap">
+        <p><img id="img_bar" src="img/img0.jpg"/></p>
+        <p id="user_bar"></p>
+        <p class="bar"><button id="gameSetting">创建房间</button><button id="findRoom">加入房间</button><button id="logout">退出登录</button></p>
+    </div>
+</div>
+<div class="gameSetting page">
+    <div class="wrap">
+        <div class="content">
+        <form id="gameSettingForm">
+            <input name="poker" type="checkbox" value="化身幽灵"/>
+            <input name="poker" type="checkbox" value="狼人"/>
+            <input name="poker" type="checkbox" value="狼人"/>
+            <input name="poker" type="checkbox" value="爪牙"/>
+            <input name="poker" type="checkbox" value="守夜人"/>
+            <input name="poker" type="checkbox" value="守夜人"/>
+            <input name="poker" type="checkbox" value="预言家"/>
+            <input name="poker" type="checkbox" value="强盗"/>
+            <input name="poker" type="checkbox" value="捣蛋鬼"/>
+            <input name="poker" type="checkbox" value="酒鬼"/>
+            <input name="poker" type="checkbox" value="失眠者"/>
+            <input name="poker" type="checkbox" value="猎人"/>
+            <input name="poker" type="checkbox" value="皮匠"/>
+            <input name="poker" type="checkbox" value="村民"/>
+            <input name="poker" type="checkbox" value="村民"/>
+            <input name="poker" type="checkbox" value="村民"/>
+            <p>共<span id="playerNumber">0</span>张牌</p>
+            <p><button id="newGame" type="button">开始游戏</button><button id="cancelGame" type="button">取消游戏</button></p>
+        </form>
+        </div>
+    </div>
+</div>
+<div class="choiceimg mwin">
+    <div class="wrap">
+        <div class="content">
+            <input class="img1" name="img" type="radio" value="img/img1.jpg"/>
+            <input class="img2" name="img" type="radio" value="img/img2.jpg"/>
+            <input class="img3" name="img" type="radio" value="img/img3.jpg"/>
+            <input class="img4" name="img" type="radio" value="img/img4.jpg"/>
+            <input class="img5" name="img" type="radio" value="img/img5.jpg"/>
+            <input class="img6" name="img" type="radio" value="img/img6.jpg"/>
+            <input class="img7" name="img" type="radio" value="img/img7.jpg"/>
+            <input class="img8" name="img" type="radio" value="img/img8.jpg"/>
+            <input class="img9" name="img" type="radio" value="img/img9.jpg"/>
+            <input class="img10" name="img" type="radio" value="img/img10.jpg"/>
+            <input class="img11" name="img" type="radio" value="img/img11.jpg"/>
+            <input class="img12" name="img" type="radio" value="img/img12.jpg"/>
+            <input class="img13" name="img" type="radio" value="img/img13.jpg"/>
+            <input class="img14" name="img" type="radio" value="img/img14.jpg"/>
+            <input class="img15" name="img" type="radio" value="img/img15.jpg"/>
+            <input class="img16" name="img" type="radio" value="img/img16.jpg"/>
+            <input class="img17" name="img" type="radio" value="img/img17.jpg"/>
+            <input class="img18" name="img" type="radio" value="img/img18.jpg"/>
+            <input class="img19" name="img" type="radio" value="img/img19.jpg"/>
+            <input class="img20" name="img" type="radio" value="img/img20.jpg"/>
+        </div>
+
+    </div>
+</div>
+<div class="disconnect mwin">
+    <div class="wrap">
+    </div>
+</div>
+<div class="disconnect dialog">
+    <div class="wrap">
+        <div class="inputRoom">
+            <label>房间号</label><input type="text" placeholder="请输入房间号"/><button>进入房间</button>
+        </div>
+    </div>
+</div>
+<script>
+
+    var Guide = {
+        current: 'init',
+        init: function() {
+            showPage('login');
+            $('.mwin').hide();
+            $('.dialog').hide();
+            Guide.current = 'init';
+        },
+        login: function () {
+            var param = formData('loginForm');
+            websocket.http("login", param, Guide.home);
+            Guide.current = 'login';
+        },
+        home: function () {
+            $('#img_bar').attr('src', $('#img').val());
+            $('#user_bar').html($('#user').val());
+            fadePage('home', 400);
+            Guide.current = 'home';
+        },
+        newGame : function () {
+
+        } 
+    }
+    function loadStory() {
+        Guide[Guide.current]();
+    }
+</script>
+<script>
+    /*创建连接*/
+    //var websocket = new WebSocket('ws://192.168.1.5:8080/hall');
+    var websocket = new WebSocket('ws://203.110.176.174:8082/GuessWolves/hall');
+
+    websocket.onError(function (e) {
+        alert('1-'+JSON.stringify(e));
+    });
+
+    $('.mwin>.wrap, .dialog>.wrap').click(function () {
+        $(this.parentNode).hide(400);//.toggleClass('hide', true);
+    });
+    $('.wrap>*').click(function (event) {
+        event.stopPropagation();// 阻止父节点拿到事件
+    });
+    $('.choiceimg input[type=radio]').change(function (event) {
+        var img = this.value;
+        $('#img').val(img);
+        $('#imgbtn').attr("src", img);
+        $(this).parents('.mwin').fadeOut(400);
+        if (Guide.current == 'home') {
+            Guide.login();// 修改图片
+        }
+    });
+    $('#imgbtn, #img_bar').click(function () {
+        $('.choiceimg').fadeIn(400);
+    });
+    //$('#loginbtn').on("touchstart", Guide.login);
+    $('#loginbtn').tap(Guide.login);
+    $('#logout').click(function () {
+        var param = formData('loginForm');
+        websocket.http("logout", param, function () {
+            Guide.init();
+        });
+    });
+    $('#gameSetting').click(function () {
+        $('.gameSetting').fadeIn(400);
+    });
+    $('.gameSetting input[type=checkbox]').change(function () {
+        var param = formData('gameSettingForm');//widgetValue('poker');
+        var playerNumber = 0;
+        if (param['poker']) {
+            playerNumber = param['poker'].length;
+        }
+        $('#playerNumber').html(playerNumber);
+    });
+    $('#newGame').click(function () {
+        var param = formData('gameSettingForm');
+        websocket.http('newGame', param, Guide.newGame);
+    });
+    $('#cancelGame').tap(function () {
+        Guide.home();
+    });
+
+    loadStory();
+</script>
+</body>
+</html>
