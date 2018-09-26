@@ -78,67 +78,67 @@
     outline: dodgerblue auto 5px;
 }
 .img0 {
-    background: url("img/img0.jpg") no-repeat;
+    background-image: url("img/img0.jpg");
 }
 .img1 {
-    background: url("img/img1.jpg") no-repeat;
+    background-image: url("img/img1.jpg");
 }
 .img2 {
-    background: url("img/img2.jpg") no-repeat;
+    background-image: url("img/img2.jpg");
 }
 .img3 {
-    background: url("img/img3.jpg") no-repeat;
+    background-image: url("img/img3.jpg");
 }
 .img4 {
-    background: url("img/img4.jpg") no-repeat;
+    background-image: url("img/img4.jpg");
 }
 .img5 {
-    background: url("img/img5.jpg") no-repeat;
+    background-image: url("img/img5.jpg");
 }
 .img6 {
-    background: url("img/img6.jpg") no-repeat;
+    background-image: url("img/img6.jpg");
 }
 .img7 {
-    background: url("img/img7.jpg") no-repeat;
+    background-image: url("img/img7.jpg");
 }
 .img8 {
-    background: url("img/img8.jpg") no-repeat;
+    background-image: url("img/img8.jpg");
 }
 .img9 {
-    background: url("img/img9.jpg") no-repeat;
+    background-image: url("img/img9.jpg");
 }
 .img10 {
-    background: url("img/img10.jpg") no-repeat;
+    background-image: url("img/img10.jpg");
 }
 .img11 {
-    background: url("img/img11.jpg") no-repeat;
+    background-image: url("img/img11.jpg");
 }
 .img12 {
-    background: url("img/img12.jpg") no-repeat;
+    background-image: url("img/img12.jpg");
 }
 .img13 {
-    background: url("img/img13.jpg") no-repeat;
+    background-image: url("img/img13.jpg");
 }
 .img14 {
-    background: url("img/img14.jpg") no-repeat;
+    background-image: url("img/img14.jpg");
 }
 .img15 {
-    background: url("img/img15.jpg") no-repeat;
+    background-image: url("img/img15.jpg");
 }
 .img16 {
-    background: url("img/img16.jpg") no-repeat;
+    background-image: url("img/img16.jpg");
 }
 .img17 {
-    background: url("img/img17.jpg") no-repeat;
+    background-image: url("img/img17.jpg");
 }
 .img18 {
-    background: url("img/img18.jpg") no-repeat;
+    background-image: url("img/img18.jpg");
 }
 .img19 {
-    background: url("img/img19.jpg") no-repeat;
+    background-image: url("img/img19.jpg");
 }
 .img20 {
-    background: url("img/img20.jpg") no-repeat;
+    background-image: url("img/img20.jpg");
 }
 .home {
 
@@ -202,40 +202,40 @@
     background-position: center;
 }
 .gameSetting input[type=checkbox][value=化身幽灵] {
-    background: url('img/化身幽灵.png') no-repeat;
+    background-image: url('img/化身幽灵.png');
 }
 .gameSetting input[type=checkbox][value=狼人] {
-    background: url('img/狼人.png') no-repeat;
+    background-image: url('img/狼人.png');
 }
 .gameSetting input[type=checkbox][value=爪牙] {
-    background: url('img/爪牙.png') no-repeat;
+    background-image: url('img/爪牙.png');
 }
 .gameSetting input[type=checkbox][value=守夜人] {
-    background: url('img/守夜人.png') no-repeat;
+    background-image: url('img/守夜人.png');
 }
 .gameSetting input[type=checkbox][value=预言家] {
-    background: url('img/预言家.png') no-repeat;
+    background-image: url('img/预言家.png');
 }
 .gameSetting input[type=checkbox][value=强盗] {
-    background: url('img/强盗.png') no-repeat;
+    background-image: url('img/强盗.png');
 }
 .gameSetting input[type=checkbox][value=捣蛋鬼] {
-    background: url('img/捣蛋鬼.png') no-repeat;
+    background-image: url('img/捣蛋鬼.png');
 }
 .gameSetting input[type=checkbox][value=酒鬼] {
-    background: url('img/酒鬼.png') no-repeat;
+    background-image: url('img/酒鬼.png');
 }
 .gameSetting input[type=checkbox][value=失眠者] {
-    background: url('img/失眠者.png') no-repeat;
+    background-image: url('img/失眠者.png');
 }
 .gameSetting input[type=checkbox][value=猎人] {
-    background: url('img/猎人.png') no-repeat;
+    background-image: url('img/猎人.png');
 }
 .gameSetting input[type=checkbox][value=皮匠] {
-    background: url('img/皮匠.png') no-repeat;
+    background-image: url('img/皮匠.png');
 }
 .gameSetting input[type=checkbox][value=村民] {
-    background: url('img/村民.png') no-repeat;
+    background-image: url('img/村民.png');
 }
 .gameSetting .content p {
     width: 100%;
@@ -401,7 +401,7 @@
     function loadUser() {
         var img = window.localStorage.getItem('img');
         if (img) {
-            $('#img').val(img);
+            setImg(img);
         }
         var user = window.localStorage.getItem('user');
         if (user) {
@@ -424,12 +424,13 @@
     $('.wrap>*').click(function (event) {
         event.stopPropagation();// 阻止父节点拿到事件
     });
-    $('#img').chang(function () {
-        $('#imgbtn').attr("src", this.value);
-    });
+    function setImg(img) {
+        $('#img').val(img);
+        $('#imgbtn').attr("src", img);
+    };
     $('.choiceimg input[type=radio]').change(function (event) {
         var img = this.value;
-        $('#img').val(img);
+        setImg(img);
         $(this).parents('.mwin').fadeOut(400);
         if (Guide.current == 'home') {
             Guide.login();// 修改图片

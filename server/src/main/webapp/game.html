@@ -17,12 +17,11 @@ page {
 }
 game {
     flex:1 0 0;
-    width :100%;
+    max-width :560px;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-direction: column;
     overflow-y: auto;
 }
 hr {
@@ -35,7 +34,7 @@ discard {
     justify-content: center;
     align-items: center;
     flex-direction: row;
-    padding: 0 42px;
+    padding: 0 10px;
 }
 poker {
     background: url('img/discard.jpg') no-repeat;
@@ -46,18 +45,19 @@ poker {
     border: 1px #ccc solid;
     margin: 3px;
 }
-seats {
+seat {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: row;
     flex-wrap: wrap;
-    overflow-y: auto;
 }
 player {
     display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
+    flex-direction: row;
+    /*flex-wrap: wrap;*/
+    justify-content: center;
+    align-items: stretch;
 
     color: red;
     font-weight: bold;
@@ -65,24 +65,26 @@ player {
 }
 portrait {
     display: block;
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     color: #222;;
     font-weight: bold;
-    margin: 2px 10px 10px 10px;
+    margin: 3px 0;
     border: 1px #ccc solid;
     background-size: contain;
     background-position: center;
 }
-no:after {
-    content: ". ";
+no {
+    color: darkblue;
 }
 name {
 
 }
+clue {
+    margin: 3px 0;
+}
 tag {
     margin: 0 2px;
-    width: 60px;
     display: block;
     color: blueviolet;
     font-size: 10px;
@@ -106,67 +108,67 @@ action {
 }
 /**/
 .img0 {
-    background: url("img/img0.jpg") no-repeat;
+    background-image: url("img/img0.jpg");
 }
 .img1 {
-    background: url("img/img1.jpg") no-repeat;
+    background-image: url("img/img1.jpg");
 }
 .img2 {
-    background: url("img/img2.jpg") no-repeat;
+    background-image: url("img/img2.jpg");
 }
 .img3 {
-    background: url("img/img3.jpg") no-repeat;
+    background-image: url("img/img3.jpg");
 }
 .img4 {
-    background: url("img/img4.jpg") no-repeat;
+    background-image: url("img/img4.jpg");
 }
 .img5 {
-    background: url("img/img5.jpg") no-repeat;
+    background-image: url("img/img5.jpg");
 }
 .img6 {
-    background: url("img/img6.jpg") no-repeat;
+    background-image: url("img/img6.jpg");
 }
 .img7 {
-    background: url("img/img7.jpg") no-repeat;
+    background-image: url("img/img7.jpg");
 }
 .img8 {
-    background: url("img/img8.jpg") no-repeat;
+    background-image: url("img/img8.jpg");
 }
 .img9 {
-    background: url("img/img9.jpg") no-repeat;
+    background-image: url("img/img9.jpg");
 }
 .img10 {
-    background: url("img/img10.jpg") no-repeat;
+    background-image: url("img/img10.jpg");
 }
 .img11 {
-    background: url("img/img11.jpg") no-repeat;
+    background-image: url("img/img11.jpg");
 }
 .img12 {
-    background: url("img/img12.jpg") no-repeat;
+    background-image: url("img/img12.jpg");
 }
 .img13 {
-    background: url("img/img13.jpg") no-repeat;
+    background-image: url("img/img13.jpg");
 }
 .img14 {
-    background: url("img/img14.jpg") no-repeat;
+    background-image: url("img/img14.jpg");
 }
 .img15 {
-    background: url("img/img15.jpg") no-repeat;
+    background-image: url("img/img15.jpg");
 }
 .img16 {
-    background: url("img/img16.jpg") no-repeat;
+    background-image: url("img/img16.jpg");
 }
 .img17 {
-    background: url("img/img17.jpg") no-repeat;
+    background-image: url("img/img17.jpg");
 }
 .img18 {
-    background: url("img/img18.jpg") no-repeat;
+    background-image: url("img/img18.jpg");
 }
 .img19 {
-    background: url("img/img19.jpg") no-repeat;
+    background-image: url("img/img19.jpg");
 }
 .img20 {
-    background: url("img/img20.jpg") no-repeat;
+    background-image: url("img/img20.jpg");
 }
 
 end {
@@ -180,155 +182,229 @@ end {
 <body>
 <page>
     <game>
-        <discard>
-            <poker></poker>
-            <poker></poker>
-            <poker></poker>
-        </discard>
-        <player>
-            <row-center>
-                <no>1</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
+        <row-center>
+            <discard>
+                <poker></poker>
+                <poker></poker>
+                <poker></poker>
+            </discard>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
 
-        <player>
-            <row-center>
-                <no>2</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>3</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>4</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>5</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>6</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>7</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>8</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>9</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>10</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>11</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>12</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
-        <player>
-            <row-center>
-                <no>13</no>
-                <name>tony</name>
-            </row-center>
-            <portrait>
-                <tag>狼x2</tag>
-                <tag>皮匠x2</tag>
-            </portrait>
-        </player>
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+        </row-center>
+        <seat>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+
+
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+            <player>
+                <column-center>
+                    <portrait class="img0">
+                        <no>1</no>
+                    </portrait>
+                    <name>tony</name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    <tag>狼x2</tag>
+                    <tag>皮匠x2</tag>
+                </clue>
+
+            </player>
+        </seat>
+
     </game>
+    <!---
     <hr/>
-    <concern>
+    <concern style="display: none;">
         <row>
             <poker value="狼人"></poker>
             <poker value="狼人"></poker>
         </row>
         <help>你当前是狼人， 应当误导村民，阻止皮匠！</help>
     </concern>
-    <action>
+    <action style="display: none;">
         <button type="button">开始发言</button>
         <button type="button">放弃发言</button>
     </action>
+    --->
 </page>
 <script>
     var no = window.location.hash;
@@ -336,6 +412,11 @@ end {
         alert('房间号无效！');
         window.location = 'index.html';
     }
+</script>
+<script>
+    var webSocket = new WebSocket('ws://192.168.1.5:8080/game/'+no);
+
+
 </script>
 </body>
 </html>
