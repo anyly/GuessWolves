@@ -1,9 +1,10 @@
 package org.idear.game.entity.spell;
 
-import org.idear.game.Context;
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.movement.Motion;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -11,10 +12,29 @@ import java.util.List;
  * 法术等于若干个天赋顺序执行
  */
 public abstract class Spell {
-    private String name;
-    private List<Motion> movements;
+    protected Integer caster;
+    protected Integer[] targets;
+    protected String name;
+    protected List<Motion> motions = new LinkedList<>();
 
-    public abstract List<Movement> cast(Context context);
+    public Spell(String name, Integer caster, Integer...targets) {
+        this.name = name;
+        this.caster = caster;
+        this.targets = targets;
+    }
+
+    public abstract void movements();
+
+    public List<Movement> cast(LinkedHashMap<Integer, String> deck) {
+        List<Movement> movements = new LinkedList<>();
+        Movement movement = null;
+        for (Motion motion: this.motions) {
+            movement = new Movement(motion, movement);
+            motion.doing(deck, movement.getViewport());
+        }
+
+        return movements;
+    }
 
     public String getName() {
         return name;
@@ -24,11 +44,11 @@ public abstract class Spell {
         this.name = name;
     }
 
-    public List<Motion> getMovements() {
-        return movements;
+    public List<Motion> getMotions() {
+        return motions;
     }
 
-    public void setMovements(List<Motion> movements) {
-        this.movements = movements;
+    public void setMotions(List<Motion> motions) {
+        this.motions = motions;
     }
 }

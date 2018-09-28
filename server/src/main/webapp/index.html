@@ -151,7 +151,7 @@
     z-index: 1000;
 }
 .inputRoom {
-    width: 331px;
+    width: 300px;
     height: 100px;
     background-color: aliceblue;
     border-radius: 4px;
@@ -159,6 +159,9 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+}
+.inputRoom input[type=text] {
+    width: 100px;
 }
 .inputUser>p>*, .inputRoom>* {
     margin-right: 4px;
@@ -333,12 +336,13 @@
 </div>
 <div class="disconnect mwin">
     <div class="wrap">
+        <div>重试连接网络</div>
     </div>
 </div>
-<div class="disconnect dialog">
+<div class="findRoom dialog">
     <div class="wrap">
         <div class="inputRoom">
-            <label>房间号</label><input type="text" placeholder="请输入房间号"/><button>进入房间</button>
+            <label>房间号</label><input id="no" type="text" placeholder="请输入房间号"/><button id="joinRoomBtn" type="button">进入房间</button>
         </div>
     </div>
 </div>
@@ -417,6 +421,11 @@
     websocket.onError(function (e) {
         alert('1-'+JSON.stringify(e));
     });
+    websocket.onDisconnect(function () {
+        //$('.disconnect').fadeIn();
+        alert("网络已断开，确认之后会重新连接！");
+        websocket.reconnect();
+    });
 
     $('.mwin>.wrap, .dialog>.wrap').click(function () {
         $(this.parentNode).hide(400);//.toggleClass('hide', true);
@@ -464,6 +473,21 @@
     });
     $('#cancelGame').tap(function () {
         Guide.home();
+    });
+    $('#findRoom').click(function () {
+        $('.findRoom').fadeIn(400);
+    });
+    $('#joinRoomBtn').click(function () {
+        var no = $('#no').val();
+        websocket.http('findGame', {
+            no: no
+        }, function (data) {
+            if (data.exist) {
+                window.location = '/game.html#'+no;
+            } else {
+                alert('该房间号不存在！');
+            }
+        });
     });
 
     loadStory();

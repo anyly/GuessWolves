@@ -18,6 +18,9 @@ public class CoherentMap<K, V> extends LinkedHashMap<K, V> {
     @Override
     public V put(K key, V value) {
         V v = super.put(key, value);
+        if (v != null) {
+            valueMap.remove(v);// 删除旧值
+        }
         valueMap.put(value, key);
         return v;
     }
@@ -35,7 +38,9 @@ public class CoherentMap<K, V> extends LinkedHashMap<K, V> {
     @Override
     public V remove(Object key) {
         V value = super.remove(key);
-        valueMap.remove(value);
+        if (value != null) {
+            valueMap.remove(value);
+        }
         return value;
     }
 

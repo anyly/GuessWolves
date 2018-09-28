@@ -89,7 +89,7 @@
                 return this;
             }
             if (listener) {
-                this.messagelistener.assign(listener);
+                messagelistener.assign(listener);
             }
             return this;
         };
@@ -102,7 +102,7 @@
                 return this;
             }
             if (callback) {
-                this.messagelistener[action] = callback;
+                messagelistener[action] = callback;
             }
             return this;
         };

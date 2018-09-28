@@ -1,4 +1,4 @@
-package org.idear.service;
+package org.idear.endpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import org.idear.util.StringUtil;
@@ -14,21 +14,13 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * Created by idear on 2018/9/21.
  */
-public class OnlineService {
+public abstract class OnlineEndpoint {
 
     protected static CopyOnWriteArraySet<Session> clientSessions = new CopyOnWriteArraySet<>();
 
-    private static OnlineService __ = new OnlineService();
+    protected Session session;
 
-    public static OnlineService instance() {
-        return __;
-    }
-
-    protected OnlineService() {
-
-    }
-
-    protected JSONObject messageHandler(Session session, String action, JSONObject data) {
+    final protected JSONObject messageHandler(Session session, String action, JSONObject data) {
         //Method method = null;
         String methodName = "on"+ StringUtil.toUpperCaseFirstOne(action);
         try {
@@ -43,7 +35,7 @@ public class OnlineService {
                             returnType.isAssignableFrom(List.class))) {
                         throw new ClassCastException(methodName+"() return type is not allow Array/Set/List");
                     }
-
+                    /*
                     Class[] parameterTypes = method.getParameterTypes();
                     Set set = new HashSet();
                     ArrayList parameter = new ArrayList(parameterTypes.length);
@@ -67,8 +59,11 @@ public class OnlineService {
                             parameter.add(null);
                         }
                     }
+                    */
 
-                    Object returnObject = method.invoke(this, session, data);
+                    // 反射不支持不定数组
+                    //Object returnObject = method.invoke(this, session, data);
+                    Object returnObject = method.invoke(this, data);
                     if (returnObject == null) {
                         return null;
                     } else if (returnObject instanceof JSONObject) {
@@ -101,9 +96,9 @@ public class OnlineService {
 
     }
 
-    @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
         clientSessions.add(session);
+        this.session = session;
         System.out.println("建立连接"+session.getId());
 //        session.addMessageHandler(new MessageHandler.Whole<String>() {
 //            @Override
@@ -113,8 +108,7 @@ public class OnlineService {
 //        });
     }
 
-    @OnMessage
-    public void onMessage(String message, Session session) {
+    public void onMessage(String message) {
         JSONObject jsonObject = JSONObject.parseObject(message);
         String action = jsonObject.getString("action");
         //String datatype = jsonObject.getString("datatype");
@@ -135,18 +129,40 @@ public class OnlineService {
         }
     }
 
-    @OnClose
-    public void onClose(Session session, CloseReason closeReason) {
+    public void onClose(CloseReason closeReason) {
         clientSessions.remove(session);
         System.out.println("断开连接"+session.getId()+" : "+closeReason.getReasonPhrase());
+        session = null;
     }
 
-    @OnError
     public void onError(Session session, Throwable error){
         System.out.println(session.getId()+": 发生错误");
         error.printStackTrace();
     }
 
+    /**
+     * 当前端传输
+     * @param action
+     * @param data
+     */
+    final public void emit(String action, JSONObject data){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("action", action);
+        jsonObject.put("data", data);
+        try {
+            session.getBasicRemote().sendText(jsonObject.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //this.session.getAsyncRemote().sendText(message);
+    }
+
+    /**
+     * 指定某一端传输
+     * @param session
+     * @param action
+     * @param data
+     */
     final public void emit(Session session, String action, JSONObject data){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("action", action);
@@ -159,6 +175,11 @@ public class OnlineService {
         //this.session.getAsyncRemote().sendText(message);
     }
 
+    /**
+     * 广播所有在线连接
+     * @param action
+     * @param data
+     */
     final public void emitAll(String action, JSONObject data) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("action", action);

@@ -1,43 +1,46 @@
-package org.idear.service;
+package org.idear.endpoint;
 
 import com.alibaba.fastjson.JSONObject;
+import org.idear.CoherentMap;
 
 import javax.websocket.Session;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * Created by idear on 2018/9/21.
  */
-public class UserService extends OnlineService {
+public abstract class UserEndpoint extends OnlineEndpoint {
 
-    public static Map<String, Session> userSession = new LinkedHashMap<>();
-
-    protected String userKey = "user";
-
-    private static UserService __ = new UserService();
-
-    public static UserService instance() {
-        return __;
-    }
-
-    protected UserService() {
-        super();
-    }
+    public static CoherentMap<String, Session> userSession = new CoherentMap<>();
+    public String user;
+    public String img;
 
     //登录
-    public JSONObject onLogin(Session session, JSONObject data) {
-        String user = data.getString("user");
-        userSession.put(user, session);
-        //session.getPathParameters().put(userKey, user);
+    public JSONObject onLogin(JSONObject data) {
+        this.user = data.getString("user");
+        this.img = data.getString("img");
+        userSession.put(this.user, session);
         return null;
     }
 
-    public JSONObject onLogout(Session session, JSONObject data) {
+    /**
+     * 要求必须登录
+     * @return
+     */
+    public boolean requireLogin() {
+        if (user == null) {
+            emit("login", null);
+            return false;
+        }
+        return true;
+    }
+
+    public JSONObject onLogout(JSONObject data) {
         String user = data.getString("user");
         userSession.remove(user);
+        this.user = null;
+        this.img = null;
         return null;
     }
 

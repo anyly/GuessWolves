@@ -1,6 +1,7 @@
 package org.idear.game.entity.movement;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by idear on 2018/9/26.
@@ -9,7 +10,20 @@ import java.util.List;
 public abstract class Motion {
     protected Integer own;
     protected String type;
-    protected List<Integer> targets;
+    protected Integer[] targets;
+
+    public Motion(String type, Integer own, Integer...targets) {
+        this.own = own;
+        this.type = type;
+        this.targets = targets;
+    }
+
+    public abstract void doing(LinkedHashMap<Integer, String> deck, Map<Integer, String> viewport);
+
+    @Override
+    public String toString() {
+        return type.toString();
+    }
 
     public Integer getOwn() {
         return own;
@@ -27,11 +41,11 @@ public abstract class Motion {
         this.type = type;
     }
 
-    public List<Integer> getTargets() {
+    public Integer[] getTargets() {
         return targets;
     }
 
-    public void setTargets(List<Integer> targets) {
+    public void setTargets(Integer[] targets) {
         this.targets = targets;
     }
 }

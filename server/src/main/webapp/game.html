@@ -4,7 +4,12 @@
 <meta name="viewport" content="width=device-width, user-scalable=no"/>
 <meta charset="UTF-8">
 <title>狼人一夜</title>
-<link rel="stylesheet" href="css/base.css" type="text/css"/>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <!--<script src="js/jquery.mobile-1.4.5.min.js"></script>-->
+    <script src="js/websocket-client.js"></script>
+    <!-- <script src="js/fastclick.js"></script> -->
+    <script src="js/util.js"></script>
+    <link rel="stylesheet" href="css/base.css" type="text/css"/>
 <style>
 body{
     background-color: white;
@@ -48,7 +53,7 @@ poker {
 seat {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: row;
     flex-wrap: wrap;
 }
@@ -59,7 +64,7 @@ player {
     justify-content: center;
     align-items: stretch;
 
-    color: red;
+    color: darkblue;
     font-weight: bold;
 
 }
@@ -71,16 +76,106 @@ portrait {
     font-weight: bold;
     margin: 3px 0;
     border: 1px #ccc solid;
+    background-image: url("img/img0.jpg");
     background-size: contain;
     background-position: center;
+    position: relative;
 }
 no {
+    z-index: 200;
+    position: absolute;
+    left: 2px;
+    top:0;
     color: darkblue;
 }
-name {
+player[seat='1'] no:before {
+    content: '1';
+}
+player[seat='2'] no:before {
+    content: '2';
+}
+player[seat='3'] no:before {
+    content: '3';
+}
+player[seat='4'] no:before {
+    content: '4';
+}
+player[seat='5'] no:before {
+    content: '5';
+}
+player[seat='6'] no:before {
+    content: '6';
+}
+player[seat='7'] no:before {
+    content: '7';
+}
+player[seat='8'] no:before {
+    content: '8';
+}
+player[seat='9'] no:before {
+    content: '9';
+}
+player[seat='10'] no:before {
+    content: '10';
+}
+player[seat='11'] no:before {
+    content: '11';
+}
+player[seat='12'] no:before {
+    content: '12';
+}
+player[seat='13'] no:before {
+    content: '13';
+}
+ready {
+    position: absolute;
+    left: 0;
+    top:0;
+    right: 0;
+    bottom: 0;
 
+    /*display: flex;*/
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: snow;
+    font-size: 14px;
+}
+ready>span {
+    z-index: 100;
+    margin-top: 5px;
+}
+cover {
+    z-index: 50;
+    position: absolute;
+    left: 0;
+    top:0;
+    right: 0;
+    bottom: 0;
+    background-color: black;
+    opacity: 0.5;
+}
+player.disconnect portrait ready, player.ready portrait ready {
+    display: flex;
+}
+player.disconnect portrait ready span:before {
+    content: '断线';
+}
+player.ready portrait ready span:before {
+    content: '就绪';
+}
+name {
+    font-size: 10px;
+    max-width: 47px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    text-align: center;
 }
 clue {
+    min-width: 50px;
     margin: 3px 0;
 }
 tag {
@@ -103,73 +198,10 @@ help {
 help:before {
     content: '小贴士：';
 }
-action {
+round {
     margin: 10px 0;
 }
 /**/
-.img0 {
-    background-image: url("img/img0.jpg");
-}
-.img1 {
-    background-image: url("img/img1.jpg");
-}
-.img2 {
-    background-image: url("img/img2.jpg");
-}
-.img3 {
-    background-image: url("img/img3.jpg");
-}
-.img4 {
-    background-image: url("img/img4.jpg");
-}
-.img5 {
-    background-image: url("img/img5.jpg");
-}
-.img6 {
-    background-image: url("img/img6.jpg");
-}
-.img7 {
-    background-image: url("img/img7.jpg");
-}
-.img8 {
-    background-image: url("img/img8.jpg");
-}
-.img9 {
-    background-image: url("img/img9.jpg");
-}
-.img10 {
-    background-image: url("img/img10.jpg");
-}
-.img11 {
-    background-image: url("img/img11.jpg");
-}
-.img12 {
-    background-image: url("img/img12.jpg");
-}
-.img13 {
-    background-image: url("img/img13.jpg");
-}
-.img14 {
-    background-image: url("img/img14.jpg");
-}
-.img15 {
-    background-image: url("img/img15.jpg");
-}
-.img16 {
-    background-image: url("img/img16.jpg");
-}
-.img17 {
-    background-image: url("img/img17.jpg");
-}
-.img18 {
-    background-image: url("img/img18.jpg");
-}
-.img19 {
-    background-image: url("img/img19.jpg");
-}
-.img20 {
-    background-image: url("img/img20.jpg");
-}
 
 end {
 
@@ -188,203 +220,253 @@ end {
                 <poker></poker>
                 <poker></poker>
             </discard>
-            <player>
+            <player seat="13">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
         </row-center>
         <seat>
-            <player>
+            <player seat="1">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
                 </clue>
 
             </player>
-            <player>
+            <player seat="2">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
-                </clue>
 
-            </player>
-
-            <player>
-                <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
-                    </portrait>
-                    <name>tony</name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
-                </clue>
-
-            </player>
-            <player>
-                <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
-                    </portrait>
-                    <name>tony</name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
-                </clue>
-
-            </player>
-            <player>
-                <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
-                    </portrait>
-                    <name>tony</name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
                 </clue>
 
             </player>
 
-
-            <player>
+            <player seat="3">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
-            <player>
+            <player seat="4">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
-            <player>
+            <player seat="5">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
-            <player>
+
+
+            <player seat="6">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
-            <player>
+            <player seat="7">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
-            <player>
+            <player seat="8">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
                 </clue>
 
             </player>
-            <player>
+            <player seat="9">
                 <column-center>
-                    <portrait class="img0">
-                        <no>1</no>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
                     </portrait>
-                    <name>tony</name>
+                    <name></name>
 
                 </column-center>
                 <poker></poker>
                 <clue>
-                    <tag>狼x2</tag>
-                    <tag>皮匠x2</tag>
+                    
+                    
+                </clue>
+
+            </player>
+            <player seat="10">
+                <column-center>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
+                    </portrait>
+                    <name></name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+                    
+                    
+                </clue>
+
+            </player>
+            <player seat="11">
+                <column-center>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
+                    </portrait>
+                    <name></name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+
+                    
+                </clue>
+
+            </player>
+            <player seat="12">
+                <column-center>
+                    <portrait>
+                        <no></no>
+                        <ready>
+                            <cover></cover>
+                            <span></span>
+                        </ready>
+                    </portrait>
+                    <name></name>
+
+                </column-center>
+                <poker></poker>
+                <clue>
+
                 </clue>
 
             </player>
@@ -400,10 +482,10 @@ end {
         </row>
         <help>你当前是狼人， 应当误导村民，阻止皮匠！</help>
     </concern>
-    <action style="display: none;">
+ roundtion style="display: none;">
         <button type="button">开始发言</button>
         <button type="button">放弃发言</button>
-    </action>
+  roundtion>
     --->
 </page>
 <script>
@@ -411,11 +493,144 @@ end {
     if (!no || no=='') {
         alert('房间号无效！');
         window.location = 'index.html';
+    } else {
+        no = no.replace('#', '');
+    }
+    var user = localStorage.getItem('user');
+    var img = localStorage.getItem('img');
+    if (!user) {
+        alert('请重新登录！');
+        window.location = 'index.html';
+    }
+    function sitdown(seat, user, img) {
+        var self = $(seat);
+        self.find('name').html(user);
+        self.find('portrait').css('background-image', 'url('+img+')');
+        self.attr('value', user);
+    }
+    function leaveSeat(seat) {
+        var self = $(seat);
+        self.find('name').html('');
+        self.find('portrait').removeAttr('style');
+        self.removeAttr('value');
+    }
+    function changeSeat(seat, user, img) {
+        $('player').each(function () {
+           if (this == seat) {
+               sitdown(this, user, img);
+           } else if (this.getAttribute("value") == user) {
+               leaveSeat(this);
+           }
+        });
+    }
+    function readyStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('ready', true);
+    }
+    function notReadyStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('ready', false);
+    }
+    function disconnectStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('disconnect', true);
+    }
+    function connectStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('disconnect', false);
     }
 </script>
 <script>
-    var webSocket = new WebSocket('ws://192.168.1.5:8080/game/'+no);
+    var Guiade = {
+        Ready: function () {
+            $('player').click(function () {
+                var self = $(this);
+                var seat = self.attr('seat');
+                seat = parseInt(seat);
+                if (self.attr('value') == null) {
+                    if ($('player.ready').length>0) {
+                        return;
+                    }
+                    webSocket.http('sitdown', {
+                        seat: seat,
+                    }, function () {
+                        changeSeat(self.get(0), user, img);
+                    });
+                } else if (self.attr('value') == user) {
+                    self.toggleClass('ready');
+                }
+            });
+        },
+        DoppelWakeup: function () {
+            
+        },
+        SeerWakeup: function () {
+            
+        },
+        AsSeerWakeup: function () {
+            
+        },
+        RobberWakeup: function () {
 
+        },
+        AsRobberWakeup: function () {
+
+        },
+        TroubleMarkerWakeup: function () {
+            
+        },
+        AsTroubleMarkerWakeup: function () {
+
+        },
+        DrunkWakeup: function () {
+
+        },
+        AsDrunkWakeup: function () {
+
+        }
+    };
+</script>
+<script>
+    var webSocket = new WebSocket('ws://192.168.1.5:8080/game/'+no);
+    webSocket.admit("notExistGame", function () {
+        alert('该房间号未创建！');
+        window.location = 'index.html';
+    });
+    webSocket.admit("updateSeat", loadDesktop);
+
+    webSocket.onConnect(function () {
+        webSocket.http('login', {
+            user: user,
+            img: img
+        }, function (data) {
+            if (data.desktop) {
+                var desktop = data.desktop;
+                loadDesktop(desktop);
+            }
+
+            var stage = data.stage;
+            Guiade[stage]();
+        });
+    });
+
+    function loadDesktop(desktop) {
+        for (var seat in desktop) {
+            var info = desktop[seat];
+            var domSeat = $('player[seat="'+seat+'"]').get(0);
+            changeSeat(domSeat, info.user, info.img);
+            if (info.isReady) {
+                readyStatus(domSeat);
+            } else {
+                notReadyStatus(domSeat);
+            }
+            if (info.isDisconnect) {
+                disconnectStatus(domSeat);
+            } else {
+                connectStatus(domSeat);
+            }
+        }
+
+    }
 
 </script>
 </body>
