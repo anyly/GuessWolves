@@ -4,6 +4,7 @@
 /**
  * 获得表单的数据
  */
+
 (function () {
     window.formData = function (formid) {
         var data = {};

@@ -11,11 +11,11 @@ import java.util.Map;
  * 动作帧,具体而完整的行动，包含结果
  */
 public class Movement {
-    private Motion movement;//行动
+    private Motion motion;//行动
     private Map<Integer, String> viewport;//所看到的牌面
 
-    public Movement(Motion movement, Movement prev) {
-        this.movement = movement;
+    public Movement(Motion motion, Movement prev) {
+        this.motion = motion;
         if (prev == null) {
             viewport = new LinkedHashMap<>();
         } else {
@@ -23,12 +23,12 @@ public class Movement {
         }
     }
 
-    public Motion getMovement() {
-        return movement;
+    public Motion getMotion() {
+        return motion;
     }
 
-    public void setMovement(Motion movement) {
-        this.movement = movement;
+    public void setMotion(Motion motion) {
+        this.motion = motion;
     }
 
     public Map<Integer, String> getViewport() {

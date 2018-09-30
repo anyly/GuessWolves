@@ -12,7 +12,7 @@ public class Rob extends Spell {
     }
 
     @Override
-    public void movements() {
+    public void motions() {
         // 交换之后查看
         Integer[] newTarget = new Integer[] {caster, targets[0]};
         this.motions.add(new Swap(caster, newTarget));

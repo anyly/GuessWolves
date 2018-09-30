@@ -1,7 +1,5 @@
 package org.idear.game.entity.movement;
 
-import org.idear.game.entity.poker.Poker;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,8 +15,9 @@ public class Flop extends Motion {
 
     @Override
     public void doing(LinkedHashMap<Integer, String> deck, Map<Integer, String> viewport) {
-        Integer target = targets[0];
-        String poker = deck.get(target);
-        viewport.put(target, poker);
+        for (Integer target: targets) {
+            String poker = deck.get(target);
+            viewport.put(target, poker);
+        }
     }
 }

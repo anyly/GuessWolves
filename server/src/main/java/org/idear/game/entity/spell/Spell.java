@@ -2,6 +2,8 @@ package org.idear.game.entity.spell;
 
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.movement.Motion;
+import org.idear.handler.Context;
+import org.idear.handler.Player;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -21,16 +23,30 @@ public abstract class Spell {
         this.name = name;
         this.caster = caster;
         this.targets = targets;
+        motions();
     }
 
-    public abstract void movements();
+    public abstract void motions();
 
-    public List<Movement> cast(LinkedHashMap<Integer, String> deck) {
+    public List<Movement> cast(Context context) {
+        LinkedHashMap<Integer, String> deck = context.getDeck();
+        Player player = context.getPlayer();
+        return cast(deck, player);
+    }
+
+    public List<Movement> cast(LinkedHashMap<Integer, String> deck, Player player) {
+        List<Movement> movements = player.movements();
+        Movement movement = movements.get(movements.size()-1);
+        return cast(deck, movement);
+    }
+
+    public List<Movement> cast(LinkedHashMap<Integer, String> deck, Movement prev) {
         List<Movement> movements = new LinkedList<>();
-        Movement movement = null;
+        Movement movement = prev;
         for (Motion motion: this.motions) {
             movement = new Movement(motion, movement);
             motion.doing(deck, movement.getViewport());
+            movements.add(movement);
         }
 
         return movements;

@@ -25,7 +25,7 @@
 
 
         window.onbeforeunload = function () {
-            websocket.close();
+            websocket.close(600);
         };
 
         /**
@@ -33,7 +33,7 @@
          **/
         websocket.onmessage = function (event) {
             var message = event.data;
-            var data = JSON.parse(message);
+            var data = eval('('+message+')');//JSON.parse(message);
             try {
                 var action = data.action;
                 var object = data["data"];
@@ -138,6 +138,9 @@
                 return this;
             }
             websocket.onclose = function (code, reason , wasClean) {
+                if (code == 600) {
+                    return;
+                }
                 callback(code, reason , wasClean);
                 httplistener = {};
                 messagelistener = {};
@@ -160,7 +163,7 @@
             if (!isSupport()) {
                 return this;
             }
-            websocket = new original(ws);
+            window.location.href=window.location.href;
             return this;
         };
 
@@ -188,7 +191,7 @@
         window.__WEBSOCKET_CALLBACK[id] = {};
         window.__WEBSOCKET_CALLBACK[id].message = function (event) {
             var message = event.data;
-            var data = JSON.parse(message);
+            var data = eval('('+message+')');//JSON.parse(message);
             try {
                 var action = data.action;
                 var object = data["data"];
@@ -297,6 +300,9 @@
                 return this;
             }
             window.__WEBSOCKET_CALLBACK[id].onclose = function (code, reason , wasClean) {
+                if (code == 600) {
+                    return;
+                }
                 callback(code, reason , wasClean);
                 httplistener = {};
                 messagelistener = {};
@@ -321,7 +327,8 @@
             if (!isSupport()) {
                 return this;
             }
-            WebSocketBridge.connect(id, ws);
+            //WebSocketBridge.connect(id, ws);
+            window.location.href=window.location.href;
             if (!id) {
                 alert('当前浏览器 Not support service');
             }

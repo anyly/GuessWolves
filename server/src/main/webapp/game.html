@@ -7,7 +7,7 @@
     <script src="js/jquery-3.3.1.min.js"></script>
     <!--<script src="js/jquery.mobile-1.4.5.min.js"></script>-->
     <script src="js/websocket-client.js"></script>
-    <!-- <script src="js/fastclick.js"></script> -->
+    <script src="js/jGestures.js"></script>
     <script src="js/util.js"></script>
     <link rel="stylesheet" href="css/base.css" type="text/css"/>
 <style>
@@ -39,7 +39,6 @@ discard {
     justify-content: center;
     align-items: center;
     flex-direction: row;
-    padding: 0 10px;
 }
 poker {
     background: url('img/discard.jpg') no-repeat;
@@ -164,6 +163,9 @@ player.disconnect portrait ready span:before {
 player.ready portrait ready span:before {
     content: '就绪';
 }
+player.disconnect.ready portrait ready span:before {
+    content: '断线';
+}
 name {
     font-size: 10px;
     max-width: 47px;
@@ -201,8 +203,108 @@ help:before {
 round {
     margin: 10px 0;
 }
-/**/
+template {
+    display: none;
+}
+sidecover {
+    z-index: 2000;
+    position: absolute;
+    left:0;
+    right: 0;
+    top:0;
+    bottom: 0;
+    /*display: flex;*/
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: stretch;
+    display: none;
+}
+sidecover.show {
+    display: flex;
+}
+sideslip.show {
+    opacity: 1;
+    width: 120px;
+}
+sideslip {
+    position: absolute;
+    right: 0;
+    top:0;
+    bottom:0;
 
+    width:0;
+    opacity: 0;
+    transition: width 1s ease, opacity 1s ease;
+    background-color: #202828;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+}
+sideslip>hr {
+    width: 100px;
+}
+mine {
+    margin-top: 40px;
+    margin-bottom: 10px;
+}
+myimg {
+    display: block;
+    width: 60px;
+    height: 60px;
+
+    background-position: center;
+    background-size: contain;
+}
+mynuser {
+    display: block;
+    width: 100%;
+    height: 20px;
+    color: white;
+    line-height: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+mymenu {
+    margin: 20px 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+exit{
+    display: block;
+    width: 50px;
+    height: 63px;
+
+
+    background: url("img/exit.png") no-repeat;
+    background-size: contain;
+}
+levitate {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 60px;
+    height: 30px;
+    display: block;
+    line-height: 30px;
+    padding-left: 15px;
+    border: 1px #202828 solid;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    background-color: #202828;
+    color: snow;
+    transition: width 1s ease-in-out;
+    z-index: 2002;
+    font-size: 14px;
+}
+
+levitate:hover {
+    width: 70px;
+}
+/**/
 end {
 
 }
@@ -214,262 +316,16 @@ end {
 <body>
 <page>
     <game>
-        <row-center>
+        <row-center style="margin: 0px 5px;">
             <discard>
                 <poker></poker>
                 <poker></poker>
                 <poker></poker>
             </discard>
-            <player seat="13">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
 
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
         </row-center>
         <seat>
-            <player seat="1">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
 
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                </clue>
-
-            </player>
-            <player seat="2">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-
-                    
-                </clue>
-
-            </player>
-
-            <player seat="3">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="4">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="5">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-
-
-            <player seat="6">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="7">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="8">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="9">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="10">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-                    
-                    
-                </clue>
-
-            </player>
-            <player seat="11">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-
-                    
-                </clue>
-
-            </player>
-            <player seat="12">
-                <column-center>
-                    <portrait>
-                        <no></no>
-                        <ready>
-                            <cover></cover>
-                            <span></span>
-                        </ready>
-                    </portrait>
-                    <name></name>
-
-                </column-center>
-                <poker></poker>
-                <clue>
-
-                </clue>
-
-            </player>
         </seat>
 
     </game>
@@ -488,6 +344,41 @@ end {
   roundtion>
     --->
 </page>
+<!--<sidecover>-->
+    <!---->
+<!--</sidecover>-->
+<sideslip>
+    <mine>
+        <myimg></myimg>
+        <mynuser></mynuser>
+    </mine>
+    <hr>
+    <mymenu>
+        <exit></exit>
+    </mymenu>
+</sideslip>
+<levitate>
+</levitate>
+<template>
+    <player seat="13">
+        <column-center>
+            <portrait>
+                <no></no>
+                <ready>
+                    <cover></cover>
+                    <span></span>
+                </ready>
+            </portrait>
+            <name></name>
+
+        </column-center>
+        <poker></poker>
+        <clue>
+
+        </clue>
+
+    </player>
+</template>
 <script>
     var no = window.location.hash;
     if (!no || no=='') {
@@ -495,12 +386,16 @@ end {
         window.location = 'index.html';
     } else {
         no = no.replace('#', '');
+        $('levitate').html('No.'+no);
     }
     var user = localStorage.getItem('user');
     var img = localStorage.getItem('img');
     if (!user) {
         alert('请重新登录！');
         window.location = 'index.html';
+    } else {
+        $('mynuser').html(user);
+        $('myimg').css('background-image', 'url('+img+')');
     }
     function sitdown(seat, user, img) {
         var self = $(seat);
@@ -515,7 +410,7 @@ end {
         self.removeAttr('value');
     }
     function changeSeat(seat, user, img) {
-        $('player').each(function () {
+        $('page player').each(function () {
            if (this == seat) {
                sitdown(this, user, img);
            } else if (this.getAttribute("value") == user) {
@@ -539,98 +434,199 @@ end {
         var self = $(seat);
         self.toggleClass('disconnect', false);
     }
+    function template_node(selector) {
+        var jq = $('template');
+        var template = jq.prop('content');
+        if (template) {
+            return $(template).find(selector).get(0);
+        } else {
+            return jq.find(selector).get(0);
+        }
+    }
+    function buildSeat(count) {
+        var node = template_node('player');
+        if (count == 13) {
+            var newNode = document.importNode(node, true);
+            $(newNode).attr('seat', 13);
+            $('discard').parent().append(newNode);
+            count = 12;
+        }
+        var jq_seat = $('seat');
+        for (var i=1; i<=count; i++) {
+            var newNode = document.importNode(node, true);
+            $(newNode).attr('seat', i);
+            jq_seat.append(newNode);
+        }
+    }
+    function readySitdown() {
+        var self = $(this);
+        var seat = self.attr('seat');
+        seat = parseInt(seat);
+
+        if (Guide.current == 'Ready') {
+            // 就位阶段, 可以换位置
+            if (self.attr('value') == null) {
+                if ($('player.ready[value="'+user+'"]').length>0) {
+                    return;
+                }
+                webSocket.http('sitdown', {
+                    seat: seat,
+                }, function () {
+                    changeSeat(self.get(0), user, img);
+                });
+            } else if (self.attr('value') == user) {
+                var ready = !self.hasClass('ready');
+                webSocket.http('ready', {
+                    ready: ready
+                }, function () {
+                    self.toggleClass('ready');
+                })
+            }
+        }
+
+    }
 </script>
 <script>
-    var Guiade = {
+    var Guide = {
+        current: 'Ready',
+        existUser: function () {
+            alert('账号被占用,请重新登录！');
+            window.location = 'index.html';
+        },
+        notExistGame: function () {
+            alert('该房间号未创建！');
+            window.location = 'index.html';
+        },
         Ready: function () {
-            $('player').click(function () {
-                var self = $(this);
-                var seat = self.attr('seat');
-                seat = parseInt(seat);
-                if (self.attr('value') == null) {
-                    if ($('player.ready').length>0) {
-                        return;
-                    }
-                    webSocket.http('sitdown', {
-                        seat: seat,
-                    }, function () {
-                        changeSeat(self.get(0), user, img);
-                    });
-                } else if (self.attr('value') == user) {
-                    self.toggleClass('ready');
-                }
-            });
+            $('page player').click(readySitdown);
         },
-        DoppelWakeup: function () {
-            
+        Doppel: function () {
+            alert('1');
         },
-        SeerWakeup: function () {
-            
+        Seer: function () {
+            alert('2');
         },
-        AsSeerWakeup: function () {
-            
+        AsSeer: function () {
+            alert('3');
         },
-        RobberWakeup: function () {
-
+        Robber: function () {
+            alert('4');
         },
-        AsRobberWakeup: function () {
-
+        AsRobber: function () {
+            alert('5');
         },
-        TroubleMarkerWakeup: function () {
-            
+        TroubleMarker: function () {
+            alert('6');
         },
-        AsTroubleMarkerWakeup: function () {
-
+        AsTroubleMarker: function () {
+            alert('7');
         },
-        DrunkWakeup: function () {
-
+        Drunk: function () {
+            alert('8');
         },
-        AsDrunkWakeup: function () {
-
+        AsDrunk: function () {
+            alert('9');
+        },
+        vote: function () {
+            alert('10');
         }
     };
 </script>
 <script>
     var webSocket = new WebSocket('ws://192.168.1.5:8080/game/'+no);
-    webSocket.admit("notExistGame", function () {
-        alert('该房间号未创建！');
-        window.location = 'index.html';
-    });
-    webSocket.admit("updateSeat", loadDesktop);
+    webSocket.admit("syncGame", loadGame);
+    webSocket.admit("gameStart", loadGame);
+    webSocket.admit("Doppel", Guide.Doppel);
+    webSocket.admit("Seer", Guide.Seer);
+    webSocket.admit("AsSeer", Guide.AsSeer);
+    webSocket.admit("Robber", Guide.Robber);
+    webSocket.admit("AsRobber", Guide.AsRobber);
+    webSocket.admit("TroubleMarker", Guide.TroubleMarker);
+    webSocket.admit("AsTroubleMarker", Guide.AsTroubleMarker);
+    webSocket.admit("Drunk", Guide.Drunk);
+    webSocket.admit("AsDrunk", Guide.AsDrunk);
+    webSocket.admit("vote", Guide.vote);
 
     webSocket.onConnect(function () {
         webSocket.http('login', {
             user: user,
             img: img
         }, function (data) {
-            if (data.desktop) {
-                var desktop = data.desktop;
-                loadDesktop(desktop);
+            if (data['playerCount']) {
+                var playerCount = data.playerCount;
+                buildSeat(playerCount);
+
+                loadGame(data);
             }
 
             var stage = data.stage;
-            Guiade[stage]();
+            if (stage) {
+                if (Guide[stage]) {
+                    Guide[stage]();
+                }
+            }
         });
     });
 
-    function loadDesktop(desktop) {
+    webSocket.onDisconnect(function () {
+        alert("网络已断开，确认之后会重新连接！");
+        webSocket.reconnect();
+    });
+
+    function loadGame(game) {
+        var stage = game.stage;
+        var desktop = game.desktop;
         for (var seat in desktop) {
             var info = desktop[seat];
+            if (!info['user']) {
+                continue;
+            }
             var domSeat = $('player[seat="'+seat+'"]').get(0);
             changeSeat(domSeat, info.user, info.img);
-            if (info.isReady) {
-                readyStatus(domSeat);
+            if (stage == 'Ready') {
+                if (info.ready) {
+                    readyStatus(domSeat);
+                } else {
+                    notReadyStatus(domSeat);
+                }
             } else {
+                if (stage) {
+                    Guide.current = stage;
+                }
+                // 删除换座位等事件
+                $('page player').unbind();
                 notReadyStatus(domSeat);
             }
-            if (info.isDisconnect) {
+            if (info.disconnect) {
                 disconnectStatus(domSeat);
             } else {
                 connectStatus(domSeat);
             }
         }
-
     }
+    $('exit').click(function (event) {
+       window.location = 'index.html#login';
+        event.stopPropagation();
+    });
+    function openMenu() {
+        $('sideslip').toggleClass('show', true);
+        $(document.body).click(closeMenu);
+    }
+    $(document.body).bind('swipeleftdown', openMenu);
+    function closeMenu(event) {
+        $('sideslip').toggleClass('show', false);
+        $(document.body).unbind('click');
+    }
+    //$(document.body).bind('swiperightdown', closeMenu);
+    $('levitate').click(function () {
+        var jq = $('sideslip');
+        if (jq.hasClass('show')) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+        return false;
+    });
 
 </script>
 </body>

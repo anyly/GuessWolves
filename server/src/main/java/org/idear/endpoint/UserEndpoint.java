@@ -3,6 +3,7 @@ package org.idear.endpoint;
 import com.alibaba.fastjson.JSONObject;
 import org.idear.CoherentMap;
 
+import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -20,7 +21,13 @@ public abstract class UserEndpoint extends OnlineEndpoint {
     public JSONObject onLogin(JSONObject data) {
         this.user = data.getString("user");
         this.img = data.getString("img");
-        userSession.put(this.user, session);
+        if (userSession.containsKey(this.user)) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("stage", "existUser");
+            return jsonObject;
+        } else {
+            userSession.put(this.user, session);
+        }
         return null;
     }
 
@@ -37,11 +44,20 @@ public abstract class UserEndpoint extends OnlineEndpoint {
     }
 
     public JSONObject onLogout(JSONObject data) {
-        String user = data.getString("user");
-        userSession.remove(user);
-        this.user = null;
-        this.img = null;
+        if (user != null) {
+            userSession.remove(user);
+            this.user = null;
+            this.img = null;
+        }
         return null;
+    }
+
+    @Override
+    public void onClose(CloseReason closeReason) {
+        if (user != null) {
+            userSession.remove(user);
+        }
+        super.onClose(closeReason);
     }
 
     final public void emitAllUser(String action, JSONObject data) {

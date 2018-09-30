@@ -4,6 +4,7 @@ package org.idear;
  * Created by idear on 2018/9/23.
  */
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,13 +18,20 @@ public class CoherentMap<K, V> extends LinkedHashMap<K, V> {
 
     @Override
     public V put(K key, V value) {
-        V v = super.put(key, value);
-        if (v != null) {
-            valueMap.remove(v);// 删除旧值
+        V oldValue = this.get(key);
+        K oldKey = valueMap.get(value);
+        if (oldValue != null) {
+            valueMap.remove(oldValue);
         }
+        if (oldKey != null) {
+            remove(oldKey);
+        }
+        super.put(key, value);
         valueMap.put(value, key);
-        return v;
+        return oldValue;
     }
+
+
 
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {

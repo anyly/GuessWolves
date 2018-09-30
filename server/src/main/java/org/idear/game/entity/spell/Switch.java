@@ -11,7 +11,7 @@ public class Switch extends Spell {
     }
 
     @Override
-    public void movements() {
+    public void motions() {
         this.motions.add(new Swap(caster, targets));
     }
 }

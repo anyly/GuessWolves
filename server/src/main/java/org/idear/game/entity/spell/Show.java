@@ -11,7 +11,7 @@ public class Show extends Spell {
     }
 
     @Override
-    public void movements() {
+    public void motions() {
         this.motions.add(new Flop(caster, targets));
     }
 }

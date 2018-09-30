@@ -46,7 +46,7 @@
 }
 .inputUser {
     width: 331px;
-    height: 180px;
+    height: 206px;
     background-color: aliceblue;
     border-radius: 4px;
     display: flex;
@@ -169,6 +169,16 @@
 #img_bar {
     width: 100px;
 }
+#user {
+    width:150px;
+}
+#user_error {
+    margin: 0;
+    color: red;
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+}
 #user_bar {
     color: yellowgreen;
 }
@@ -269,7 +279,8 @@
         <div class="inputUser">
             <p><img id="imgbtn" src="img/img0.jpg"/><input type="hidden" id="img" name="img" value="img/img0.jpg"/></p>
             <p><label>昵称</label><input id="user" name="user" type="text" placeholder="请输入姓名"/></p>
-            <p id="loginbtn"><button type="button">登录</button></p>
+            <p id="user_error"></p>
+            <p><button id="loginbtn" type="button">登录</button></p>
         </div>
         </form>
     </div>
@@ -347,7 +358,6 @@
     </div>
 </div>
 <script>
-
     var Guide = {
         current: 'init',
         init: function() {
@@ -358,9 +368,16 @@
         },
         login: function () {
             var param = formData('loginForm');
-            websocket.http("login", param, function() {
-                setUser(param);
-                Guide.home();
+            $('#user_error').html('');
+            websocket.http("login", param, function(data) {
+                if (data && data.error){
+                    $('#user_error').html(data.error);
+                } else {
+                    $('#user_error').html('');
+                    setUser(param);
+                    Guide.home();
+                }
+
             });
             Guide.current = 'login';
         },
@@ -419,10 +436,9 @@
     //var websocket = new WebSocket('ws://203.110.176.174:8082/GuessWolves/hall');
 
     websocket.onError(function (e) {
-        alert('1-'+JSON.stringify(e));
+        //alert('1-'+JSON.stringify(e));
     });
     websocket.onDisconnect(function () {
-        //$('.disconnect').fadeIn();
         alert("网络已断开，确认之后会重新连接！");
         websocket.reconnect();
     });
@@ -442,14 +458,29 @@
         setImg(img);
         $(this).parents('.mwin').fadeOut(400);
         if (Guide.current == 'home') {
-            Guide.login();// 修改图片
+            //Guide.login();// 修改图片
+            websocket.http('editImg', {
+                img: img
+            }, function () {
+                var img = $('#img').val();
+                var user = $('#user').val();
+                $('#img_bar').attr('src', img);
+                $('#user_bar').html(user);
+                setUser({
+                    user: user,
+                    img:img
+                });
+            });
         }
     });
     $('#imgbtn, #img_bar').click(function () {
         $('.choiceimg').fadeIn(400);
     });
     //$('#loginbtn').on("touchstart", Guide.login);
-    $('#loginbtn').tap(Guide.login);
+    $('#loginbtn').click(function (event) {
+        Guide.login();
+        event.stopPropagation();
+    });
     $('#logout').click(function () {
         var param = formData('loginForm');
         websocket.http("logout", param, function () {
@@ -469,6 +500,10 @@
     });
     $('#newGame').click(function () {
         var param = formData('gameSettingForm');
+        if (param.poker.length < 4) {
+            alert('必须至少4张牌!~');
+            return;
+        }
         websocket.http('newGame', param, Guide.newGame);
     });
     $('#cancelGame').tap(function () {
@@ -491,6 +526,21 @@
     });
 
     loadStory();
+</script>
+<script>
+    var user = localStorage.getItem('user');
+    var img = localStorage.getItem('img');
+    if (user) {
+        $('#user').val(user);
+        setImg(img);
+    }
+    websocket.onConnect(function () {
+        var stage = window.location.hash;
+        if (stage) {
+            stage = stage.replace('#', '');
+            Guide[stage]();
+        }
+    });
 </script>
 </body>
 </html>

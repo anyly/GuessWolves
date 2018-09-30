@@ -1,5 +1,8 @@
 package org.idear;
 
+import org.idear.handler.GameCenter;
+import org.idear.handler.Handler;
+
 import javax.websocket.Endpoint;
 import javax.websocket.server.ServerEndpointConfig;
 import java.util.HashSet;
@@ -11,6 +14,8 @@ import java.util.Set;
 public class ServerApplicationConfig implements javax.websocket.server.ServerApplicationConfig  {
     @Override
     public Set<ServerEndpointConfig> getEndpointConfigs(Set<Class<? extends Endpoint>> endpointClasses) {
+        GameCenter.loadFor();
+
         Set<ServerEndpointConfig> result = null;
 //        for (Class<? extends Endpoint> cls:endpointClasses) {
 //            boolean isAbstract = Modifier.isAbstract(cls.getModifiers());

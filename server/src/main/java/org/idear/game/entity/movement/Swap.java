@@ -1,7 +1,5 @@
 package org.idear.game.entity.movement;
 
-import org.idear.game.entity.poker.Poker;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -22,7 +20,7 @@ public class Swap extends Motion {
         String poker1 = deck.get(one);
         String poker2 = deck.get(two);
 
-        viewport.put(one, poker2);
-        viewport.put(two, poker1);
+        deck.put(one, poker2);
+        deck.put(two, poker1);
     }
 }

@@ -12,7 +12,7 @@ public class Replicate extends Spell {
     }
 
     @Override
-    public void movements() {
+    public void motions() {
         this.motions.add(new Copy(caster, targets));
     }
 

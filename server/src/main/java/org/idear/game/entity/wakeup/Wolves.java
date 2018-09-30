@@ -1,10 +1,14 @@
 package org.idear.game.entity.wakeup;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import org.idear.endpoint.Player;
+import org.idear.CoherentMap;
+import org.idear.endpoint.PlayerEndpoint;
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.spell.Show;
+import org.idear.handler.Context;
+import org.idear.handler.Player;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,29 +21,37 @@ import java.util.List;
 public class Wolves extends Wakeup {
 
 
-    public boolean execute(Player player, JSONObject jsonObject) {
-        if ("狼人".equals(player.poker) || "化身狼人".equals(player.poker)) {
-            LinkedHashMap<Integer, String> deck = jsonObject.getObject("deck", new TypeReference<LinkedHashMap<Integer, String>>(){});
-
-            List<Movement> movements = new LinkedList<>();
-            // 找狼人
-            Integer[] indexs = findWolves(deck);
-            // 每一只狼互相看到
-            for (int i=0; i<indexs.length; i++) {
-                Show show = new Show(indexs[i], indexs);
-                List<Movement> partMovement = show.cast(deck);
-                movements.addAll(partMovement);
-            }
-            player.setMovements(movements);
+    public boolean execute(Context context) {
+        if (context == null) {
             return true;
         }
-        return false;
+
+        Player player = context.getPlayer();
+        CoherentMap<Integer, Player> desktop = context.getDesktop();
+        LinkedHashMap<Integer, String> deck = context.getDeck();
+
+        List<Movement> movements = player.movements();
+        // 找狼人
+        Integer[] indexs = findWolves(desktop);
+        // 每一只狼互相看到
+        for (int i=0; i<indexs.length; i++) {
+            Player team = desktop.get(indexs[i]);
+            if (team == null) {
+                continue;
+            }
+            Show show = new Show(indexs[i], indexs);
+            List<Movement> partMovement = show.cast(context);
+            team.movements().addAll(partMovement);
+            System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.movements().get(team.movements().size()-1).getViewport()));
+        }
+        return true;
     }
 
-    private Integer[] findWolves(LinkedHashMap<Integer, String> deck) {
+    private Integer[] findWolves(CoherentMap<Integer, Player> desktop) {
         List<Integer> indexs = new ArrayList<>();
-        for (int i=0; i<deck.size(); i++) {
-            String poker = deck.get(i);
+        for (int i=1; i<=desktop.size(); i++) {
+            Player player = desktop.get(i);
+            String poker = player.getPoker();
             if (poker.equals("狼人") || poker.equals("化身狼人")) {
                 indexs.add(i);
             }

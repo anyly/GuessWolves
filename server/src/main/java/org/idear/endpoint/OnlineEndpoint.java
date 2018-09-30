@@ -136,8 +136,8 @@ public abstract class OnlineEndpoint {
     }
 
     public void onError(Session session, Throwable error){
-        System.out.println(session.getId()+": 发生错误");
-        error.printStackTrace();
+        System.out.println(session.getId()+": 发生错误"+error.getMessage());
+        //error.printStackTrace();
     }
 
     /**

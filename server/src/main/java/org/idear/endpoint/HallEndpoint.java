@@ -2,7 +2,7 @@ package org.idear.endpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import org.idear.game.Game;
+import org.idear.handler.GameCenter;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -14,19 +14,15 @@ import java.util.LinkedList;
  */
 @ServerEndpoint("/hall")
 public class HallEndpoint extends UserEndpoint {
-
-    private static int noSeed = 1000;
-
-    private int nextNo() {
-        return ++noSeed;
+    GameCenter gameCenter;
+    public HallEndpoint() {
+        gameCenter =  GameCenter.instance();
     }
 
     public JSONObject onNewGame(JSONObject data) {
         requireLogin();
         LinkedList<String> setting = data.getObject("poker", new TypeReference<LinkedList<String>>(){});
-        Game game = new Game(setting);
-        Integer no = nextNo();
-        Player.gameMap.put(no, game);
+        int no = gameCenter.newGame(setting).getNo();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("no", no);
         return jsonObject;
@@ -37,14 +33,38 @@ public class HallEndpoint extends UserEndpoint {
         if (no == null) {
             return null;
         }
-        boolean exist = Player.gameMap.containsKey(no);
+        boolean exist = gameCenter.game(no) != null;
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("exist", exist);
         return jsonObject;
     }
 
+    @Override
+    public JSONObject onLogin(JSONObject data) {
+        String user = data.getString("user");
+        boolean exist = false;
+        if (user.equals(this.user)) {
+            exist = true;
+        } else {
+            exist = userSession.containsKey(user);
+        }
 
+        JSONObject jsonObject = null;
+        if (exist) {
+            jsonObject = new JSONObject();
+            jsonObject.put("error", "用户名已存在");
+            return jsonObject;
+        }
+        return super.onLogin(data);
+    }
+
+    public JSONObject onEditImg(JSONObject data) {
+        requireLogin();
+        this.img = data.getString("img");
+
+        return null;
+    }
 
     @OnMessage
     public void onMessage(String message, Session session) {
