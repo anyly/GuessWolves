@@ -28,28 +28,28 @@ public abstract class Spell {
 
     public abstract void motions();
 
-    public List<Movement> cast(Context context) {
+    public Movement cast(Context context) {
         LinkedHashMap<Integer, String> deck = context.getDeck();
         Player player = context.getPlayer();
         return cast(deck, player);
     }
 
-    public List<Movement> cast(LinkedHashMap<Integer, String> deck, Player player) {
+    public Movement cast(LinkedHashMap<Integer, String> deck, Player player) {
         List<Movement> movements = player.movements();
-        Movement movement = movements.get(movements.size()-1);
+        Movement movement = null;
+        if (movements.size()>0) {
+            movement = movements.get(movements.size()-1);
+        }
         return cast(deck, movement);
     }
 
-    public List<Movement> cast(LinkedHashMap<Integer, String> deck, Movement prev) {
+    public Movement cast(LinkedHashMap<Integer, String> deck, Movement prev) {
         List<Movement> movements = new LinkedList<>();
-        Movement movement = prev;
+        Movement movement = new Movement(this, prev);
         for (Motion motion: this.motions) {
-            movement = new Movement(motion, movement);
             motion.doing(deck, movement.getViewport());
-            movements.add(movement);
         }
-
-        return movements;
+        return movement;
     }
 
     public String getName() {
@@ -60,11 +60,4 @@ public abstract class Spell {
         this.name = name;
     }
 
-    public List<Motion> getMotions() {
-        return motions;
-    }
-
-    public void setMotions(List<Motion> motions) {
-        this.motions = motions;
-    }
 }

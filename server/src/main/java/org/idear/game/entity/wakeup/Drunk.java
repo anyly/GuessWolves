@@ -26,7 +26,7 @@ public class Drunk extends Wakeup {
         Player player = context.getPlayer();
         LinkedHashMap<Integer, String> deck = context.getDeck();
         Integer caller = player.getSeat();
-        Integer[] targets = new Integer[]{3};//player.getTargets();
+        Integer[] targets = /*new Integer[]{3};//*/player.getTargets();
         if (targets == null) {
             String stage = this.getClass().getSimpleName();
             player.setStage(stage);
@@ -38,12 +38,14 @@ public class Drunk extends Wakeup {
         List<Movement> movements = new LinkedList<>();
         //交换但不能查看
         Switch aSwitch = new Switch(caller, caller, target);
-        List<Movement> partMovement = aSwitch.cast(context);
-        movements.addAll(partMovement);
+        aSwitch.setName("交换"+target);
+        Movement partMovement = aSwitch.cast(context);
+        movements.add(partMovement);
         //
         player.movements(movements);
         player.setStage(null);
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+        player.endpoint().emit("syncGame", context.game().export(player));
         return true;
 
     }

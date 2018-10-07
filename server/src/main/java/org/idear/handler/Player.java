@@ -8,6 +8,7 @@ import org.idear.game.entity.Movement;
 import javax.websocket.Session;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by idear on 2018/9/29.
@@ -25,9 +26,9 @@ public class Player {
 
     private Integer[] targets;// 行动时选择技能目标
 
-    private List<String> speaks;//发言阶段
+    private List<String> speaks = new LinkedList<>();//发言阶段
 
-    private int vote;// 投票
+    private Integer vote;// 投票
 
     private boolean win;// 胜利或失败
 
@@ -110,11 +111,11 @@ public class Player {
         this.speaks = speaks;
     }
 
-    public int getVote() {
+    public Integer getVote() {
         return vote;
     }
 
-    public void setVote(int vote) {
+    public void setVote(Integer vote) {
         this.vote = vote;
     }
 
@@ -141,4 +142,20 @@ public class Player {
     public void setStage(String stage) {
         this.stage = stage;
     }
+
+    public List<Movement> getMovements() {
+        return movements;
+    }
+
+    /**
+     * 当前视线
+     * @return
+     */
+//    public Map<Integer, String> getViewport() {
+//        if (movements.size()>0) {
+//
+//            return movements.get(movements.size() - 1);
+//        }
+//        return null;
+//    }
 }

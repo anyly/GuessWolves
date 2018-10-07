@@ -33,6 +33,44 @@ public class Wolves extends Wakeup {
         List<Movement> movements = player.movements();
         // 找狼人
         Integer[] indexs = findWolves(desktop);
+        String string = "";
+        if (indexs.length == 1) {
+            Integer[] targets = player.getTargets();
+            if (targets == null) {
+                //
+                String stage = this.getClass().getSimpleName();
+                player.setStage(stage);
+                player.endpoint().emit(stage, context.game().export(player));
+                return false;
+            }
+            ////
+            for (Integer target: targets) {
+                if (string.length()>0) {
+                    string += ",";
+                }
+                string += target.toString();
+            }
+            string = "孤狼>" + string;
+            // 查看底牌
+            Show show = new Show(player.getSeat(), targets);
+            show.setName(string);
+            Movement partMovement = show.cast(context);
+            movements.add(partMovement);
+            player.endpoint().emit("syncGame", context.game().export(player));
+            System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+            return true;
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Integer ii : indexs) {
+            if (stringBuilder.length()>0) {
+                stringBuilder.append(",");
+            }
+            stringBuilder.append(ii);
+        }
+        string = "同伴"+stringBuilder.toString();
+
+
         // 每一只狼互相看到
         for (int i=0; i<indexs.length; i++) {
             Player team = desktop.get(indexs[i]);
@@ -40,8 +78,11 @@ public class Wolves extends Wakeup {
                 continue;
             }
             Show show = new Show(indexs[i], indexs);
-            List<Movement> partMovement = show.cast(context);
-            team.movements().addAll(partMovement);
+
+            show.setName(string);
+            Movement partMovement = show.cast(context);
+            team.movements().add(partMovement);
+            team.endpoint().emit("syncGame", context.game().export(player));
             System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.movements().get(team.movements().size()-1).getViewport()));
         }
         return true;

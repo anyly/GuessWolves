@@ -4,6 +4,14 @@ package org.idear.util;
  * Created by idear on 2018/9/21.
  */
 public class StringUtil {
+    public static String simplePokerName(String poker) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String prefix =  "化身";
+        if (poker.startsWith(prefix)) {
+            return poker.substring(prefix.length(), prefix.length()+1);
+        }
+        return poker.substring(0, 1);
+    }
 
     //首字母转小写
     public static String toLowerCaseFirstOne(String s){

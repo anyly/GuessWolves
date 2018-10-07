@@ -17,13 +17,15 @@ public class Context {
     private List<Integer> deadth;
     private CoherentMap<Integer, Player> desktop;
     private Chain chain;
+    private Game game;
 
-    public Context(Player player, LinkedHashMap<Integer, String> deck, Map<Integer, Integer> votes, List<Integer> deadth, CoherentMap<Integer, Player> desktop) {
+    public Context(Player player, LinkedHashMap<Integer, String> deck, Map<Integer, Integer> votes, List<Integer> deadth, CoherentMap<Integer, Player> desktop, Game game) {
         this.player = player;
         this.deck = deck;
         this.votes = votes;
         this.deadth = deadth;
         this.desktop = desktop;
+        this.game = game;
     }
 
     public Player getPlayer() {
@@ -72,5 +74,9 @@ public class Context {
 
     public void setChain(Chain chain) {
         this.chain = chain;
+    }
+
+    public Game game() {
+        return game;
     }
 }

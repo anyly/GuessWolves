@@ -35,9 +35,18 @@ public class Minion extends Wakeup {
         if (indexs.length>0) {
             // 爪牙看到狼
             Show show = new Show(indexs[0], indexs);
-            List<Movement> partMovement = show.cast(context);
-            movements.addAll(partMovement);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Integer i : indexs) {
+                if (stringBuilder.length()>0) {
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(i);
+            }
+            show.setName("狼人"+stringBuilder.toString());
+            Movement partMovement = show.cast(context);
+            movements.add(partMovement);
         }
+        player.endpoint().emit("syncGame", context.game().export(player));
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
         return true;
 

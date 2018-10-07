@@ -59,12 +59,13 @@ public class GameCenter extends Handler {
         pokerAbility.put("酒鬼", new Drunk());
         pokerAbility.put("化身酒鬼", new AsDrunk());
         pokerAbility.put("失眠者", new Insomniac());
-        pokerAbility.put("化身失眠者", new Insomniac());
+        pokerAbility.put("化身失眠者", new AsInsomniac());
 
         camp.put("狼人", "狼人");
         camp.put("化身狼人", "狼人");
         camp.put("爪牙", "狼人");
         camp.put("化身爪牙", "狼人");
+        camp.put("化身幽灵", "城镇");
         camp.put("守夜人", "城镇");
         camp.put("化身守夜人", "城镇");
         camp.put("预言家", "城镇");

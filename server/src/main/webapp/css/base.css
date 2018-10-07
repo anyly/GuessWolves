@@ -16,6 +16,7 @@ body {
     -webkit-user-select: none; /*webkit浏览器*/
     user-select: none;
     font-family: '微软雅黑';
+    overflow: hidden;
 }
 page {
     width:100%;

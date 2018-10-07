@@ -1,6 +1,7 @@
 package org.idear.game.entity;
 
 import org.idear.game.entity.movement.Motion;
+import org.idear.game.entity.spell.Spell;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,11 +12,11 @@ import java.util.Map;
  * 动作帧,具体而完整的行动，包含结果
  */
 public class Movement {
-    private Motion motion;//行动
+    private Spell spell;//行动说明
     private Map<Integer, String> viewport;//所看到的牌面
 
-    public Movement(Motion motion, Movement prev) {
-        this.motion = motion;
+    public Movement(Spell spell, Movement prev) {
+        this.spell = spell;
         if (prev == null) {
             viewport = new LinkedHashMap<>();
         } else {
@@ -23,12 +24,12 @@ public class Movement {
         }
     }
 
-    public Motion getMotion() {
-        return motion;
+    public Spell getSpell() {
+        return spell;
     }
 
-    public void setMotion(Motion motion) {
-        this.motion = motion;
+    public void setSpell(Spell spell) {
+        this.spell = spell;
     }
 
     public Map<Integer, String> getViewport() {

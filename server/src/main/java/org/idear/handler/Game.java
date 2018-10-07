@@ -4,11 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import org.idear.CoherentMap;
 import org.idear.endpoint.PlayerEndpoint;
 import org.idear.game.Stage;
+import org.idear.game.Utils;
 import org.idear.game.entity.Camp;
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.Report;
 import org.idear.game.entity.movement.Flop;
+import org.idear.game.entity.spell.Show;
 import org.idear.game.entity.wakeup.*;
+import org.idear.util.StringUtil;
 
 import javax.print.attribute.standard.PrinterLocation;
 import javax.websocket.Session;
@@ -52,10 +55,25 @@ public class Game {
     private LinkedHashMap<Integer, String> deck = new LinkedHashMap<>();// 牌面, <座位, 身份>
 
     /**
+     * 发言
+     * seat = [String]
+     */
+    private LinkedHashMap<Integer, List<String>> speekMap = new LinkedHashMap<>();
+    private int speekStartIndex;// 第一个发言人
+    private int speekCurrentIndex;// 当前发言人
+    private int speekRound = 1;// 第几轮发言
+
+
+    /**
      * 投票情况
-     * seat = vote
+     * seat = vote[seat]
      */
     private Map<Integer, Integer> votes = new LinkedHashMap<>();
+
+    /**
+     * 猎人时间
+     */
+    private List<Integer> hunters = new LinkedList<>();
 
     /**
      * 投票死亡
@@ -119,9 +137,9 @@ public class Game {
                             int index = random.nextInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-                            //if (seat==1)poker = "强盗";
-                            //if (seat==2)poker = "失眠者";
-                            //if (seat==3)poker = "狼人";
+//                            if (seat==1)poker = "酒鬼";
+//                            if (seat==2)poker = "皮匠";
+//                            if (seat==3)poker = "狼人";
 
                             System.out.println("发牌:"+seat+" = "+ poker);
                             initial.put(seat, poker);
@@ -131,12 +149,12 @@ public class Game {
                             if (player != null) {
                                 player.setPoker(poker);
                                 // 查看自己的牌
-                                Flop flop = new Flop(seat, seat);
-                                Movement movement = new Movement(flop, null);
-                                flop.doing(deck, movement.getViewport());
+                                Show show = new Show(seat, seat);
+                                show.setName("初>"+ StringUtil.simplePokerName(poker));
+                                Movement movement = show.cast(deck, player);
                                 player.movements().add(movement);
                                 //
-                                Context context = new Context(player, deck, votes, deadth, desktop);
+                                Context context = new Context(player, deck, votes, deadth, desktop, Game.this);
                                 guide.setData(context);
                             }
                         }
@@ -181,13 +199,27 @@ public class Game {
                 // 失眠者行动
                 .add(new Insomniac())
 
+                // 化身失眠者行动
+                .add(new AsInsomniac())
+
                 // 发言
-                .interrupt("Speek")
-                // 投票
-                .add("vote", new Stage() {
+                .add("Speek", new Stage() {
                     @Override
                     public boolean execute(Context context) {
-                        broadcast("vote", null);
+                        Random random = new Random(System.currentTimeMillis());
+                        speekCurrentIndex = random.nextInt(players.size())+1;
+                        speekStartIndex = speekCurrentIndex;
+                        //Player player = desktop.get(speekCurrentIndex);
+                        //player.endpoint().emit("Speek", export(player));
+                        speek();
+                        return false;
+                    }
+                })
+                // 投票
+                .add("Vote", new Stage() {
+                    @Override
+                    public boolean execute(Context context) {
+                        broadcast("Vote", null);
                         return false;
                     }
                 })
@@ -195,31 +227,58 @@ public class Game {
                 .add("Deadth", new Stage() {
                     @Override
                     public boolean execute(Context context) {
-                        Map<Integer,Integer> votes = context.getVotes();
-                        LinkedHashMap<Integer, List<Integer>> voteAndSeat = new LinkedHashMap<>();
                         Integer max = -1;
-                        List<Integer> list = null;
+                        List<Integer> scope = new LinkedList<>();
+                        Map<Integer, Integer> map = new LinkedHashMap();
                         for (Map.Entry<Integer, Integer> entry: votes.entrySet()) {
-                            int vote = entry.getValue();
-                            int seat = entry.getKey();
-                            if (vote>max) {
-                                max = vote;
-                                list = new LinkedList<>();
-                                list.add(seat);
-                                voteAndSeat.put(max, list);
-                            } else if (vote == max){
-                                list = voteAndSeat.get(max);
-                                list.add(seat);
+                            Integer vote = entry.getValue();// 投给谁
+                            int seat = entry.getKey();// 投票人
+
+                            if (vote == null || vote == 0) {
+                                continue;
+                            }
+                            Integer count = map.get(vote);
+                            if (count == null) {
+                                count = 1;
+                            } else {
+                                count = count + 1;
+                            }
+                            map.put(vote, count);
+
+                            if (count>max) {
+                                max = count;
+                                scope.clear();
+                                scope.add(vote);
+                            } else if (count == max){
+                                scope.add(vote);
                             } else {
 
                             }
                         }
-                        list = voteAndSeat.get(max);
-                        deadth.addAll(list);
+                        deadth.addAll(scope);
                         return true;
                     }
                 })
-                .add(new Hunter())
+                .add("Hunter", new Stage(){
+                    @Override
+                    public boolean execute(Context context) {
+                        for (Integer seat: deadth) {
+                            String poker = deck.get(seat);
+                            if (poker.equals("猎人") || poker.equals("化身猎人")) {
+                                hunters.add(seat);
+                            }
+                        }
+                        if (hunters.size() == 0) {
+                            return true;
+                        }
+                        for (Integer seat: hunters) {
+                            Player player = desktop.get(seat);
+                            player.setStage("Hunter");
+                            player.endpoint().emit("Hunter", export(player));
+                        }
+                        return false;
+                    }
+                })
                 .add("Finally", new Stage() {
                     @Override
                     public boolean execute(Context context) {
@@ -247,75 +306,122 @@ public class Game {
                             }
                         }
 
-                        boolean hasWolves = deck.containsValue("狼人") || deck.containsValue("化身狼人");
-
-                        // 皮匠死亡 => 皮匠获胜
-                        if (cobberDeadth) {
-                            cobblerWin = true;
-                        }
-
-                        // 有狼局，投出狼才能获胜
-                        if (hasWolves) {
-                            if (wolvesDeadth) {
-                                villagerWin = true;
-                            } else {
-                                villagerWin = false;
+                        boolean hasWolves = false;
+                        for (Integer seat : desktop.keySet()) {
+                            String poker = deck.get(seat);
+                            if (poker.equals("狼人") || poker.equals("化身狼人")) {
+                                hasWolves = true;
+                                break;
                             }
-                        } else {
-                            // 无狼局，平局，无人出局
-                            villagerWin = deadth.size()>1 || votes.size()>0;
                         }
 
-                        if (villagerWin) {
-                            wolvesWin = false;
-                        } else {
-                            wolvesWin = true;
+                        try {
+                            // 皮匠死亡 => 皮匠获胜
+                            if (cobberDeadth) {
+                                cobblerWin = true;
+                                if (deadth.size() == 1) {// 皮匠单独赢
+                                    villagerWin = false;
+                                    wolvesWin = false;
+                                    throw new RuntimeException();
+                                }
+                            }
+
+                            // 有狼局，投出狼才能获胜
+                            if (hasWolves) {
+                                if (wolvesDeadth) {
+                                    villagerWin = true;
+                                } else {
+                                    villagerWin = false;
+                                }
+                            } else {
+                                // 无狼局，平局，无人出局
+                                villagerWin = deadth.size() == 0 || deadth.size()>1;
+                            }
+
+                            if (villagerWin) {
+                                wolvesWin = false;
+                            } else {
+                                wolvesWin = true;
+                            }
+                        } catch (RuntimeException e) {
+
                         }
+
                         //
-                        for (Player player : players.values()) {
-                            String campName = GameCenter.camp.get(player.getPoker());
+                        for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
+                            Player player = entry.getValue();
+                            Integer seat = entry.getKey();
+                            String poker = deck.get(seat);
+                            String campName = GameCenter.camp.get(poker);
                             if ("城镇".equals(campName)) {
                                 Camp camp = report.getTown();
                                 if (camp == null) {
                                     camp = new Camp(campName);
+                                    camp.setWin(villagerWin);
                                     report.setTown(camp);
                                 }
-                                camp.getMembers().add(player);
+                                JSONObject jsonObject = new JSONObject();
+                                jsonObject.put("user", player.getUser());
+                                jsonObject.put("seat", player.getSeat());
+                                camp.getMembers().add(jsonObject);
                             } else if ("狼人".equals(campName)) {
-                                Camp camp = report.getTown();
+                                Camp camp = report.getWolves();
                                 if (camp == null) {
                                     camp = new Camp(campName);
+                                    camp.setWin(wolvesWin);
                                     report.setWolves(camp);
                                 }
-                                camp.getMembers().add(player);
+                                JSONObject jsonObject = new JSONObject();
+                                jsonObject.put("user", player.getUser());
+                                jsonObject.put("seat", player.getSeat());
+                                camp.getMembers().add(jsonObject);
                             } else if ("皮匠".equals(campName)) {
-                                Camp camp = report.getTown();
+                                Camp camp = report.getCobbler();
                                 if (camp == null) {
                                     camp = new Camp(campName);
+                                    camp.setWin(cobblerWin);
                                     report.setCobbler(camp);
                                 }
-                                camp.getMembers().add(player);
+                                JSONObject jsonObject = new JSONObject();
+                                jsonObject.put("user", player.getUser());
+                                jsonObject.put("seat", player.getSeat());
+                                camp.getMembers().add(jsonObject);
                             }
                         }
 
+                        finall();
                         return false;
                     }
                 })
         ;
     }
 
-    /**
-     * 通过身份牌找玩家, 如果return为null, 表示没有玩家持有此身份, 可能是在牌堆里
-     * @param poker
-     * @return
-     */
-//    public Player findByPoker(String poker) {
-//        Integer seat = deck.key(poker);
-//        if (seat == null) {
-//            return null;
-//        }
-//        return findBySeat(seat);
-//    }
+    public void speek(Player player, String string) {
+        if (speekCurrentIndex != player.getSeat()) {
+            return;
+        }
+        gameCenter.add(new Callback() {
+            @Override
+            public void execute(Object data) {
+                List<String> speaks = player.getSpeaks();
+                speaks.add(string);
+                speekCurrentIndex++;
+                if (speekCurrentIndex > desktop.size()) {
+                    speekCurrentIndex = 1;
+                    speekRound++;
+                }
+
+                if (speekRound > 3) {
+                    speekRound = 3;
+                    // 结束
+                    guide.resume("Speek");
+                } else {
+                    // 下一个发言
+                    speek();
+                }
+            }
+        });
+    }
 
     /**
      * 通过座位找玩家, 如果是null表示座位上个没有玩家
@@ -332,6 +438,18 @@ public class Game {
      */
     public String currentStage() {
         return guide.current();
+    }
+
+    /**
+     * 尝试当前步骤
+     */
+    public synchronized void tryStage() {
+        gameCenter.add(new Callback() {
+            @Override
+            public void execute(Object data) {
+                guide.start();
+            }
+        });
     }
 
     /**
@@ -385,6 +503,32 @@ public class Game {
     /**
      * 同步客户端
      */
+    public synchronized void finall() {
+        LinkedList<Player> list = new LinkedList<>(players.values());
+        for (Player player: list) {
+            PlayerEndpoint playerEndpoint = player.endpoint();
+            if (playerEndpoint != null) {
+                playerEndpoint.emit("Finally", export(player));
+            }
+        }
+    }
+
+    /**
+     * 同步客户端
+     */
+    public synchronized void speek() {
+        LinkedList<Player> list = new LinkedList<>(players.values());
+        for (Player player: list) {
+            PlayerEndpoint playerEndpoint = player.endpoint();
+            if (playerEndpoint != null) {
+                playerEndpoint.emit("Speek", export(player));
+            }
+        }
+    }
+
+    /**
+     * 同步客户端
+     */
     public synchronized void synchronise() {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
@@ -412,30 +556,25 @@ public class Game {
     }
 
     /**
-     * 桌面
-     * @return
-     */
-    public JSONObject getDesktop() {
-        JSONObject jsonObject = new JSONObject();
-        for (Map.Entry<Integer, Player> entry: desktop.entrySet()) {
-            jsonObject.put(entry.getKey().toString(), entry.getValue());
-        }
-        return jsonObject;
-    }
-
-    /**
      * 游戏核心数据,用于输出同步给client
      * @return
      */
     public JSONObject export(Player player) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("desktop", getDesktop());
+        jsonObject.put("desktop", desktop);
+        jsonObject.put("deck", deck);
         jsonObject.put("playerCount", playerCount());
 
         String stage = calcuStage(player);
         System.out.println("玩家["+player.getUser()+"]["+player.getPoker()+"] 当前步骤["+currentStage()+"] 返回["+stage+"]");
 
         jsonObject.put("stage", stage);
+        jsonObject.put("speekStartIndex", speekStartIndex);
+        jsonObject.put("speekCurrentIndex", speekCurrentIndex);
+        jsonObject.put("speekRound", speekRound);
+        jsonObject.put("votes", votes);
+        jsonObject.put("report", report);
+        jsonObject.put("deadth", deadth);
         //jsonObject.put("movements", movements);
         return jsonObject;
     }
@@ -491,5 +630,22 @@ public class Game {
             //}
         }
         return false;
+    }
+
+    public void vote(Player player, Integer vote) {
+        player.setVote(vote);
+        votes.put(player.getSeat(), vote);
+        if (votes.size() == players.size()) {
+            nextStage("Vote");
+        }
+    }
+
+    public void hunter(Player player, Integer kill) {
+        if (hunters.remove(player.getSeat())) {
+            deadth.add(kill);
+        }
+        if (hunters.size() == 0) {
+            nextStage("Hunter");
+        }
     }
 }

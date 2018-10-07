@@ -1,5 +1,6 @@
 package org.idear.game.entity;
 
+import com.alibaba.fastjson.JSONObject;
 import org.idear.handler.Player;
 
 import java.util.LinkedList;
@@ -12,7 +13,7 @@ import java.util.List;
 public class Camp {
     private String name;
     private boolean win;
-    private List<Player> members = new LinkedList<>();
+    private List<JSONObject> members = new LinkedList<>();
 
     public Camp(String name) {
         this.name = name;
@@ -34,11 +35,11 @@ public class Camp {
         this.win = win;
     }
 
-    public List<Player> getMembers() {
+    public List<JSONObject> getMembers() {
         return members;
     }
 
-    public void setMembers(List<Player> members) {
+    public void setMembers(List<JSONObject> members) {
         this.members = members;
     }
 }

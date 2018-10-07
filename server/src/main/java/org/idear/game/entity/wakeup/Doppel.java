@@ -10,6 +10,7 @@ import org.idear.game.entity.spell.Replicate;
 import org.idear.game.entity.spell.Show;
 import org.idear.handler.Context;
 import org.idear.handler.Player;
+import org.idear.util.StringUtil;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -28,7 +29,7 @@ public class Doppel extends Wakeup {
 
         Player player = context.getPlayer();
         LinkedHashMap<Integer, String> deck = context.getDeck();
-        Integer[] targets = new Integer[]{2};//player.getTargets();
+        Integer[] targets = /*new Integer[]{2};*/player.getTargets();
         if (targets == null) {
             //
             String stage = this.getClass().getSimpleName();
@@ -43,16 +44,16 @@ public class Doppel extends Wakeup {
         List<Movement> movements = player.movements();
         //复制身份
         Replicate replicate = new Replicate(caller, target);
-        List<Movement> partMovements = replicate.cast(context);
-        movements.addAll(partMovements);
-        //查看复制的牌
-        Show show = new Show(caller, caller, target);
+        Movement partMovements = replicate.cast(context);
+        replicate.setName("化("+target+ ")>"+StringUtil.simplePokerName(deck.get(target)));
+        movements.add(partMovements);
         // 化身之后, 得到新技能
         player.setPoker(deck.get(player.getSeat()));
         context.getChain().setData(context);
         //
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
 
+        player.endpoint().emit("syncGame", context.game().export(player));
 
         player.setTargets(null);
         player.setStage(null);

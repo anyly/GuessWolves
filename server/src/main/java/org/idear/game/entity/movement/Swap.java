@@ -22,5 +22,14 @@ public class Swap extends Motion {
 
         deck.put(one, poker2);
         deck.put(two, poker1);
+
+        poker1 = viewport.remove(one);
+        poker2 = viewport.remove(two);
+        if (poker2 != null) {
+            viewport.put(one, poker2);
+        }
+        if (poker1 != null) {
+            viewport.put(two, poker1);
+        }
     }
 }

@@ -1,9 +1,12 @@
 package org.idear.endpoint;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 
+import com.alibaba.fastjson.TypeReference;
 import org.idear.CoherentMap;
 import org.idear.game.entity.Movement;
+import org.idear.game.entity.wakeup.Wakeup;
 import org.idear.handler.Game;
 import org.idear.handler.GameCenter;
 import org.idear.handler.Player;
@@ -153,6 +156,35 @@ public class PlayerEndpoint extends UserEndpoint {
         }
         game.synchronise(player);
 
+        return null;
+    }
+
+    public JSONObject onTargets(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        // 通知游戏继续
+        Wakeup wakeup = GameCenter.pokerAbility.get(this.player.getPoker());
+        if (wakeup!=null) {
+            game.tryStage();
+        }
+        return game.export(player);
+    }
+
+    public JSONObject onSpeek(JSONObject data) {
+        String speek = data.getString("speek");
+        game.speek(player, speek);
+        return null;
+    }
+
+    public JSONObject onVote(JSONObject data){
+        Integer vote = data.getInteger("vote");
+        game.vote(player, vote);
+        return null;
+    }
+
+    public JSONObject onHunter(JSONObject data) {
+        Integer target = data.getInteger("target");
+        game.hunter(player, target);
         return null;
     }
 }

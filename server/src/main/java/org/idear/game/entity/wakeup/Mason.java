@@ -37,8 +37,17 @@ public class Mason extends Wakeup {
                 continue;
             }
             Show show = new Show(indexs[i], indexs);
-            List<Movement> partMovement = show.cast(context);
-            team.movements().addAll(partMovement);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Integer ii : indexs) {
+                if (stringBuilder.length()>0) {
+                    stringBuilder.append(",");
+                }
+                stringBuilder.append(ii);
+            }
+            show.setName("同伴"+stringBuilder.toString());
+            Movement partMovement = show.cast(context);
+            team.movements().add(partMovement);
+            team.endpoint().emit("syncGame", context.game().export(player));
             System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.movements().get(team.movements().size()-1).getViewport()));
         }
         return true;

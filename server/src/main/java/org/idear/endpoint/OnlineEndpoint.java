@@ -1,6 +1,8 @@
 package org.idear.endpoint;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.idear.util.StringUtil;
 
 import javax.websocket.*;
@@ -69,7 +71,7 @@ public abstract class OnlineEndpoint {
                     } else if (returnObject instanceof JSONObject) {
                         return (JSONObject) returnObject;
                     } else {
-                        String jsonString = JSONObject.toJSONString(returnObject);
+                        String jsonString = JSON.toJSONString(returnObject, SerializerFeature.DisableCircularReferenceDetect);
                         return (JSONObject) JSONObject.parse(jsonString);
                     }
                 }
@@ -108,7 +110,7 @@ public abstract class OnlineEndpoint {
 //        });
     }
 
-    public void onMessage(String message) {
+    public synchronized void onMessage(String message) {
         JSONObject jsonObject = JSONObject.parseObject(message);
         String action = jsonObject.getString("action");
         //String datatype = jsonObject.getString("datatype");
@@ -145,7 +147,7 @@ public abstract class OnlineEndpoint {
      * @param action
      * @param data
      */
-    final public void emit(String action, JSONObject data){
+    final synchronized public void emit(String action, JSONObject data){
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("action", action);
         jsonObject.put("data", data);
@@ -168,7 +170,7 @@ public abstract class OnlineEndpoint {
         jsonObject.put("action", action);
         jsonObject.put("data", data);
         try {
-            session.getBasicRemote().sendText(jsonObject.toString());
+            session.getBasicRemote().sendText(JSON.toJSONString(jsonObject, SerializerFeature.DisableCircularReferenceDetect));
         } catch (IOException e) {
             e.printStackTrace();
         }
