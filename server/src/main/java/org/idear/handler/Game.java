@@ -137,8 +137,8 @@ public class Game {
                             int index = random.nextInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-//                            if (seat==1)poker = "猎人";
-//                            if (seat==2)poker = "皮匠";
+//                            if (seat==1)poker = "化身幽灵";
+//                            if (seat==2)poker = "强盗";
 //                            if (seat==3)poker = "狼人";
 
                             System.out.println("发牌:"+seat+" = "+ poker);
@@ -296,8 +296,7 @@ public class Game {
 
                         //皮匠如果死亡, 皮匠一定赢
                         for (Integer seat: deadth) {
-                            Player player = findBySeat(seat);
-                            String poker = player.getPoker();
+                            String poker = deck.get(seat);
                             if (poker.equals("皮匠") || poker.equals("化身皮匠")) {
                                 cobberDeadth = true;
                             }
@@ -643,6 +642,7 @@ public class Game {
     public void hunter(Player player, Integer kill) {
         if (hunters.remove(player.getSeat())) {
             deadth.add(kill);
+            player.setStage(null);
         }
         if (hunters.size() == 0) {
             nextStage("Hunter");

@@ -168,9 +168,6 @@ player.dead portrait ready
 {
     display: flex;
 }
-player.disconnect portrait ready span:before {
-    content: '断线';
-}
 player.ready portrait ready span:before {
     content: '就绪';
 }
@@ -180,7 +177,7 @@ player.speek portrait ready span:before {
 player.dead portrait ready span:before {
     content: '死亡';
 }
-player.disconnect.ready portrait ready span:before {
+player portrait ready span.state:before {
     content: '断线';
 }
 name {
@@ -694,7 +691,7 @@ end {
                 <no></no>
                 <ready>
                     <cover></cover>
-                    <span></span>
+                    <span class="state"></span>
                 </ready>
             </portrait>
             <name></name>
@@ -1243,11 +1240,15 @@ end {
                 if (movement && movement['viewport']) {
                     var viewport = movement['viewport'];
                     for (var seat in viewport) {
-                        $('player[seat='+seat+'] poker').attr('value', viewport[seat]);
+                        var poker = viewport[seat];
+                        if (info.poker != '化身幽灵' && poker.indexOf('化身') == 0) {
+                            poker = '化身幽灵';
+                        }
+                        $('player[seat='+seat+'] poker').attr('value', poker);
                         $('discard poker').each(function () {
                             var jq = $(this);
                             if (jq.html() == ''+seat) {
-                                jq.attr('value', viewport[seat]);
+                                jq.attr('value', poker);
                             }
                         });
                     }
@@ -1262,10 +1263,11 @@ end {
         event.stopPropagation();
     });
     $('reset').click(function (event) {
-        $('tips').css({
-            left: '',
-            top: ''
-        });
+        // $('tips').css({
+        //     left: '',
+        //     top: ''
+        // });
+        window.location.reload(true);
         event.stopPropagation();
     });
     function openMenu() {
