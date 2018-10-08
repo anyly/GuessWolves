@@ -137,7 +137,7 @@ public class Game {
                             int index = random.nextInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-//                            if (seat==1)poker = "酒鬼";
+//                            if (seat==1)poker = "猎人";
 //                            if (seat==2)poker = "皮匠";
 //                            if (seat==3)poker = "狼人";
 

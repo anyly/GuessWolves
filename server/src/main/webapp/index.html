@@ -185,6 +185,9 @@
 .hide {
     display: none;
 }
+.gameSetting {
+    overflow-y: auto;
+}
 .gameSetting .content {
     min-width: 320px;
     padding: 14px 4px 6px 8px;
@@ -432,15 +435,21 @@
 </script>
 <script>
     /*创建连接*/
-    var websocket = new WebSocket('ws://192.168.1.5:8080/hall');
+    var websocket = new WebSocket('ws://'+window.location.basepath+'/hall');
     //var websocket = new WebSocket('ws://203.110.176.174:8082/GuessWolves/hall');
 
     websocket.onError(function (e) {
         //alert('1-'+JSON.stringify(e));
     });
     websocket.onDisconnect(function () {
-        alert("网络已断开，确认之后会重新连接！");
-        websocket.reconnect();
+        //alert("网络已断开，确认之后会重新连接！");
+        connectFail(function () {
+            connectSuccess();
+            websocket.reconnect();
+        });
+    });
+    websocket.onConnect(function () {
+        connectSuccess();
     });
 
     $('.mwin>.wrap, .dialog>.wrap').click(function () {
@@ -506,7 +515,7 @@
         }
         websocket.http('newGame', param, Guide.newGame);
     });
-    $('#cancelGame').tap(function () {
+    $('#cancelGame').click(function () {
         Guide.home();
     });
     $('#findRoom').click(function () {
@@ -538,7 +547,9 @@
         var stage = window.location.hash;
         if (stage) {
             stage = stage.replace('#', '');
-            Guide[stage]();
+            if (Guide[stage]) {
+                Guide[stage]();
+            }
         }
     });
 </script>

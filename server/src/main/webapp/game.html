@@ -305,7 +305,16 @@ exit{
     height: 63px;
 
 
-    background: url("img/exit.png") no-repeat;
+    background: url("img/exit.svg") no-repeat;
+    background-size: contain;
+}
+reset {
+    display: block;
+    width: 50px;
+    height: 63px;
+
+
+    background: url("img/refresh.svg") no-repeat;
     background-size: contain;
 }
 room {
@@ -455,6 +464,7 @@ pop {
     justify-content: center;
     align-items: center;
     opacity: 0.9;
+    z-index: 3000;
 }
 tips {
     text-align: center;
@@ -591,6 +601,7 @@ end {
     </mine>
     <hr>
     <mymenu>
+        <reset></reset>
         <exit></exit>
         <room></room>
     </mymenu>
@@ -1146,7 +1157,7 @@ end {
     }
 </script>
 <script>
-    var webSocket = new WebSocket('ws://192.168.1.5:8080/game/'+no);
+    var webSocket = new WebSocket('ws://'+window.location.basepath+'/game/'+no);
     webSocket.admit("syncGame", loadGame);
     webSocket.admit("gameStart", loadGame);
     webSocket.admit("Doppel", Guide.Doppel);
@@ -1165,6 +1176,7 @@ end {
     webSocket.admit("Finally", Guide.Finally);
 
     webSocket.onConnect(function () {
+        connectSuccess();
         webSocket.http('login', {
             user: user,
             img: img
@@ -1186,8 +1198,9 @@ end {
     });
 
     webSocket.onDisconnect(function () {
-        alert("网络已断开，确认之后会重新连接！");
-        webSocket.reconnect();
+        connectFail(function () {
+            websocket.reconnect();
+        });
     });
 
     function loadGame(game) {
@@ -1246,8 +1259,16 @@ end {
             }
         }
     }
+    $('tips').draggable();
     $('exit').click(function (event) {
        window.location = 'index.html#login';
+        event.stopPropagation();
+    });
+    $('reset').click(function (event) {
+        $('tips').css({
+            left: '',
+            top: ''
+        });
         event.stopPropagation();
     });
     function openMenu() {

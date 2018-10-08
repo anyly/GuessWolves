@@ -163,7 +163,7 @@
             if (!isSupport()) {
                 return this;
             }
-            window.location.href=window.location.href;
+            window.location.reload(true);
             return this;
         };
 
