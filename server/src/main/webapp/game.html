@@ -1176,7 +1176,6 @@ end {
     webSocket.admit("Finally", Guide.Finally);
 
     webSocket.onConnect(function () {
-        connectSuccess();
         webSocket.http('login', {
             user: user,
             img: img
@@ -1198,9 +1197,7 @@ end {
     });
 
     webSocket.onDisconnect(function () {
-        connectFail(function () {
-            websocket.reconnect();
-        });
+        connectFail();
     });
 
     function loadGame(game) {

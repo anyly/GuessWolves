@@ -443,13 +443,7 @@
     });
     websocket.onDisconnect(function () {
         //alert("网络已断开，确认之后会重新连接！");
-        connectFail(function () {
-            connectSuccess();
-            websocket.reconnect();
-        });
-    });
-    websocket.onConnect(function () {
-        connectSuccess();
+        connectFail();
     });
 
     $('.mwin>.wrap, .dialog>.wrap').click(function () {
