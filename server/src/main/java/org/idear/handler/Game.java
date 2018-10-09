@@ -589,7 +589,7 @@ public class Game {
      */
     public synchronized void vote() {
         LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
+        for (Player player : list) {
             player.setStage("Vote");
             PlayerEndpoint playerEndpoint = player.endpoint();
             if (playerEndpoint != null) {
@@ -611,8 +611,8 @@ public class Game {
     public synchronized void synchronise(Player caller) {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            PlayerEndpoint playerEndpoint = player.endpoint();
             if (player != caller) {
+                PlayerEndpoint playerEndpoint = player.endpoint();
                 if (playerEndpoint != null) {
                     playerEndpoint.emit("syncGame", export(player));
                 }
@@ -636,8 +636,6 @@ public class Game {
             }
         }
         System.out.println("玩家[" + player.getUser() + "][" + player.getPoker() + "] 当前步骤[" + currentStage() + "] 返回[" + stage + "]");
-
-
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("desktop", desktop);
