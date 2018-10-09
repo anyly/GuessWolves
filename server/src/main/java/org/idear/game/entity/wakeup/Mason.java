@@ -50,6 +50,8 @@ public class Mason extends Wakeup {
             team.endpoint().emit("syncGame", context.game().export(player));
             System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.movements().get(team.movements().size()-1).getViewport()));
         }
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 

@@ -3,6 +3,7 @@ package org.idear.handler;
 import com.alibaba.fastjson.JSONObject;
 import org.idear.CoherentMap;
 import org.idear.endpoint.PlayerEndpoint;
+import org.idear.endpoint.UserEndpoint;
 import org.idear.game.Stage;
 import org.idear.game.Utils;
 import org.idear.game.entity.Camp;
@@ -15,6 +16,7 @@ import org.idear.util.StringUtil;
 
 import javax.print.attribute.standard.PrinterLocation;
 import javax.websocket.Session;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -78,7 +80,7 @@ public class Game {
     /**
      * 投票死亡
      */
-    private List<Integer> deadth = new LinkedList<>();
+    private Set<Integer> deadth = new LinkedHashSet<>();
 
     /**
      * 结果报告
@@ -529,28 +531,30 @@ public class Game {
      * 同步客户端
      */
     public synchronized void synchronise() {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            PlayerEndpoint playerEndpoint = player.endpoint();
-            if (playerEndpoint != null) {
-                playerEndpoint.emit("syncGame", export(player));
-            }
-        }
+        synchronise(null);
     }
 
     /**
      * 同步客户端
      */
     public synchronized void synchronise(Player caller) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
+        LinkedHashMap<String, Session> userSession = new LinkedHashMap(UserEndpoint.userSession);
+        for (Map.Entry<String, Session> entry : userSession.entrySet()) {
+            String user = entry.getKey();
+            Session session = entry.getValue();
+            Player player = players.get(user);
             if (player != caller) {
-                PlayerEndpoint playerEndpoint = player.endpoint();
-                if (playerEndpoint != null) {
-                    playerEndpoint.emit("syncGame", export(player));
+                synchronized (session) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("action", "syncGame");
+                    jsonObject.put("data", export(player));
+                    try {
+                        session.getBasicRemote().sendText(jsonObject.toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
         }
     }
 
@@ -559,14 +563,18 @@ public class Game {
      * @return
      */
     public JSONObject export(Player player) {
+        String stage = null;
+        if (player == null) {
+            stage = "notSeat";
+        } else {
+            stage = calcuStage(player);
+            System.out.println("玩家[" + player.getUser() + "][" + player.getPoker() + "] 当前步骤[" + currentStage() + "] 返回[" + stage + "]");
+        }
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("desktop", desktop);
         jsonObject.put("deck", deck);
         jsonObject.put("playerCount", playerCount());
-
-        String stage = calcuStage(player);
-        System.out.println("玩家["+player.getUser()+"]["+player.getPoker()+"] 当前步骤["+currentStage()+"] 返回["+stage+"]");
-
         jsonObject.put("stage", stage);
         jsonObject.put("speekStartIndex", speekStartIndex);
         jsonObject.put("speekCurrentIndex", speekCurrentIndex);

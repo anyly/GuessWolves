@@ -48,6 +48,8 @@ public class Minion extends Wakeup {
         }
         player.endpoint().emit("syncGame", context.game().export(player));
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+        player.setTargets(null);
+        player.setStage(null);
         return true;
 
     }

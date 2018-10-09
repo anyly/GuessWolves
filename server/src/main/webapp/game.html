@@ -145,11 +145,16 @@ ready {
     justify-content: center;
     align-items: center;
     color: snow;
-    font-size: 14px;
+    font-size: 12px;
+    text-align: center;
 }
 ready>span {
     z-index: 100;
     margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 cover {
     z-index: 50;
@@ -177,7 +182,7 @@ player.speek portrait ready span:before {
 player.dead portrait ready span:before {
     content: '死亡';
 }
-player portrait ready span.state:before {
+player.disconnect portrait ready span:after {
     content: '断线';
 }
 name {
@@ -807,14 +812,14 @@ end {
                 if ($('player.ready[value="'+user+'"]').length>0) {
                     return;
                 }
-                webSocket.http('sitdown', {
+                websocket.http('sitdown', {
                     seat: seat,
                 }, function () {
                     changeSeat(self.get(0), user, img);
                 });
             } else if (self.attr('value') == user) {
                 var ready = !self.hasClass('ready');
-                webSocket.http('ready', {
+                websocket.http('ready', {
                     ready: ready
                 }, function () {
                     self.toggleClass('ready');
@@ -830,7 +835,7 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('player').attr('seat');
             seat = parseInt(seat);
-            webSocket.http('targets', {
+            websocket.http('targets', {
                 targets:[seat]
             }, function () {
                 playerPokers.cancelTips();
@@ -854,7 +859,7 @@ end {
                 self.unbind();
                 return;
             }
-            webSocket.http('targets', {
+            websocket.http('targets', {
                 targets:targets
             }, function () {
                 publicPokers.cancelTips();
@@ -876,7 +881,7 @@ end {
             if (targets.length == 1) {
                 playerPokers.cancelTips();
             }else if (targets.length == 2) {
-                webSocket.http('targets', {
+                websocket.http('targets', {
                     targets:targets
                 }, function () {
                     publicPokers.cancelTips();
@@ -889,7 +894,7 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('player').attr('seat');
             seat = parseInt(seat);
-            webSocket.http('targets', {
+            websocket.http('targets', {
                 targets:[seat]
             }, function () {
                 publicPokers.cancelTips();
@@ -906,7 +911,7 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('player').attr('seat');
             seat = parseInt(seat);
-            webSocket.http('targets', {
+            websocket.http('targets', {
                 targets:[seat]
             }, function () {
                 playerPokers.cancelTips();
@@ -925,7 +930,7 @@ end {
             var toSeat = $(to).parents('player').attr('seat');
             toSeat = parseInt(toSeat);
 
-            webSocket.http('targets', {
+            websocket.http('targets', {
                 targets:[fromSeat, toSeat]
             }, function () {
                 playerPokers.cancelTips();
@@ -941,7 +946,7 @@ end {
             var self = $(this);
             var seat = self.html();
             seat = parseInt(seat);
-            webSocket.http('targets', {
+            websocket.http('targets', {
                 targets:[seat]
             }, function () {
                 $('player[value='+user+'] poker').removeAttr('value');
@@ -970,7 +975,7 @@ end {
             Doppel();
         },
         Wolves : function (data) {
-            $('tips').html('孤狼:点击你要复制的身份牌!');
+            $('tips').html('孤狼:点击你要查看的公共牌!');
             Wolves(data);
         },
         Seer: function () {
@@ -1026,7 +1031,7 @@ end {
                     seat = jqplayer.attr('seat');
                     seat = parseInt(seat);
                 }
-                webSocket.http('vote', {
+                websocket.http('vote', {
                     vote:seat
                 }, function () {
                     playerPokers.cancelTips();
@@ -1066,7 +1071,7 @@ end {
             playerPokers.tipsPoker('blue').click(function () {
                 var seat = $(this).parents('player').attr('seat');
                 seat = parseInt(seat);
-                webSocket.http('hunter', {
+                websocket.http('hunter', {
                     target:seat
                 }, function () {
                     playerPokers.cancelTips();
@@ -1154,26 +1159,35 @@ end {
     }
 </script>
 <script>
-    var webSocket = new WebSocket('ws://'+window.location.basepath+'/game/'+no);
-    webSocket.admit("syncGame", loadGame);
-    webSocket.admit("gameStart", loadGame);
-    webSocket.admit("Doppel", Guide.Doppel);
-    webSocket.admit("Wolves", Guide.Wolves);
-    webSocket.admit("Seer", Guide.Seer);
-    webSocket.admit("AsSeer", Guide.AsSeer);
-    webSocket.admit("Robber", Guide.Robber);
-    webSocket.admit("AsRobber", Guide.AsRobber);
-    webSocket.admit("TroubleMarker", Guide.TroubleMarker);
-    webSocket.admit("AsTroubleMarker", Guide.AsTroubleMarker);
-    webSocket.admit("Drunk", Guide.Drunk);
-    webSocket.admit("AsDrunk", Guide.AsDrunk);
-    webSocket.admit("Speek", Guide.Speek);
-    webSocket.admit("Vote", Guide.Vote);
-    webSocket.admit("Hunter", Guide.Hunter);
-    webSocket.admit("Finally", Guide.Finally);
+    var websocket = new WebSocket('ws://'+window.location.basepath+'/game/'+no);
+    /*切换重连*/
+    document.addEventListener('webkitvisibilitychange',function(){
+        if (document.webkitVisibilityState == 'visible') {
+            if (websocket.readyState >= 3) {
+                window.location.reload(true);
+            }
+        }
+    });
 
-    webSocket.onConnect(function () {
-        webSocket.http('login', {
+    websocket.admit("syncGame", loadGame);
+    websocket.admit("gameStart", loadGame);
+    websocket.admit("Doppel", Guide.Doppel);
+    websocket.admit("Wolves", Guide.Wolves);
+    websocket.admit("Seer", Guide.Seer);
+    websocket.admit("AsSeer", Guide.AsSeer);
+    websocket.admit("Robber", Guide.Robber);
+    websocket.admit("AsRobber", Guide.AsRobber);
+    websocket.admit("TroubleMarker", Guide.TroubleMarker);
+    websocket.admit("AsTroubleMarker", Guide.AsTroubleMarker);
+    websocket.admit("Drunk", Guide.Drunk);
+    websocket.admit("AsDrunk", Guide.AsDrunk);
+    websocket.admit("Speek", Guide.Speek);
+    websocket.admit("Vote", Guide.Vote);
+    websocket.admit("Hunter", Guide.Hunter);
+    websocket.admit("Finally", Guide.Finally);
+
+    websocket.onConnect(function () {
+        websocket.http('login', {
             user: user,
             img: img
         }, function (data) {
@@ -1193,7 +1207,7 @@ end {
         });
     });
 
-    webSocket.onDisconnect(function () {
+    websocket.onDisconnect(function () {
         connectFail();
     });
 
@@ -1241,8 +1255,15 @@ end {
                     var viewport = movement['viewport'];
                     for (var seat in viewport) {
                         var poker = viewport[seat];
-                        if (info.poker != '化身幽灵' && poker.indexOf('化身') == 0) {
-                            poker = '化身幽灵';
+                        if (poker.indexOf('化身') == 0) {
+                            if (info.poker == '狼人' ||
+                                info.poker == '守夜人' ||
+                                info.poker == '爪牙' ||
+                                info.poker == '化身幽灵') {
+
+                            } else {
+                                poker = '化身幽灵';
+                            }
                         }
                         $('player[seat='+seat+'] poker').attr('value', poker);
                         $('discard poker').each(function () {
@@ -1294,7 +1315,7 @@ end {
         if (self.hasClass('quiet') || self.hasClass('noisy')) {
             self.removeClass('quiet noisy');
             // 结束发言
-            webSocket.http('speek', {
+            websocket.http('speek', {
                 speek: '按不动'
             }, function () {
                 //$('tips').html('等待其他玩家发言...');

@@ -5,10 +5,7 @@ import org.idear.endpoint.PlayerEndpoint;
 import org.idear.handler.Context;
 import org.idear.handler.Player;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by idear on 2018/9/27.
@@ -21,7 +18,7 @@ public class Hunter extends Wakeup {
             return true;
         }
         Player player = context.getPlayer();
-        List<Integer> deadth = context.getDeadth();
+        Set<Integer> deadth = context.getDeadth();
         Integer[] targets = player.getTargets();
 
         if (deadth.contains(player.getSeat())) {
@@ -33,6 +30,8 @@ public class Hunter extends Wakeup {
             // 执行枪杀
             deadth.add(targets[0]);
         }
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 }

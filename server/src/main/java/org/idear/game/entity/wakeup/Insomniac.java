@@ -36,6 +36,8 @@ public class Insomniac extends Wakeup {
         movements.add(partMovement);
         //
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 }

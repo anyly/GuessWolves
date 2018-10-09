@@ -436,7 +436,14 @@
 <script>
     /*创建连接*/
     var websocket = new WebSocket('ws://'+window.location.basepath+'/hall');
-    //var websocket = new WebSocket('ws://203.110.176.174:8082/GuessWolves/hall');
+    /*切换重连*/
+    document.addEventListener('webkitvisibilitychange',function(){
+        if (document.webkitVisibilityState == 'visible') {
+            if (websocket.readyState >= 3) {
+                window.location.reload(true);
+            }
+        }
+    });
 
     websocket.onError(function (e) {
         //alert('1-'+JSON.stringify(e));

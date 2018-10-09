@@ -6,6 +6,7 @@ import org.idear.CoherentMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by idear on 2018/9/29.
@@ -14,12 +15,12 @@ public class Context {
     private Player player;
     private LinkedHashMap<Integer, String> deck;
     private Map<Integer, Integer> votes;
-    private List<Integer> deadth;
+    private Set<Integer> deadth;
     private CoherentMap<Integer, Player> desktop;
     private Chain chain;
     private Game game;
 
-    public Context(Player player, LinkedHashMap<Integer, String> deck, Map<Integer, Integer> votes, List<Integer> deadth, CoherentMap<Integer, Player> desktop, Game game) {
+    public Context(Player player, LinkedHashMap<Integer, String> deck, Map<Integer, Integer> votes, Set<Integer> deadth, CoherentMap<Integer, Player> desktop, Game game) {
         this.player = player;
         this.deck = deck;
         this.votes = votes;
@@ -52,11 +53,11 @@ public class Context {
         this.votes = votes;
     }
 
-    public List<Integer> getDeadth() {
+    public Set<Integer> getDeadth() {
         return deadth;
     }
 
-    public void setDeadth(List<Integer> deadth) {
+    public void setDeadth(Set<Integer> deadth) {
         this.deadth = deadth;
     }
 

@@ -58,6 +58,8 @@ public class Wolves extends Wakeup {
             movements.add(partMovement);
             player.endpoint().emit("syncGame", context.game().export(player));
             System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+            player.setTargets(null);
+            player.setStage(null);
             return true;
         }
 
@@ -85,6 +87,8 @@ public class Wolves extends Wakeup {
             team.endpoint().emit("syncGame", context.game().export(player));
             System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.movements().get(team.movements().size()-1).getViewport()));
         }
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 

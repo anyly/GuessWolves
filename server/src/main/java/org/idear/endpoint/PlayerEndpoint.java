@@ -94,14 +94,14 @@ public class PlayerEndpoint extends UserEndpoint {
             player = new Player(user, img, this);
             game.addPlayer(player);
         } else {
-            if (player.endpoint() == null) {
+            //if (player.endpoint() == null) {
                 player.endpoint(this);
                 player.setImg(img);
-            } else {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("stage", "existUser");
-                return jsonObject;
-            }
+           // } else {
+//                JSONObject jsonObject = new JSONObject();
+//                jsonObject.put("stage", "existUser");
+//                return jsonObject;
+            //}
         }
         return null;
     }

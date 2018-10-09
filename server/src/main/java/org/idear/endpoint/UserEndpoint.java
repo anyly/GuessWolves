@@ -21,12 +21,23 @@ public abstract class UserEndpoint extends OnlineEndpoint {
     public JSONObject onLogin(JSONObject data) {
         this.user = data.getString("user");
         this.img = data.getString("img");
+        /*
         if (userSession.containsKey(this.user)) {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("stage", "existUser");
             return jsonObject;
         } else {
             userSession.put(this.user, session);
+        }
+        */
+        // 做挤下线
+        Session session = userSession.put(this.user, this.session);
+        if (session != null) {
+            try {
+                session.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
