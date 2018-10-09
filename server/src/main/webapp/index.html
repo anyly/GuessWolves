@@ -365,8 +365,8 @@
         current: 'init',
         init: function() {
             showPage('login');
-            $('.mwin').hide();
-            $('.dialog').hide();
+            $('.mwin').fadeOut();
+            $('.dialog').fadeOut();
             Guide.current = 'init';
         },
         login: function () {
@@ -436,7 +436,14 @@
 <script>
     /*创建连接*/
     var websocket = new WebSocket('ws://'+window.location.basepath+'/hall');
-    //var websocket = new WebSocket('ws://203.110.176.174:8082/GuessWolves/hall');
+    /*切换重连*/
+    document.addEventListener('webkitvisibilitychange',function(){
+        if (document.webkitVisibilityState == 'visible') {
+            if (websocket.readyState >= 3) {
+                window.location.reload(true);
+            }
+        }
+    });
 
     websocket.onError(function (e) {
         //alert('1-'+JSON.stringify(e));
@@ -447,7 +454,7 @@
     });
 
     $('.mwin>.wrap, .dialog>.wrap').click(function () {
-        $(this.parentNode).hide(400);//.toggleClass('hide', true);
+        $(this.parentNode).fadeOut();//.toggleClass('hide', true);
     });
     $('.wrap>*').click(function (event) {
         event.stopPropagation();// 阻止父节点拿到事件
@@ -477,7 +484,7 @@
         }
     });
     $('#imgbtn, #img_bar').click(function () {
-        $('.choiceimg').fadeIn(400);
+        $('.choiceimg').fadeIn();
     });
     //$('#loginbtn').on("touchstart", Guide.login);
     $('#loginbtn').click(function (event) {
@@ -491,7 +498,7 @@
         });
     });
     $('#gameSetting').click(function () {
-        $('.gameSetting').fadeIn(400);
+        $('.gameSetting').fadeIn();
     });
     $('.gameSetting input[type=checkbox]').change(function () {
         var param = formData('gameSettingForm');//widgetValue('poker');
@@ -513,7 +520,7 @@
         Guide.home();
     });
     $('#findRoom').click(function () {
-        $('.findRoom').fadeIn(400);
+        $('.findRoom').fadeIn();
     });
     $('#joinRoomBtn').click(function () {
         var no = $('#no').val();

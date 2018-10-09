@@ -45,9 +45,10 @@ public class Robber extends Wakeup {
         rob.setName("抢牌"+target+ "号");
         movements.add(partMovement);
         //
-        player.setStage(null);
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
         player.endpoint().emit("syncGame", context.game().export(player));
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 }

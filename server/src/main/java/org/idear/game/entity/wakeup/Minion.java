@@ -32,9 +32,8 @@ public class Minion extends Wakeup {
         List<Movement> movements = player.movements();
         // 找狼人
         Integer[] indexs = findWolves(desktop);
+        String spellName = null;
         if (indexs.length>0) {
-            // 爪牙看到狼
-            Show show = new Show(indexs[0], indexs);
             StringBuilder stringBuilder = new StringBuilder();
             for (Integer i : indexs) {
                 if (stringBuilder.length()>0) {
@@ -42,12 +41,21 @@ public class Minion extends Wakeup {
                 }
                 stringBuilder.append(i);
             }
-            show.setName("狼人"+stringBuilder.toString());
-            Movement partMovement = show.cast(context);
-            movements.add(partMovement);
+            spellName = "狼人"+stringBuilder.toString();
+        } else {
+            spellName = "没有狼人";
         }
+        // 爪牙看到狼
+        Show show = new Show(player.getSeat(), indexs);
+
+        show.setName(spellName);
+        Movement partMovement = show.cast(context);
+        movements.add(partMovement);
+
         player.endpoint().emit("syncGame", context.game().export(player));
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+        player.setTargets(null);
+        player.setStage(null);
         return true;
 
     }

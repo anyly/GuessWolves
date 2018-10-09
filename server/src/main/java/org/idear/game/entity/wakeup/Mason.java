@@ -31,12 +31,8 @@ public class Mason extends Wakeup {
         // 找狼人
         Integer[] indexs = findWolves(desktop);
         // 每一个守夜人互相看到
-        for (int i=0; i<indexs.length; i++) {
-            Player team = context.getDesktop().get(indexs[i]);
-            if (team == null) {
-                continue;
-            }
-            Show show = new Show(indexs[i], indexs);
+        String spellName = null;
+        if (indexs.length > 1) {
             StringBuilder stringBuilder = new StringBuilder();
             for (Integer ii : indexs) {
                 if (stringBuilder.length()>0) {
@@ -44,12 +40,25 @@ public class Mason extends Wakeup {
                 }
                 stringBuilder.append(ii);
             }
-            show.setName("同伴"+stringBuilder.toString());
+            spellName = "同伴"+stringBuilder.toString();
+        } else {
+            spellName = "没有同伴";
+        }
+        for (int i=0; i<indexs.length; i++) {
+            Player team = context.getDesktop().get(indexs[i]);
+            if (team == null) {
+                continue;
+            }
+            Show show = new Show(indexs[i], indexs);
+
+            show.setName(spellName);
             Movement partMovement = show.cast(context);
             team.movements().add(partMovement);
             team.endpoint().emit("syncGame", context.game().export(player));
             System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.movements().get(team.movements().size()-1).getViewport()));
         }
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 

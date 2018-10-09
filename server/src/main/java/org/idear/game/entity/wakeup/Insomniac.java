@@ -35,7 +35,10 @@ public class Insomniac extends Wakeup {
         show.setName("失>"+ StringUtil.simplePokerName(deck.get(player.getSeat())));
         movements.add(partMovement);
         //
+        player.endpoint().emit("syncGame", context.game().export(player));
         System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.movements().get(player.movements().size()-1).getViewport()));
+        player.setTargets(null);
+        player.setStage(null);
         return true;
     }
 }

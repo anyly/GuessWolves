@@ -3,6 +3,7 @@ package org.idear.handler;
 import com.alibaba.fastjson.JSONObject;
 import org.idear.CoherentMap;
 import org.idear.endpoint.PlayerEndpoint;
+import org.idear.endpoint.UserEndpoint;
 import org.idear.game.Stage;
 import org.idear.game.Utils;
 import org.idear.game.entity.Camp;
@@ -15,6 +16,7 @@ import org.idear.util.StringUtil;
 
 import javax.print.attribute.standard.PrinterLocation;
 import javax.websocket.Session;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -27,7 +29,7 @@ public class Game {
     private List<String> setting;// 选牌
 
     /**
-     * 玩家信息，进入房间后记录
+     * 玩家信息，进入房间后记录,包括观战
      * user = Player
      */
     private Map<String, Player> players = new LinkedHashMap<>();
@@ -76,9 +78,15 @@ public class Game {
     private List<Integer> hunters = new LinkedList<>();
 
     /**
+     * 猎人枪杀
+     * seat = kill seat
+     */
+    private Map<Integer, Integer> hunterKill = new LinkedHashMap<>();
+
+    /**
      * 投票死亡
      */
-    private List<Integer> deadth = new LinkedList<>();
+    private Set<Integer> deadth = new LinkedHashSet<>();
 
     /**
      * 结果报告
@@ -102,6 +110,9 @@ public class Game {
 
     public void removePlayer(Player player) {
         players.remove(player);
+        desktop.removeKey(player);
+        ready.remove(player);
+        synchronise();
     }
 
 
@@ -203,7 +214,7 @@ public class Game {
                 .add(new AsInsomniac())
 
                 // 发言
-                .add("Speek", new Stage() {
+                /*.add("Speek", new Stage() {
                     @Override
                     public boolean execute(Context context) {
                         Random random = new Random(System.currentTimeMillis());
@@ -214,12 +225,12 @@ public class Game {
                         speek();
                         return false;
                     }
-                })
+                })*/
                 // 投票
-                .add("Vote", new Stage() {
+                .add("ReturnVote", new Stage() {
                     @Override
                     public boolean execute(Context context) {
-                        broadcast("Vote", null);
+                        vote();
                         return false;
                     }
                 })
@@ -288,11 +299,15 @@ public class Game {
                         boolean villagerWin = false;
                         //皮匠阵营
                         boolean cobblerWin = false;
+                        // 所有人
+                        boolean allWin = false;
 
                         //皮匠死亡
                         boolean cobberDeadth = false;
                         //狼人死亡
                         boolean wolvesDeadth = false;
+
+
 
                         //皮匠如果死亡, 皮匠一定赢
                         for (Integer seat: deadth) {
@@ -315,76 +330,120 @@ public class Game {
                         }
 
                         try {
+                            /**
+                             * 获胜条件入下:
+                             * <条件:皮匠死亡> = 皮匠获胜 => 狼输 , <条件1.有狼局 && 条件2.狼死亡> = 村民获胜, <条件1.无狼局>= 村民输
+                             * <条件;皮匠未死亡> = 皮匠输, <条件1.有狼局 && 条件2.狼死亡> = 村民获胜狼输, <条件1.有狼局 && 条件2.狼未死亡> = 村民输狼获胜, <条件1.无狼局 && 条件2.无死亡--平票或弃权票> = 所有人获胜, <条件1.无狼局 && 条件2.有死亡> = 所有人落败
+                             */
+
+
+
                             // 皮匠死亡 => 皮匠获胜
                             if (cobberDeadth) {
                                 cobblerWin = true;
                                 if (deadth.size() == 1) {// 皮匠单独赢
                                     villagerWin = false;
                                     wolvesWin = false;
+                                    report.setDescription("皮匠独赢");
                                     throw new RuntimeException();
                                 }
                             }
 
-                            // 有狼局，投出狼才能获胜
-                            if (hasWolves) {
-                                if (wolvesDeadth) {
-                                    villagerWin = true;
+                            if (cobblerWin) {
+                                wolvesWin = false;
+                                if (hasWolves) {
+                                    if (wolvesDeadth) {
+                                        villagerWin = true;
+                                        report.setDescription("皮匠狼都死");
+                                    } else {
+                                        villagerWin = false;
+                                        report.setDescription("皮匠死狼未死");
+                                    }
                                 } else {
                                     villagerWin = false;
+                                    report.setDescription("皮匠死无狼局");
                                 }
+                                throw new RuntimeException();
                             } else {
-                                // 无狼局，平局，无人出局
-                                villagerWin = deadth.size() == 0 || deadth.size()>1;
-                            }
-
-                            if (villagerWin) {
-                                wolvesWin = false;
-                            } else {
-                                wolvesWin = true;
+                                if (hasWolves) {
+                                    if (wolvesDeadth) {
+                                        villagerWin = true;
+                                        wolvesWin = false;
+                                        report.setDescription("狼人被抓住了");
+                                    } else {
+                                        villagerWin = false;
+                                        wolvesWin = true;
+                                        report.setDescription("有狼未死");
+                                    }
+                                    throw new RuntimeException();
+                                } else {
+                                    if (deadth.size() == 0) {
+                                        report.setDescription("无狼局弃权票");
+                                        allWin = true;
+                                    } else if (deadth.size() == playerCount()) {
+                                        report.setDescription("无狼局平票");
+                                        allWin = true;
+                                    } else {
+                                        report.setDescription("无狼局有伤亡");
+                                        allWin = false;
+                                    }
+                                    // 所有人的获胜
+                                    for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
+                                        Player player = entry.getValue();
+                                        Camp camp = report.getAll();
+                                        if (camp == null) {
+                                            camp = new Camp("所有人");
+                                            camp.setWin(allWin);
+                                            report.setAll(camp);
+                                        }
+                                        JSONObject jsonObject = new JSONObject();
+                                        jsonObject.put("user", player.getUser());
+                                        jsonObject.put("seat", player.getSeat());
+                                        camp.getMembers().add(jsonObject);
+                                    }
+                                }
                             }
                         } catch (RuntimeException e) {
-
-                        }
-
-                        //
-                        for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
-                            Player player = entry.getValue();
-                            Integer seat = entry.getKey();
-                            String poker = deck.get(seat);
-                            String campName = GameCenter.camp.get(poker);
-                            if ("城镇".equals(campName)) {
-                                Camp camp = report.getTown();
-                                if (camp == null) {
-                                    camp = new Camp(campName);
-                                    camp.setWin(villagerWin);
-                                    report.setTown(camp);
+                            // 分阵营获胜
+                            for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
+                                Player player = entry.getValue();
+                                Integer seat = entry.getKey();
+                                String poker = deck.get(seat);
+                                String campName = GameCenter.camp.get(poker);
+                                if ("城镇".equals(campName)) {
+                                    Camp camp = report.getTown();
+                                    if (camp == null) {
+                                        camp = new Camp("城镇阵营");
+                                        camp.setWin(villagerWin);
+                                        report.setTown(camp);
+                                    }
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("user", player.getUser());
+                                    jsonObject.put("seat", player.getSeat());
+                                    camp.getMembers().add(jsonObject);
+                                } else if ("狼人".equals(campName)) {
+                                    Camp camp = report.getWolves();
+                                    if (camp == null) {
+                                        camp = new Camp("狼人阵营");
+                                        camp.setWin(wolvesWin);
+                                        report.setWolves(camp);
+                                    }
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("user", player.getUser());
+                                    jsonObject.put("seat", player.getSeat());
+                                    camp.getMembers().add(jsonObject);
+                                } else if ("皮匠".equals(campName)) {
+                                    Camp camp = report.getCobbler();
+                                    if (camp == null) {
+                                        camp = new Camp("皮匠阵营");
+                                        camp.setWin(cobblerWin);
+                                        report.setCobbler(camp);
+                                    }
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("user", player.getUser());
+                                    jsonObject.put("seat", player.getSeat());
+                                    camp.getMembers().add(jsonObject);
                                 }
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("user", player.getUser());
-                                jsonObject.put("seat", player.getSeat());
-                                camp.getMembers().add(jsonObject);
-                            } else if ("狼人".equals(campName)) {
-                                Camp camp = report.getWolves();
-                                if (camp == null) {
-                                    camp = new Camp(campName);
-                                    camp.setWin(wolvesWin);
-                                    report.setWolves(camp);
-                                }
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("user", player.getUser());
-                                jsonObject.put("seat", player.getSeat());
-                                camp.getMembers().add(jsonObject);
-                            } else if ("皮匠".equals(campName)) {
-                                Camp camp = report.getCobbler();
-                                if (camp == null) {
-                                    camp = new Camp(campName);
-                                    camp.setWin(cobblerWin);
-                                    report.setCobbler(camp);
-                                }
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("user", player.getUser());
-                                jsonObject.put("seat", player.getSeat());
-                                camp.getMembers().add(jsonObject);
                             }
                         }
 
@@ -395,7 +454,7 @@ public class Game {
         ;
     }
 
-    public void speek(Player player, String string) {
+    public void speek(final Player player, final String string) {
         if (speekCurrentIndex != player.getSeat()) {
             return;
         }
@@ -455,7 +514,7 @@ public class Game {
      * 完成上一个阶段, 进入下一个阶段
      * @param current
      */
-    public synchronized void nextStage(String current) {
+    public synchronized void nextStage(final String current) {
         gameCenter.add(new Callback() {
             @Override
             public void execute(Object data) {
@@ -500,7 +559,7 @@ public class Game {
     }
 
     /**
-     * 同步客户端
+     * 广播结果
      */
     public synchronized void finall() {
         LinkedList<Player> list = new LinkedList<>(players.values());
@@ -513,7 +572,7 @@ public class Game {
     }
 
     /**
-     * 同步客户端
+     * 轮流发言
      */
     public synchronized void speek() {
         LinkedList<Player> list = new LinkedList<>(players.values());
@@ -526,16 +585,24 @@ public class Game {
     }
 
     /**
+     * 发起投票
+     */
+    public synchronized void vote() {
+        LinkedList<Player> list = new LinkedList<>(players.values());
+        for (Player player: list) {
+            player.setStage("Vote");
+            PlayerEndpoint playerEndpoint = player.endpoint();
+            if (playerEndpoint != null) {
+                playerEndpoint.emit("Vote", null);
+            }
+        }
+    }
+
+    /**
      * 同步客户端
      */
     public synchronized void synchronise() {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            PlayerEndpoint playerEndpoint = player.endpoint();
-            if (playerEndpoint != null) {
-                playerEndpoint.emit("syncGame", export(player));
-            }
-        }
+        synchronise(null);
     }
 
     /**
@@ -544,13 +611,12 @@ public class Game {
     public synchronized void synchronise(Player caller) {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
+            PlayerEndpoint playerEndpoint = player.endpoint();
             if (player != caller) {
-                PlayerEndpoint playerEndpoint = player.endpoint();
                 if (playerEndpoint != null) {
                     playerEndpoint.emit("syncGame", export(player));
                 }
             }
-
         }
     }
 
@@ -559,14 +625,24 @@ public class Game {
      * @return
      */
     public JSONObject export(Player player) {
+        String stage = currentStage();
+        if ("Ready".equals(stage)) {
+        } else if ("Finally".equals(stage)) {
+        } else {
+            if (player.getSeat() == null) {
+                stage = "notSeat";
+            } else {
+                stage = calcuStage(player);
+            }
+        }
+        System.out.println("玩家[" + player.getUser() + "][" + player.getPoker() + "] 当前步骤[" + currentStage() + "] 返回[" + stage + "]");
+
+
+
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("desktop", desktop);
         jsonObject.put("deck", deck);
         jsonObject.put("playerCount", playerCount());
-
-        String stage = calcuStage(player);
-        System.out.println("玩家["+player.getUser()+"]["+player.getPoker()+"] 当前步骤["+currentStage()+"] 返回["+stage+"]");
-
         jsonObject.put("stage", stage);
         jsonObject.put("speekStartIndex", speekStartIndex);
         jsonObject.put("speekCurrentIndex", speekCurrentIndex);
@@ -574,6 +650,7 @@ public class Game {
         jsonObject.put("votes", votes);
         jsonObject.put("report", report);
         jsonObject.put("deadth", deadth);
+        jsonObject.put("hunterKill", hunterKill);
         //jsonObject.put("movements", movements);
         return jsonObject;
     }
@@ -633,14 +710,16 @@ public class Game {
 
     public void vote(Player player, Integer vote) {
         player.setVote(vote);
+        player.setStage(null);
         votes.put(player.getSeat(), vote);
-        if (votes.size() == players.size()) {
-            nextStage("Vote");
+        if (votes.size() == playerCount()) {
+            nextStage("ReturnVote");
         }
     }
 
     public void hunter(Player player, Integer kill) {
         if (hunters.remove(player.getSeat())) {
+            hunterKill.put(player.getSeat(), kill);
             deadth.add(kill);
             player.setStage(null);
         }

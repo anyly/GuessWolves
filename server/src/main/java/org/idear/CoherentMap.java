@@ -62,4 +62,12 @@ public class CoherentMap<K, V> extends LinkedHashMap<K, V> {
     public K key(V value) {
         return valueMap.get(value);
     }
+
+    public K removeKey(V value) {
+        K key = valueMap.remove(value);
+        if (key != null) {
+            remove(key);
+        }
+        return key;
+    }
 }

@@ -11,6 +11,7 @@
         var websocket = null;
         var httplistener = {};
         var messagelistener = {};
+        this.readyState = 0;
 
         if (original) {
             websocket = new original(ws);
@@ -114,6 +115,7 @@
             if (!isSupport()) {
                 return this;
             }
+            this.readyState = 1;
             websocket.onopen = callback;
             return this;
         };
@@ -126,6 +128,7 @@
             if (!isSupport()) {
                 return this;
             }
+            this.readyState = 2;
             websocket.close(code, reason);
             return this;
         };
@@ -137,6 +140,7 @@
             if (!isSupport()) {
                 return this;
             }
+            this.readyState = 3;
             websocket.onclose = function (code, reason , wasClean) {
                 if (code == 600) {
                     return;
@@ -163,7 +167,14 @@
             if (!isSupport()) {
                 return this;
             }
-            window.location.reload(true);
+            if (this.readyState >= 3) {
+                if (original) {
+                    websocket = new original(ws);
+                } else {
+                    alert('当前浏览器 Not support service');
+                    return null;
+                }
+            }
             return this;
         };
 
