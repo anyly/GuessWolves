@@ -270,7 +270,7 @@ public class Game {
                         return true;
                     }
                 })
-                .add("Hunter", new Stage(){
+                .add("HunterKill", new Stage(){
                     @Override
                     public boolean execute(Context context) {
                         for (Integer seat: deadth) {
@@ -722,7 +722,7 @@ public class Game {
             player.setStage(null);
         }
         if (hunters.size() == 0) {
-            nextStage("Hunter");
+            nextStage("HunterKill");
         }
     }
 }
