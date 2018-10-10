@@ -435,7 +435,11 @@
 </script>
 <script>
     /*创建连接*/
-    var websocket = new WebSocket('ws://'+window.location.basepath+'/hall');
+    var wsprotocol = 'ws';
+    if (window.location.protocol.indexOf('https')==0) {
+        wsprotocol = 'wss'
+    }
+    var websocket = new WebSocket(wsprotocol+'://'+window.location.basepath+'/hall');
     /*切换重连*/
     document.addEventListener('webkitvisibilitychange',function(){
         if (document.webkitVisibilityState == 'visible') {

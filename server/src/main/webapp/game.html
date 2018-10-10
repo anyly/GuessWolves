@@ -269,6 +269,7 @@ sideslip {
     align-items: center;
     flex-direction: column;
     overflow: hidden;
+    z-index: 5000;
 }
 sideslip>hr {
     width: 100px;
@@ -336,6 +337,7 @@ levitate {
     right: 28px;
     bottom: 28px;
     transition: all 600ms;
+    z-index: 6000;
 }
 
 levitate .bulb {
@@ -466,27 +468,28 @@ pop {
     justify-content: center;
     align-items: center;
     opacity: 0.9;
-    z-index: 3000;
 }
 tips {
     text-align: center;
     font-size: 14px;
-    line-height: 30px;
     color: #cccccc;
     background-color: black;
     border-radius: 8px;
     padding: 0 20px;
-    max-height: 100%;
+    max-width: 320px;
+    max-height: 568px;
     overflow-y: auto;
 }
 tips>h3 {
     font-size: 14px;
     border-bottom: 1px #cccccc dashed;
+    line-height: 30px;
 }
 tips>h4 {
     font-size: 14px;
     border-top: 1px #cccccc dashed;
     border-bottom: 1px #cccccc dashed;
+    line-height: 30px;
 }
 tips>p {
     display: block;
@@ -1216,7 +1219,11 @@ end {
     }
 </script>
 <script>
-    var websocket = new WebSocket('ws://'+window.location.basepath+'/game/'+no);
+    var wsprotocol = 'ws';
+    if (window.location.protocol.indexOf('https')==0) {
+        wsprotocol = 'wss'
+    }
+    var websocket = new WebSocket(wsprotocol+'://'+window.location.basepath+'/game/'+no);
     /*切换重连*/
     document.addEventListener('webkitvisibilitychange',function(){
         if (document.webkitVisibilityState == 'visible') {
