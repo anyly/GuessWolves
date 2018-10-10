@@ -52,7 +52,7 @@ public class Chain {
      * @return
      */
     public Chain add(Wakeup wakeup) {
-        add(wakeup.getClass().getSimpleName(), wakeup);
+        add(wakeup.getClass().getSimpleName()+"Action", wakeup);
         return this;
     }
 
@@ -66,7 +66,7 @@ public class Chain {
         String poker = player.getPoker();
         Wakeup wakeup = GameCenter.pokerAbility.get(poker);
         if (wakeup != null) {
-            setData(wakeup.getClass().getSimpleName(), context);
+            setData(wakeup.getClass().getSimpleName()+"Action", context);
         }
         return this;
     }
