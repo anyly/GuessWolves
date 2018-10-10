@@ -733,12 +733,11 @@ end {
 <script src="js/jquery.ui.touch-punch.min.js"></script>
 <script src="js/game.js"></script>
 <script>
-    var no = window.location.hash;
-    if (!no || no=='') {
+    var no = getAnchor();
+    if (no=='') {
         alert('房间号无效！');
         window.location = 'index.html';
     } else {
-        no = no.replace('#', '');
         $('room').html('No.'+no);
     }
     var user = localStorage.getItem('user');

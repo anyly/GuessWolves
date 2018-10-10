@@ -549,9 +549,8 @@
         setImg(img);
     }
     websocket.onConnect(function () {
-        var stage = window.location.hash;
-        if (stage) {
-            stage = stage.replace('#', '');
+        var stage = getAnchor();
+        if (stage != '') {
             if (Guide[stage]) {
                 Guide[stage]();
             }

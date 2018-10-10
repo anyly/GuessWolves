@@ -174,7 +174,18 @@
             return false;
         });
     };
-    // window.connectSuccess = function () {
-    //     $('blackout').remove();
-    // };
+})();
+
+(function () {
+    window.getAnchor = function () {
+        if (window.location.hash != '' && window.location.hash != '#') {
+            var start = window.location.hash.indexOf('#') + 1;
+            var end = window.location.hash.indexOf('?', start);
+            if (end >= 0) {
+                return window.location.hash.substring(start, end);
+            }
+            return window.location.hash.substring(start);
+        }
+        return '';
+    };
 })();
