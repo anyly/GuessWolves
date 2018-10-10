@@ -91,6 +91,7 @@ $.fn.castSpellBy = function (targetSelector, callback) {
             }
         }
     });
+    return this;
 };
 
 var castSpell = function (callback, callerfilter, targetfilter) {

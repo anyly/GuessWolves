@@ -939,8 +939,10 @@ end {
     }
     
     function TroubleMarker() {
+        var targets = [];
         var playerPokers = $('player:not([value="'+user+'"]) poker');
-        playerPokers.tipsPoker('blue').castSpellBy('player poker', function (from, to) {
+        playerPokers.tipsPoker('blue')
+        /*.castSpellBy('player poker', function (from, to) {
             var fromSeat = $(from).parents('player').attr('seat');
             fromSeat = parseInt(fromSeat);
 
@@ -954,6 +956,24 @@ end {
                 cancelSpell();
                 $('tips').html('等待其他玩家行动...');
             });
+        })*/
+        .click(function () {
+            var jq = $(this);
+            var seat = jq.parents('player').attr('seat');
+            seat = parseInt(seat);
+            targets.push(seat);
+            if (targets.length == 1) {
+                jq.cancelTips();
+                $('tips').html('捣蛋鬼:再选择一张身份牌交换!');
+            }else if (targets.length == 2) {
+                websocket.http('targets', {
+                    targets:targets
+                }, function () {
+                    playerPokers.cancelTips();
+                    cancelSpell();
+                    $('tips').html('等待其他玩家行动...');
+                });
+            }
         });
     }
 
@@ -1032,11 +1052,11 @@ end {
             Robber();
         },
         TroubleMarker: function () {
-            $('tips').html('捣蛋鬼:拖拽你要交换的两张身份牌!');
+            $('tips').html('捣蛋鬼:点选你要交换的两张身份牌!');
             TroubleMarker();
         },
         AsTroubleMarker: function () {
-            $('tips').html('化身捣蛋鬼:拖拽你要交换的两张身份牌!');
+            $('tips').html('化身捣蛋鬼:点选你要交换的两张身份牌!');
             TroubleMarker();
         },
         Drunk: function () {
