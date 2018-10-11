@@ -127,14 +127,6 @@ public class Player {
         this.win = win;
     }
 
-    public List<Movement> movements() {
-        return movements;
-    }
-
-    public void movements(List<Movement> movements) {
-        this.movements = movements;
-    }
-
     public String getStage() {
         return stage;
     }
@@ -147,7 +139,10 @@ public class Player {
         return movements;
     }
 
-    /**
+    public void setMovements(List<Movement> movements) {
+        this.movements = movements;
+    }
+/**
      * 当前视线
      * @return
      */

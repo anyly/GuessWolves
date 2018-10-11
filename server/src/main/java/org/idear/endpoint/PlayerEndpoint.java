@@ -1,12 +1,7 @@
 package org.idear.endpoint;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-
 import com.alibaba.fastjson.TypeReference;
-import org.idear.CoherentMap;
-import org.idear.game.entity.Movement;
-import org.idear.game.entity.wakeup.Wakeup;
 import org.idear.handler.Game;
 import org.idear.handler.GameCenter;
 import org.idear.handler.Player;
@@ -14,10 +9,6 @@ import org.idear.handler.Player;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by idear on 2018/9/21.
@@ -135,6 +126,7 @@ public class PlayerEndpoint extends UserEndpoint {
         super.onError(session, error);
     }
 
+    /////////////////////////
     /**
      * 选定座位
      * @param data
@@ -159,17 +151,112 @@ public class PlayerEndpoint extends UserEndpoint {
         return null;
     }
 
-    public JSONObject onTargets(JSONObject data) {
-        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
-        this.player.setTargets(targets);
-        // 通知游戏继续
-        Wakeup wakeup = GameCenter.pokerAbility.get(this.player.getPoker());
-        if (wakeup!=null) {
-            game.tryStage();
-        }
-        return game.export(player);
+    public JSONObject onRestart(JSONObject data) {
+        boolean readyStatus = data.getBoolean("ready");
+        game.restart(player, readyStatus);
+        game.synchronise(player);
+
+        return null;
     }
 
+    //////////////////////
+    /**
+     * 化身幽灵行动
+     * @param data
+     * @return
+     */
+    public JSONObject onDoppel(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        if (targets.length > 0) {
+            // 通知游戏继续
+            game.doppel(player, targets[0]);
+            return game.export(player);
+        }
+        return null;
+    }
+
+    /**
+     * 狼人行动
+     * @param data
+     * @return
+     */
+    public JSONObject onWolves(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        if (targets.length > 0) {
+            // 通知游戏继续
+            game.wolves(player, targets);
+            return game.export(player);
+        }
+        return null;
+    }
+
+    /**
+     * 预言家行动
+     * @param data
+     * @return
+     */
+    public JSONObject onSeer(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        if (targets.length > 0) {
+            // 通知游戏继续
+            game.seer(player, targets);
+            return game.export(player);
+        }
+        return null;
+    }
+
+    /**
+     * 强盗行动
+     * @param data
+     * @return
+     */
+    public JSONObject onRobber(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        if (targets.length > 0) {
+            // 通知游戏继续
+            game.robber(player, targets[0]);
+            return game.export(player);
+        }
+        return null;
+    }
+
+    /**
+     * 捣蛋鬼行动
+     * @param data
+     * @return
+     */
+    public JSONObject onTroubleMarker(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        if (targets.length > 0) {
+            // 通知游戏继续
+            game.troubleMarker(player, targets);
+            return game.export(player);
+        }
+        return null;
+    }
+
+    /**
+     * 酒鬼行动
+     * @param data
+     * @return
+     */
+    public JSONObject onDrunk(JSONObject data) {
+        Integer[] targets = data.getObject("targets", new TypeReference<Integer[]>(){});
+        this.player.setTargets(targets);
+        if (targets.length > 0) {
+            // 通知游戏继续
+            game.drunk(player, targets[0]);
+            return game.export(player);
+        }
+        return null;
+    }
+
+    /////////////////////////
     public JSONObject onSpeek(JSONObject data) {
         String speek = data.getString("speek");
         game.speek(player, speek);

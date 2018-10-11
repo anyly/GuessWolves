@@ -30,9 +30,13 @@ public class Story {
         String key = null;
         while ((chapter = chapters.getFirst()) != null) {
             key = keys.getFirst();
-            chapter.perform();
-            poll();
-            return keys.getFirst();
+            if (chapter.perform()) {
+                System.out.println("行动["+key+"]  >[下一步]");
+                poll();
+            } else {
+                System.out.println("行动["+key+"]  =[暂停]");
+                return keys.getFirst();
+            }
         }
         return null;
     }

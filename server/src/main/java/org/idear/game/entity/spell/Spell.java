@@ -2,7 +2,6 @@ package org.idear.game.entity.spell;
 
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.movement.Motion;
-import org.idear.handler.Context;
 import org.idear.handler.Player;
 
 import java.util.LinkedHashMap;
@@ -28,14 +27,8 @@ public abstract class Spell {
 
     public abstract void motions();
 
-    public Movement cast(Context context) {
-        LinkedHashMap<Integer, String> deck = context.getDeck();
-        Player player = context.getPlayer();
-        return cast(deck, player);
-    }
-
     public Movement cast(LinkedHashMap<Integer, String> deck, Player player) {
-        List<Movement> movements = player.movements();
+        List<Movement> movements = player.getMovements();
         Movement movement = null;
         if (movements.size()>0) {
             movement = movements.get(movements.size()-1);

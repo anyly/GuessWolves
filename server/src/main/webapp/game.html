@@ -169,12 +169,16 @@ cover {
 player.disconnect portrait ready,
 player.ready portrait ready,
 player.speek portrait ready,
-player.dead portrait ready
+player.dead portrait ready,
+player.restart portrait ready
 {
     display: flex;
 }
 player.ready portrait ready span:before {
     content: '就绪';
+}
+player.restart portrait ready span:before {
+    content: '重开';
 }
 player.speek portrait ready span:before {
     content: '发言中';
@@ -318,6 +322,15 @@ reset {
 
 
     background: url("img/refresh.svg") no-repeat;
+    background-size: contain;
+}
+restart {
+    display: block;
+    width: 50px;
+    height: 63px;
+
+
+    background: url("img/restart.svg") no-repeat;
     background-size: contain;
 }
 room {
@@ -624,6 +637,7 @@ end {
     <hr>
     <mymenu>
         <reset></reset>
+        <restart style="display: none"></restart>
         <exit></exit>
         <room></room>
     </mymenu>
@@ -782,6 +796,22 @@ end {
         var self = $(seat);
         self.toggleClass('ready', false);
     }
+    function restartStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('restart', true);
+    }
+    function notRestartStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('restart', false);
+    }
+    function deadStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('dead', true);
+    }
+    function notDeadStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('dead', false);
+    }
     function disconnectStatus(seat) {
         var self = $(seat);
         self.toggleClass('disconnect', true);
@@ -850,11 +880,12 @@ end {
 </script>
 <script>
     function Doppel() {
+        var stage = arguments.callee.name;
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('player').attr('seat');
             seat = parseInt(seat);
-            websocket.http('targets', {
+            websocket.http(stage, {
                 targets:[seat]
             }, function () {
                 playerPokers.cancelTips();
@@ -864,6 +895,7 @@ end {
         });
     }
     function Wolves(data) {
+        var stage = arguments.callee.name;
         var publicPokers = $('discard poker');
         var targets = [];
         publicPokers.tipsPoker('#202828').click(function () {
@@ -878,7 +910,7 @@ end {
                 self.unbind();
                 return;
             }
-            websocket.http('targets', {
+            websocket.http(stage, {
                 targets:targets
             }, function () {
                 publicPokers.cancelTips();
@@ -887,7 +919,11 @@ end {
             });
         });
     }
-    function Seer() {
+    function Seer(as) {
+        var stage = arguments.callee.name;
+        if (as) {
+            stage = 'as' + stage;
+        }
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         var targets = [];
         var publicPokers = $('discard poker');
@@ -900,7 +936,7 @@ end {
             if (targets.length == 1) {
                 playerPokers.cancelTips();
             }else if (targets.length == 2) {
-                websocket.http('targets', {
+                websocket.http(stage, {
                     targets:targets
                 }, function () {
                     publicPokers.cancelTips();
@@ -913,7 +949,7 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('player').attr('seat');
             seat = parseInt(seat);
-            websocket.http('targets', {
+            websocket.http(stage, {
                 targets:[seat]
             }, function () {
                 publicPokers.cancelTips();
@@ -925,12 +961,16 @@ end {
         });
     }
 
-    function Robber() {
+    function Robber(as) {
+        var stage = arguments.callee.name;
+        if (as) {
+            stage = 'as' + stage;
+        }
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('player').attr('seat');
             seat = parseInt(seat);
-            websocket.http('targets', {
+            websocket.http(stage, {
                 targets:[seat]
             }, function () {
                 playerPokers.cancelTips();
@@ -940,7 +980,11 @@ end {
         });
     }
     
-    function TroubleMarker() {
+    function TroubleMarker(as) {
+        var stage = arguments.callee.name;
+        if (as) {
+            stage = 'as' + stage;
+        }
         var targets = [];
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         playerPokers.tipsPoker('blue')
@@ -968,7 +1012,7 @@ end {
                 jq.cancelTips();
                 $('tips').html('捣蛋鬼:再选择一张身份牌交换!');
             }else if (targets.length == 2) {
-                websocket.http('targets', {
+                websocket.http(stage, {
                     targets:targets
                 }, function () {
                     playerPokers.cancelTips();
@@ -979,13 +1023,17 @@ end {
         });
     }
 
-    function Drunk() {
+    function Drunk(as) {
+        var stage = arguments.callee.name;
+        if (as) {
+            stage = 'as' + stage;
+        }
         var publicPokers = $('discard poker');
         publicPokers.tipsPoker('#202828').click(function () {
             var self = $(this);
             var seat = self.html();
             seat = parseInt(seat);
-            websocket.http('targets', {
+            websocket.http(stage, {
                 targets:[seat]
             }, function () {
                 $('player[value='+user+'] poker').removeAttr('value');
@@ -997,6 +1045,7 @@ end {
     }
 
     function Vote() {
+        var stage = arguments.callee.name;
         $('tips').html('发起投票！--投给自己为弃权票');
         var playerPokers = $('player poker').tipsPoker('blue').click(function () {
             var jq = $(this);
@@ -1006,7 +1055,7 @@ end {
                 seat = jqplayer.attr('seat');
                 seat = parseInt(seat);
             }
-            websocket.http('vote', {
+            websocket.http(stage, {
                 vote:seat
             }, function () {
                 playerPokers.cancelTips();
@@ -1025,6 +1074,9 @@ end {
         notExistGame: function () {
             alert('该房间号未创建！');
             window.location = 'index.html';
+        },
+        WaitForAction: function () {
+            $('tips').html('等待其他玩家行动...');
         },
         Ready: function () {
             $('page player portrait').click(readySitdown);
@@ -1156,7 +1208,7 @@ end {
             }
             ///
             var report = data.report;
-            var string = '<h3>'+report.description+':</h3>';
+            var string = '<h3>'+report.description+'！</h3>';
             var all = report.all;
             var town = report.town;
             var wolves = report.wolves;
@@ -1202,6 +1254,20 @@ end {
             }
             ///
             $('tips').html(string);
+            //// 可重新开始
+            $('restart').fadeIn();
+            // $('page player[value'+user+'] portrait').click(function () {
+            //     var self = $(this).parents('player');
+            //     var ready = !self.hasClass('restart');
+            //     websocket.http('restart', {
+            //         ready: ready
+            //     }, function () {
+            //         $('page poker').removeAttr('value');
+            //         $('page clue').html('');
+            //         $('tips').html('');
+            //         self.toggleClass('restart');
+            //     })
+            // });
         }
     };
     function camp(c) {
@@ -1244,6 +1310,7 @@ end {
     websocket.admit("AsTroubleMarker", Guide.AsTroubleMarker);
     websocket.admit("Drunk", Guide.Drunk);
     websocket.admit("AsDrunk", Guide.AsDrunk);
+    websocket.admit("WaitForAction", Guide.WaitForAction);
     websocket.admit("Speek", Guide.Speek);
     websocket.admit("Vote", Guide.Vote);
     websocket.admit("ReturnVote", Guide.ReturnVote);
@@ -1291,6 +1358,12 @@ end {
                 } else {
                     notReadyStatus(domSeat);
                 }
+            } else if (stage == 'Finally') {
+                if (info.ready) {
+                    restartStatus(domSeat);
+                } else {
+                    notRestartStatus(domSeat);
+                }
             } else {
                 if (stage) {
                     Guide.current = stage;
@@ -1298,6 +1371,8 @@ end {
                 // 删除换座位等事件
                 $('page player portrait').unbind();
                 notReadyStatus(domSeat);
+                notRestartStatus(domSeat);
+                notDeadStatus(domSeat);
             }
             if (info.disconnect) {
                 disconnectStatus(domSeat);
@@ -1364,6 +1439,19 @@ end {
         // });
         window.location.reload(true);
         event.stopPropagation();
+    });
+    $('restart').click(function () {
+        var self = $('player[value='+user+']');
+        var ready = !self.hasClass('restart');
+        websocket.http('restart', {
+            ready: ready
+        }, function () {
+            $('page poker').removeAttr('value');
+            $('page clue').html('');
+            $('tips').html('');
+            self.toggleClass('dead', false);
+            self.toggleClass('restart');
+        })
     });
     function openMenu() {
         $('sideslip').toggleClass('show', true);

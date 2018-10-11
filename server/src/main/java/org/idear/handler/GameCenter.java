@@ -1,8 +1,5 @@
 package org.idear.handler;
 
-import org.idear.endpoint.PlayerEndpoint;
-import org.idear.game.entity.wakeup.*;
-
 import java.util.*;
 
 /**
@@ -41,38 +38,10 @@ public class GameCenter extends Handler {
     }
 
     /**
-     * 身份牌和处理函数
-     */
-    public static Map<String, Wakeup> pokerAbility = new LinkedHashMap<>();
-    /**
      * 阵营分类
      */
     public static Map<String, String> camp = new LinkedHashMap<>();
     static {
-        pokerAbility.put("化身幽灵", new Doppel());
-        //after
-        pokerAbility.put("狼人", new Wolves());
-        pokerAbility.put("化身狼人", new Wolves());
-        pokerAbility.put("爪牙", new Minion());
-        pokerAbility.put("化身爪牙", new AsMinion());
-        pokerAbility.put("守夜人", new Mason());
-        pokerAbility.put("化身守夜人", new Mason());
-        pokerAbility.put("预言家", new Seer());
-        pokerAbility.put("化身预言家", new AsSeer());
-        //after
-        pokerAbility.put("强盗", new Robber());
-        pokerAbility.put("化身强盗", new AsRobber());
-        //after
-        pokerAbility.put("捣蛋鬼", new TroubleMarker());
-        //after
-        pokerAbility.put("化身捣蛋鬼", new AsTroubleMarker());
-        //after
-        pokerAbility.put("酒鬼", new Drunk());
-        //after
-        pokerAbility.put("化身酒鬼", new AsDrunk());
-        //after
-        pokerAbility.put("失眠者", new Insomniac());
-        pokerAbility.put("化身失眠者", new AsInsomniac());
 
         camp.put("狼人", "狼人");
         camp.put("化身狼人", "狼人");

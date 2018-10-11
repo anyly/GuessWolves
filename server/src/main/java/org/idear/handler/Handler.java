@@ -15,9 +15,8 @@ public class Handler {
                 synchronized (this) {
                     try {
                         callback = callbacks.poll();
-                        data = datas.poll();
                         if (callback != null) {
-                            callback.execute(data);
+                            callback.execute();
                         } else {
                             //this.wait();
                         }
@@ -30,18 +29,12 @@ public class Handler {
     });
 
     LinkedList<Callback> callbacks = new LinkedList<>();
-    LinkedList datas = new LinkedList<>();
 
-    public <T> void add(Callback callback, T data){
+    public void add(Callback callback){
         synchronized(thread) {
             callbacks.add(callback);
-            datas.add(data);
             //thread.notifyAll();
         }
-    }
-
-    public void add(Callback callback) {
-        add(callback, null);
     }
 
     public Handler() {
