@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.idear.CoherentMap;
 import org.idear.endpoint.PlayerEndpoint;
+import org.idear.game.Utils;
 import org.idear.game.entity.Camp;
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.Report;
@@ -356,7 +357,17 @@ public class Game {
                     List<Player> players = findInitialByPokers("失眠者", "化身失眠者");
                     if (players.size() > 0) {
                         for (Player player : players) {
-                            player.setStage(stage);
+                            Integer seat = player.getSeat();
+                            // 失眠者 查看当前自己牌
+                            Show show = new Show(seat, seat);
+                            Movement partMovement = show.cast(deck, player);
+                            player.getMovements().add(partMovement);
+                            String poker = deck.get(seat);
+                            if (poker.equals("失眠者") || poker.equals("化身失眠者")) {
+                                show.setName("身份未调换");
+                            } else {
+                                show.setName("失 > "+ StringUtil.simplePokerName(poker));
+                            }
                             player.endpoint().emit(stage, null);
                         }
                     }
