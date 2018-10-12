@@ -333,6 +333,15 @@ restart {
     background: url("img/restart.svg") no-repeat;
     background-size: contain;
 }
+myseat {
+    display: block;
+    width: 50px;
+    height: 63px;
+
+
+    background: url("img/myseat.svg") no-repeat;
+    background-size: contain;
+}
 room {
     height: 30px;
     display: block;
@@ -637,6 +646,7 @@ end {
     <hr>
     <mymenu>
         <reset></reset>
+        <myseat></myseat>
         <restart style="display: none"></restart>
         <exit></exit>
         <room></room>
@@ -1425,6 +1435,14 @@ end {
     }
     $('tips').draggable({
         scroll:false
+    });
+    $('myseat').click(function () {
+        $('page player[value='+user+'] portrait').each(function () {
+            var portrait = $(this).toggleClass('shake', true);
+            setTimeout(function () {
+                portrait.toggleClass('shake', false);
+            }, 1000);
+        });
     });
     $('exit').click(function (event) {
         websocket.http('logout', null, function () {
