@@ -1131,9 +1131,9 @@ end {
                 $('mic').fadeIn();
             }
         },
-        Vote: function () {
+        Vote: function (data) {
             $('player.speek').removeClass('speek');
-            $('tips').html('点击按钮可以开始投票!');
+            $('tips').html('随机选出'+data.speekStartIndex+'号第一个发言</br>三轮后点击按钮开始投票!');
             $('vote').fadeIn();
         },
         ReturnVote : function () {

@@ -364,6 +364,14 @@ public class Game {
                 });
         // 行动结束
         waitForAction()
+                // 发言
+                .addChapter("SpeekAction", ()-> {
+                    Random random = new Random(System.currentTimeMillis());
+                    speekCurrentIndex = random.nextInt(players.size())+1;
+                    speekStartIndex = speekCurrentIndex;
+                    //speek();
+                    return true;
+                })
                 // 发起投票
                 .addChapter("StartVote", ()->{
                     LinkedList<Player> list = new LinkedList<>(players.values());
@@ -371,7 +379,7 @@ public class Game {
                         player.setStage("Vote");
                         PlayerEndpoint playerEndpoint = player.endpoint();
                         if (playerEndpoint != null) {
-                            playerEndpoint.emit("Vote", null);
+                            playerEndpoint.emit("Vote", export(player));
                         }
                     }
                     return true;
@@ -379,19 +387,6 @@ public class Game {
                 // 结束投票
                 .addChapter("AfterVote")
 
-                // 发言
-                /*.add("Speek", new Stage() {
-                    @Override
-                    public boolean execute(Context context) {
-                        Random random = new Random(System.currentTimeMillis());
-                        speekCurrentIndex = random.nextInt(players.size())+1;
-                        speekStartIndex = speekCurrentIndex;
-                        //Player player = desktop.get(speekCurrentIndex);
-                        //player.endpoint().emit("Speek", export(player));
-                        speek();
-                        return false;
-                    }
-                })*/
                 // 死亡情况
                 .addChapter("Deadth", ()-> {
                     Integer max = -1;
