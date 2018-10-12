@@ -64,6 +64,10 @@ public class Story {
         return null;
     }
 
+    /**
+     * 当前阶段
+     * @return
+     */
     public String chapter() {
         return keys.getFirst();
     }

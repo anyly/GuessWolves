@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.idear.CoherentMap;
 import org.idear.endpoint.PlayerEndpoint;
-import org.idear.game.Utils;
 import org.idear.game.entity.Camp;
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.Report;
@@ -106,10 +105,15 @@ public class Game {
     }
 
     public void removePlayer(Player player) {
-        players.remove(player);
-        desktop.removeKey(player);
-        ready.remove(player);
-        synchronise();
+        if ("Ready".equals(story.chapter())) {
+            players.remove(player.getUser());
+            desktop.removeKey(player);
+            ready.remove(player);
+
+            leaveGame(player);
+        } else {
+            synchronise(player);
+        }
     }
 
 
@@ -244,7 +248,14 @@ public class Game {
                 })
                 // 化身幽灵醒来
                 .addChapter("DoppelAction", ()-> {
-                    playerAction("Doppel", "化身幽灵");
+                    String stage = "Doppel";
+                    String poker = "化身幽灵";
+                    Player player = findInitialByPoker(poker);
+                    if (player != null) {
+                        player.setStage(stage);
+                        player.endpoint().emit(stage, null);
+                    }
+                    gameStart(player);
                     return true;
                 });
 
@@ -803,6 +814,39 @@ public class Game {
             PlayerEndpoint playerEndpoint = player.endpoint();
             if (playerEndpoint != null) {
                 playerEndpoint.emit("Speek", export(player));
+            }
+        }
+    }
+
+    /**
+     * 离开游戏
+     * @param player
+     */
+    public synchronized void leaveGame(Player player) {
+        LinkedList<Player> list = new LinkedList<>(players.values());
+        for (Player pl : list) {
+            if (pl != player) {
+                PlayerEndpoint playerEndpoint = pl.endpoint();
+                if (playerEndpoint != null) {
+                    JSONObject object = new JSONObject();
+                    object.put("seat", player.getSeat());
+                    playerEndpoint.emit("LeaveGame", object);
+                }
+            }
+        }
+    }
+
+    /**
+     * 离开游戏
+     */
+    public synchronized void gameStart(Player caller) {
+        LinkedList<Player> list = new LinkedList<>(players.values());
+        for (Player player : list) {
+            if (player != caller) {
+                PlayerEndpoint playerEndpoint = player.endpoint();
+                if (playerEndpoint != null) {
+                    playerEndpoint.emit("GameStart", export(player));
+                }
             }
         }
     }

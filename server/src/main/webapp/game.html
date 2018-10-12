@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>狼人一夜</title>
     <script src="js/jquery-3.3.1.min.js"></script>
@@ -177,7 +177,7 @@ player.restart portrait ready
 player.ready portrait ready span:before {
     content: '就绪';
 }
-player.restart portrait ready span:before {
+player.restart portrait ready span:before, player.restart.dead portrait ready span:before {
     content: '重开';
 }
 player.speek portrait ready span:before {
@@ -300,7 +300,7 @@ mynuser {
     font-weight: bold;
 }
 mymenu {
-    margin: 20px 0 80px 0;
+    margin: 20px 0 20px 0;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -348,7 +348,12 @@ room {
     line-height: 30px;
     color: snow;
     font-size: 14px;
+    transition: all 0.6s ease;
 }
+sideslip.show room {
+    margin-bottom: 80px;
+}
+
 /**/
 sideslip.show + levitate {
     right: 60px;
@@ -490,6 +495,7 @@ pop {
     justify-content: center;
     align-items: center;
     opacity: 0.9;
+    z-index: 200;
 }
 tips {
     text-align: center;
@@ -649,8 +655,8 @@ end {
         <myseat></myseat>
         <restart style="display: none"></restart>
         <exit></exit>
-        <room></room>
     </mymenu>
+    <room></room>
 </sideslip>
 <levitate>
     <svg class="bulb" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="64px" height="64px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
@@ -900,7 +906,7 @@ end {
             }, function () {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                $('tips').html('等待其他玩家行动...');
+                $('tips').html('等待行动...');
             });
         });
     }
@@ -925,7 +931,7 @@ end {
             }, function () {
                 publicPokers.cancelTips();
                 publicPokers.unbind();
-                $('tips').html('等待其他玩家行动...');
+                $('tips').html('等待行动...');
             });
         });
     }
@@ -951,7 +957,7 @@ end {
                 }, function () {
                     publicPokers.cancelTips();
                     playerPokers.unbind();
-                    $('tips').html('等待其他玩家行动...');
+                    $('tips').html('等待行动...');
                 });
             }
             self.cancelTips();
@@ -966,7 +972,7 @@ end {
                 publicPokers.unbind();
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                $('tips').html('等待其他玩家行动...');
+                $('tips').html('等待行动...');
             });
         });
     }
@@ -985,7 +991,7 @@ end {
             }, function () {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                $('tips').html('等待其他玩家行动...');
+                $('tips').html('等待行动...');
             });
         });
     }
@@ -1010,7 +1016,7 @@ end {
             }, function () {
                 playerPokers.cancelTips();
                 cancelSpell();
-                $('tips').html('等待其他玩家行动...');
+                $('tips').html('等待行动...');
             });
         })*/
         .click(function () {
@@ -1027,7 +1033,7 @@ end {
                 }, function () {
                     playerPokers.cancelTips();
                     cancelSpell();
-                    $('tips').html('等待其他玩家行动...');
+                    $('tips').html('等待行动...');
                 });
             }
         });
@@ -1049,7 +1055,7 @@ end {
                 $('player[value='+user+'] poker').removeAttr('value');
                 publicPokers.cancelTips();
                 publicPokers.unbind();
-                $('tips').html('等待其他玩家行动...');
+                $('tips').html('等待行动...');
             });
         });
     }
@@ -1070,7 +1076,7 @@ end {
             }, function () {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                $('tips').html('等待其他玩家投票...');
+                $('tips').html('等待投票...');
             });
         });
     }
@@ -1086,10 +1092,16 @@ end {
             window.location = 'index.html';
         },
         WaitForAction: function () {
-            $('tips').html('等待其他玩家行动...');
+            $('tips').html('等待行动...');
         },
         Ready: function () {
             $('page player portrait').click(readySitdown);
+        },
+        GameStart: function(data) {
+            $('tips').html('游戏开始了!');
+            $('page poker').removeAttr('value');
+            $('page clue').html('');
+            loadGame(data);
         },
         Doppel: function () {
             $('tips').html('化身幽灵:点击你要复制的身份牌!');
@@ -1308,8 +1320,9 @@ end {
         }
     });
 
+    websocket.admit("LeaveGame", LeaveGame);
     websocket.admit("syncGame", loadGame);
-    websocket.admit("gameStart", loadGame);
+    websocket.admit("GameStart", Guide.GameStart);
     websocket.admit("Doppel", Guide.Doppel);
     websocket.admit("Wolves", Guide.Wolves);
     websocket.admit("Seer", Guide.Seer);
@@ -1351,6 +1364,11 @@ end {
     websocket.onDisconnect(function () {
         connectFail();
     });
+
+    function LeaveGame(data) {
+        var seat = data.seat;
+        $('player[seat='+seat+']').removeAttr('class').find('portrait').removeAttr('style');
+    }
 
     function loadGame(game) {
         var stage = game.stage;
@@ -1463,10 +1481,7 @@ end {
         var ready = !self.hasClass('restart');
         websocket.http('restart', {
             ready: ready
-        }, function () {
-            $('page poker').removeAttr('value');
-            $('page clue').html('');
-            $('tips').html('');
+        }, function (data) {
             self.toggleClass('dead', false);
             self.toggleClass('restart');
         })
