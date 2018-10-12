@@ -190,7 +190,8 @@ public class Game {
      * @param pokers
      */
     private void playerAction(String stage, String... pokers) {
-        List<Player> players = findByPokers(pokers);
+        // 找初始身份
+        List<Player> players = findInitialByPokers(pokers);
         if (players.size() > 0) {
             for (Player player : players) {
                 player.setStage(stage);
@@ -249,7 +250,7 @@ public class Game {
         waitForAction()
                 // 狼人行动
                 .addChapter("WolvesAction", ()-> {
-                    List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
+                    List<Integer> indexs = findInitialSeatsByPokers("狼人", "化身狼人");
                     if (indexs.size() == 0) {
 
                     } else if (indexs.size() == 1) {
@@ -264,7 +265,7 @@ public class Game {
                 })
                 // 爪牙行动
                 .addChapter("MinionAction", ()-> {
-                    List<Player> pls = findByPokers("爪牙", "化身爪牙");
+                    List<Player> pls = findInitialByPokers("爪牙", "化身爪牙");
                     for (Player player: pls) {
                         List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
                         String spellName = null;
@@ -297,7 +298,7 @@ public class Game {
 
                 // 守夜人行动
                 .addChapter("MasonAction", () -> {
-                    List<Integer> indexs = findSeatsByPokers("守夜人", "化身守夜人");
+                    List<Integer> indexs = findInitialSeatsByPokers("守夜人", "化身守夜人");
                     if (indexs.size() > 0) {
                         partnerAction(indexs);
                     }
@@ -352,7 +353,7 @@ public class Game {
                 // 失眠者行动
                 .addChapter("InsomniacAction", ()-> {
                     String stage = "Insomniac";
-                    List<Player> players = findByPokers("失眠者", "化身失眠者");
+                    List<Player> players = findInitialByPokers("失眠者", "化身失眠者");
                     if (players.size() > 0) {
                         for (Player player : players) {
                             player.setStage(stage);
@@ -612,6 +613,20 @@ public class Game {
 
     //////////////////////////////////////////////
     /***
+     * 通过初始身份牌找玩家
+     * @param poker
+     * @return
+     */
+    public Player findInitialByPoker(String poker) {
+        for (Player player:desktop.values()) {
+            if (player.getPoker().equals(poker)) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    /***
      * 通过身份牌找玩家
      * @param poker
      * @return
@@ -624,6 +639,23 @@ public class Game {
             }
         }
         return null;
+    }
+
+    /***
+     * 通过初始身份牌找玩家
+     * @param pokers
+     * @return
+     */
+    public List<Player> findInitialByPokers(String... pokers) {
+        List<Player> players = new LinkedList<>();
+        for (Player player:desktop.values()) {
+            for (String poker:pokers) {
+                if (player.getPoker().equals(poker)) {
+                    players.add(player);
+                }
+            }
+        }
+        return players;
     }
 
     /***
@@ -657,6 +689,23 @@ public class Game {
             for (String poker:pokers) {
                 if (entry.getValue().equals(poker)) {
                     seats.add(entry.getKey());
+                }
+            }
+        }
+        return seats;
+    }
+
+    /***
+     * 通过初始身份牌找座位
+     * @param pokers
+     * @return
+     */
+    public List<Integer> findInitialSeatsByPokers(String... pokers) {
+        List<Integer> seats = new LinkedList<>();
+        for (Player player:desktop.values()) {
+            for (String poker:pokers) {
+                if (player.getPoker().equals(poker)) {
+                    seats.add(player.getSeat());
                 }
             }
         }
