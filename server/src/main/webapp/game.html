@@ -257,6 +257,7 @@ sidecover.show {
 sideslip.show {
     opacity: 1;
     width: 120px;
+    overflow: visible;
 }
 sideslip {
     position: absolute;
@@ -281,6 +282,7 @@ sideslip>hr {
 mine {
     margin-top: 40px;
     margin-bottom: 10px;
+    position: relative;
 }
 myimg {
     display: block;
@@ -306,39 +308,45 @@ mymenu {
     flex-direction: column;
     justify-content: space-between;
 }
-exit{
+myaction {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    right: 100%;
+    top: 0;
+    background-color: #202828;
+    height: 58px;
+    align-items: center;
+    border-radius: 2px;
+    border: 1px white solid;
+}
+mymenu>*, myaction>* {
     display: block;
     width: 50px;
-    height: 63px;
-
-
+    height: 50px;
+}
+log {
+    background: url("img/message.svg") no-repeat;
+    background-size: contain;
+}
+exit{
     background: url("img/exit.svg") no-repeat;
     background-size: contain;
 }
 reset {
-    display: block;
-    width: 50px;
-    height: 63px;
-
-
     background: url("img/refresh.svg") no-repeat;
     background-size: contain;
 }
 restart {
-    display: block;
-    width: 50px;
-    height: 63px;
-
-
     background: url("img/restart.svg") no-repeat;
     background-size: contain;
 }
+settings {
+    background: url("img/settings.svg") no-repeat;
+    background-size: contain;
+}
 myseat {
-    display: block;
-    width: 50px;
-    height: 63px;
-
-
     background: url("img/myseat.svg") no-repeat;
     background-size: contain;
 }
@@ -352,6 +360,43 @@ room {
 }
 sideslip.show room {
     margin-bottom: 80px;
+}
+logger {
+    position: absolute;
+    top: 10px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+logger bar {
+    display: flex;
+    flex-direction: row;
+    font-size: 16px;
+    background-color: #202828;
+    color: white;
+}
+logger select {
+    background-color: #202828;
+    color: white;
+}
+logger prev {
+    display: block;
+    width: 31px;
+    height: 31px;
+    background: url("img/prev.svg") no-repeat;
+    background-size: contain;
+    border-left: 1px white solid;
+    border-right: 1px white solid;
+}
+logger next {
+    display: block;
+    width: 31px;
+    height: 31px;
+    background: url("img/next.svg") no-repeat;
+    background-size: contain;
 }
 
 /**/
@@ -482,6 +527,18 @@ sideslip.show + levitate .light .flare {
     transition: all 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+config {
+    position: absolute;
+    right: 0px;
+    top: 45px;
+    display: block;
+    color: #262832;
+    font-size: 16px;
+    width: 52px;
+    /*height: 230px;*/
+    background-color: #2028280a;
+}
+
 @keyframes act {
     100% {
         stroke-dashoffset: 0;
@@ -498,6 +555,7 @@ pop {
     z-index: 200;
 }
 tips {
+    bottom: 10px;
     text-align: center;
     font-size: 14px;
     color: #cccccc;
@@ -641,19 +699,42 @@ end {
     </pop>
 
 </page>
-<!--<sidecover>-->
-    <!---->
-<!--</sidecover>-->
+<logger>
+    <bar>
+        <select id="filter">
+            <option>全部</option>
+            <option>与我有关</option>
+            <option>只看换牌</option>
+        </select>
+        <select id="stage">
+            <option>化身幽灵行动</option>
+            <option>发牌</option>
+            <option>强盗</option>
+            <option>捣蛋鬼</option>
+        </select>
+        <prev></prev>
+        <next></next>
+    </bar>
+
+</logger>
+<config>
+
+</config>
+
 <sideslip>
     <mine>
+        <myaction style="display: none;">
+            <myseat></myseat>
+            <settings></settings>
+        </myaction>
         <myimg></myimg>
         <mynuser></mynuser>
     </mine>
     <hr>
     <mymenu>
         <reset></reset>
-        <myseat></myseat>
-        <restart style="display: none"></restart>
+        <log></log>
+        <restart style="opacity: 0.5;"></restart>
         <exit></exit>
     </mymenu>
     <room></room>
@@ -1223,8 +1304,8 @@ end {
                     var clue = $('player[value="'+info.user+'"] clue').empty();
                     for (var i=0;i<movements.length;i++) {
                         movement = movements[i];
-                        var spell = movement.spell;
-                        clue.append('<tag>'+spell.name+'</tag>');
+                        var summary = movement.summary;
+                        clue.append('<tag>'+summary+'</tag>');
                     }
                 }
             }
@@ -1277,19 +1358,7 @@ end {
             ///
             $('tips').html(string);
             //// 可重新开始
-            $('restart').fadeIn();
-            // $('page player[value'+user+'] portrait').click(function () {
-            //     var self = $(this).parents('player');
-            //     var ready = !self.hasClass('restart');
-            //     websocket.http('restart', {
-            //         ready: ready
-            //     }, function () {
-            //         $('page poker').removeAttr('value');
-            //         $('page clue').html('');
-            //         $('tips').html('');
-            //         self.toggleClass('restart');
-            //     })
-            // });
+            $('restart').fadeIn().css('opacity', '');
         }
     };
     function camp(c) {
@@ -1320,7 +1389,7 @@ end {
         }
     });
 
-    websocket.admit("LeaveGame", LeaveGame);
+    websocket.admit("LeaveGame", leaveGame);
     websocket.admit("syncGame", loadGame);
     websocket.admit("GameStart", Guide.GameStart);
     websocket.admit("Doppel", Guide.Doppel);
@@ -1365,14 +1434,37 @@ end {
         connectFail();
     });
 
-    function LeaveGame(data) {
+    function leaveGame(data) {
         var seat = data.seat;
         $('player[seat='+seat+']').removeAttr('class').find('portrait').removeAttr('style');
+    }
+
+    function loadConfig(config) {
+        if (!config) {
+            return;
+        }
+        var object = {};
+        for (var i=0; i<config.length; i++) {
+            var poker = config[i];
+            var count = object[poker];
+            if (count) {
+                object[poker] = count+1;
+            } else {
+                object[poker] = 1;
+            }
+        }
+        var text = '';
+        for (var poker in object) {
+            text += '<p>'+poker.substr(0, 2)+'x'+object[poker]+'</p>';
+        }
+        $('config').html(text);
     }
 
     function loadGame(game) {
         var stage = game.stage;
         var desktop = game.desktop;
+        var config = game['setting'];
+        loadConfig(config);
         for (var seat in desktop) {
             var info = desktop[seat];
             if (!info['user']) {
@@ -1408,14 +1500,14 @@ end {
                 connectStatus(domSeat);
             }
             // 自我视角
-            if (info['user'] == user) {
+            if (stage != 'Finally' && info['user'] == user) {
                 var movements = info['movements'];
                 var movement = null;
                 var clue = $('player[value="'+user+'"] clue').empty();
                 for (var i=0;i<movements.length;i++) {
                     movement = movements[i];
-                    var spell = movement.spell;
-                    clue.append('<tag>'+spell.name+'</tag>');
+                    var summary = movement.summary;
+                    clue.append('<tag>'+summary+'</tag>');
                 }
 
                 if (movement && movement['viewport']) {
@@ -1454,13 +1546,32 @@ end {
     $('tips').draggable({
         scroll:false
     });
+    $('config').draggable({
+        containment: "page",
+        scroll:false
+    });
+    $('mine').click(function () {
+        $('myaction').fadeToggle();
+        return false;
+    });
     $('myseat').click(function () {
         $('page player[value='+user+'] portrait').each(function () {
-            var portrait = $(this).toggleClass('shake', true);
+            var self = $(this);
             setTimeout(function () {
-                portrait.toggleClass('shake', false);
-            }, 1000);
+                var portrait = self.toggleClass('shake', true);
+                setTimeout(function () {
+                    portrait.toggleClass('shake', false);
+                }, 1000);
+            }, 200);
         });
+        closeMenu();
+    });
+    $('settings').click(function () {
+        $('config').fadeToggle();
+        closeMenu();
+    });
+    $('log').click(function () {
+        $('logger').fadeToggle();
     });
     $('exit').click(function (event) {
         websocket.http('logout', null, function () {
@@ -1477,6 +1588,9 @@ end {
         event.stopPropagation();
     });
     $('restart').click(function () {
+        if ($(this).css('opacity') != 1) {
+            return;
+        }
         var self = $('player[value='+user+']');
         var ready = !self.hasClass('restart');
         websocket.http('restart', {
@@ -1488,10 +1602,11 @@ end {
     });
     function openMenu() {
         $('sideslip').toggleClass('show', true);
+        $('myaction').hide();
         $(document.body).click(closeMenu);
     }
     //$(document.body).bind('swipeleftdown', openMenu);
-    function closeMenu(event) {
+    function closeMenu() {
         $('sideslip').toggleClass('show', false);
         $(document.body).unbind('click');
     }

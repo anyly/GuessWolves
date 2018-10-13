@@ -89,8 +89,15 @@ public class Game {
      */
     private Report report;
 
-    // 流程
-    public static Story story;
+    /**
+     * 流程
+     */
+    private Story story;
+
+    /**
+     * 记录步骤
+     */
+    private List<Movement> logs;
 
     public Player getPlayer(String user) {
         return players.get(user);
@@ -151,33 +158,54 @@ public class Game {
     /**
      * 找同伙
      * @param indexs
+     * @param poker
      */
-    private void partnerAction(List<Integer> indexs) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Integer i : indexs) {
-            if (stringBuilder.length()>0) {
-                stringBuilder.append(",");
+    private void partnerAction(List<Integer> indexs, String poker) {
+        Integer[] indexArray = indexs.toArray(integers);
+        String summary = null;
+        String description = null;
+        if (indexs.size() > 1) {
+            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder stringBuilder1 = new StringBuilder();
+            for (Integer i : indexs) {
+                if (stringBuilder.length() > 0) {
+                    stringBuilder.append(",");
+                    stringBuilder1.append(",");
+                }
+                stringBuilder.append(i);
+                stringBuilder1.append(i + "号玩家");
             }
-            stringBuilder.append(i);
+            summary = "同伙" + stringBuilder.toString();
+            description = poker+"同伙是" + stringBuilder1.toString();
+        }  else {
+            summary = "没有同伙";
+            description = "没有"+poker+"同伙";
         }
-        String string = "同伙"+stringBuilder.toString();
-
         // 每个同伙互相看到
         for (int index:indexs) {
             Player team = desktop.get(index);
             if (team == null) {
                 continue;
             }
-            Show show = new Show(index, indexs.toArray(integers));
-
-            show.setName(string);
+            Show show = new Show(index, indexArray);
             Movement partMovement = show.cast(deck, team);
+            partMovement.setSummary(summary);
+            description += index+"号玩家"+team.getUser()+description;
+            partMovement.setSummary(summary);
+            partMovement.setDescription(description);
             team.getMovements().add(partMovement);
             team.endpoint().emit("syncGame", export(team));
-            System.out.println("####玩家["+team.getUser()+"]["+team.getPoker()+"] 的视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
+            System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
             team.setTargets(null);
             team.setStage(null);
         }
+
+        Movement movement = new Movement(null);
+        movement.setSummary(summary);
+        movement.setDescription(description);
+        movement.setViewport(new LinkedHashMap<>(deck));
+        movement.setTargets(indexArray);
+        logs.add(movement);
     }
 
     public Story waitForAction() {
@@ -194,7 +222,7 @@ public class Game {
      * @param stage
      * @param pokers
      */
-    private void playerAction(String stage, String... pokers) {
+    private boolean playerAction(String stage, String... pokers) {
         // 找初始身份
         List<Player> players = findInitialByPokers(pokers);
         if (players.size() > 0) {
@@ -202,7 +230,9 @@ public class Game {
                 player.setStage(stage);
                 player.endpoint().emit(stage, null);
             }
+            return true;
         }
+        return false;
     }
 
     public void init() {
@@ -214,11 +244,15 @@ public class Game {
         hunterKill = new LinkedHashMap<>();
         deadth = new LinkedHashSet<>();
         report = new Report();
+        logs = new LinkedList<>();
         story = new Story()
                 .addChapter("Ready")
                 .addChapter("Shuffle", ()-> {
                     List<String> pool = new LinkedList<>(setting);
 
+                    List<Player> wolves = findByPokers();
+                    Player cobber = null;
+                    Player doppel = null;
                     for (int seat=1; pool.size()>0; seat++) {
                         int index = GameCenter.randomInt(pool.size());
                         String poker = pool.remove(index);
@@ -236,14 +270,48 @@ public class Game {
                             player.setPoker(poker);
                             // 查看自己的牌
                             Show show = new Show(seat, seat);
-                            show.setName("初>"+ StringUtil.simplePokerName(poker));
                             Movement movement = show.cast(deck, player);
                             player.getMovements().add(movement);
+                            ///log
+                            String summary = "初为"+ StringUtil.simplePokerName(poker);
+                            movement.setSummary(summary);
+                            movement.setDescription(seat+"号发牌后得到"+poker);
+                            movement.setSpell("系统发牌");
                             // 确定执行顺序
+                            if (poker.equals("狼人")) {
+                                wolves.add(player);
+                            } else if (poker.equals("皮匠")) {
+                                cobber = player;
+                            } else if (poker.equals("化身幽灵")) {
+                                doppel = player;
+                            }
                         }
                     }
+                    ///log
+                    Movement movement = new Movement(null);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    if (wolves.size() > 0) {
+                        for (Player player: wolves) {
+                            stringBuilder.append(player.getSeat()+"号");
+                        }
+                        stringBuilder.append("玩家是狼人");
+                    } else {
+                        stringBuilder.append("没有狼人");
+                    }
+                    String description = "发牌,本局"+stringBuilder.toString();
+                    if (cobber != null) {
+                        description += ","+cobber.getSeat()+"玩家是皮匠";
+                    }
+                    movement.setDescription(description);
+                    movement.setSpell("系统发牌");
+                    movement.setViewport(new LinkedHashMap<Integer, String>(deck));
+                    logs.add(movement);
                     // 广播所有玩家,游戏开始
-                    synchronise();
+                    if (doppel == null) {
+                        gameStart(null);
+                    } else {
+                        doppel.endpoint().emit("GameStart", export(doppel));
+                    }
                     return true;
                 })
                 // 化身幽灵醒来
@@ -255,7 +323,6 @@ public class Game {
                         player.setStage(stage);
                         player.endpoint().emit(stage, null);
                     }
-                    gameStart(player);
                     return true;
                 });
 
@@ -271,7 +338,7 @@ public class Game {
                         player.setStage(stage);
                         player.endpoint().emit(stage, export(player));
                     } else {
-                        partnerAction(indexs);
+                        partnerAction(indexs, "狼人");
                     }
                     return true;
                 })
@@ -280,28 +347,35 @@ public class Game {
                     List<Player> pls = findInitialByPokers("爪牙", "化身爪牙");
                     for (Player player: pls) {
                         List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
-                        String spellName = null;
+                        String summary = null;
+                        String description = null;
                         if (indexs.size()>0) {
                             StringBuilder stringBuilder = new StringBuilder();
+                            StringBuilder stringBuilder1 = new StringBuilder();
                             for (Integer i : indexs) {
                                 if (stringBuilder.length()>0) {
                                     stringBuilder.append(",");
+                                    stringBuilder1.append(",");
                                 }
                                 stringBuilder.append(i);
+                                stringBuilder1.append(i+"号玩家");
                             }
-                            spellName = "狼人"+stringBuilder.toString();
+                            summary = "狼人"+stringBuilder.toString();
+                            description = "狼人"+stringBuilder1.toString();
                         } else {
-                            spellName = "没有狼人";
+                            summary = "没有狼人";
+                            description = "没有狼人";
                         }
                         // 爪牙看到狼
                         Show show = new Show(player.getSeat(), indexs.toArray(integers));
-
-                        show.setName(spellName);
                         Movement partMovement = show.cast(deck, player);
+                        partMovement.setSummary(summary);
+                        description += player.getSeat()+"号玩家"+player.getUser()+"发现"+description;
+                        partMovement.setDescription(description);
                         player.getMovements().add(partMovement);
 
                         player.endpoint().emit("syncGame", export(player));
-                        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+                        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
                         player.setTargets(null);
                         player.setStage(null);
                     }
@@ -312,7 +386,7 @@ public class Game {
                 .addChapter("MasonAction", () -> {
                     List<Integer> indexs = findInitialSeatsByPokers("守夜人", "化身守夜人");
                     if (indexs.size() > 0) {
-                        partnerAction(indexs);
+                        partnerAction(indexs, "守夜人");
                     }
                     return true;
                 })
@@ -897,6 +971,7 @@ public class Game {
         System.out.println("玩家[" + player.getUser() + "][" + player.getPoker() + "] 当前步骤[" + story.chapter() + "] 返回[" + stage + "]");
 
         JSONObject jsonObject = new JSONObject();
+        jsonObject.put("setting", setting);
         jsonObject.put("desktop", desktop);
         jsonObject.put("deck", deck);
         jsonObject.put("playerCount", playerCount());
@@ -908,6 +983,7 @@ public class Game {
         jsonObject.put("report", report);
         jsonObject.put("deadth", deadth);
         jsonObject.put("hunterKill", hunterKill);
+        jsonObject.put("logs", logs);
         //jsonObject.put("movements", movements);
         return jsonObject;
     }
@@ -932,18 +1008,36 @@ public class Game {
         List<Movement> movements = player.getMovements();
         //复制身份
         Replicate replicate = new Replicate(caller, target);
-        Movement partMovements = replicate.cast(deck, player);
-        replicate.setName("化("+target+ ")>"+StringUtil.simplePokerName(deck.get(target)));
-        movements.add(partMovements);
-        // 化身之后, 得到新技能
-        player.setPoker(deck.get(player.getSeat()));
-        //
-        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        Movement partMovement = replicate.cast(deck, player);
+        String targetPoker = deck.get(target);
 
-        player.endpoint().emit("syncGame", export(player));
+        movements.add(partMovement);
+        // 化身之后, 得到新技能
+        String newPoker = deck.get(player.getSeat());
+        player.setPoker(newPoker);
+        ///log
+        String summary = "化"+target+ "变"+StringUtil.simplePokerName(targetPoker);
+        partMovement.setSummary(summary);
+        Player targetPlayer = desktop.get(target);
+        String description = String.format(
+                "%d号玩家%s化身为%d号玩家%s的%s",
+                player.getSeat(),
+                player.getUser(),
+                targetPlayer.getSeat(),
+                targetPlayer.getPoker(),
+                targetPoker);
+        System.out.println("####" + description +"] 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        partMovement.setDescription(description);
+        partMovement.setSpell("化身幽灵行动");
+        logs.add(partMovement.clone());
+
+        //player.endpoint().emit("syncGame", export(player));
+        // 通知游戏开始
+        gameStart(null);
 
         player.setTargets(null);
         player.setStage(null);
+
 
         if (allComplete()) {
             nextStage();
@@ -956,6 +1050,14 @@ public class Game {
      * @param targets
      */
     public void wolves(Player player, Integer[] targets) {
+
+        // 查看底牌
+        Show show = new Show(player.getSeat(), targets);
+
+        Movement partMovement = show.cast(deck, player);
+        player.getMovements().add(partMovement);
+
+        ///log
         StringBuilder stringBuilder = new StringBuilder();
         for (Integer target: targets) {
             if (stringBuilder.length()>0) {
@@ -963,17 +1065,25 @@ public class Game {
             }
             stringBuilder.append(target.toString());
         }
-        String string = "孤狼>" + stringBuilder.toString();
-        // 查看底牌
-        Show show = new Show(player.getSeat(), targets);
-        show.setName(string);
-        Movement partMovement = show.cast(deck, player);
-        player.getMovements().add(partMovement);
+        String summary = "孤狼底牌" + stringBuilder.toString();
+        partMovement.setSummary(summary);
+        String description = String.format(
+                "%d号玩家%s翻看%d号底牌%s",
+                player.getSeat(),
+                player.getUser(),
+                targets[0],
+                deck.get(targets[0]));
+        if (targets.length ==  2) {
+            description += String.format("和%d号底牌%s", targets[1], deck.get(targets[1]));
+        }
+        partMovement.setDescription(description);
+        partMovement.setSpell("狼人行动");
+        logs.add(partMovement.clone());
+        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         player.endpoint().emit("syncGame", export(player));
-        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+
         player.setTargets(null);
         player.setStage(null);
-
         if (allComplete()) {
             nextStage();
         }
@@ -989,16 +1099,40 @@ public class Game {
         List<Movement> movements = player.getMovements();
         //复制身份
         Show show = new Show(caller, targets);
-        if (targets.length == 2) {
-            show.setName("看牌"+targets[0]+","+targets[1]);
-        } else {
-            show.setName("看牌"+targets[0]);
-        }
+
         Movement partMovement = show.cast(deck, player);
         movements.add(partMovement);
-        //
+        ///log
+        String summary = null;
+        summary = "看牌"+targets[0];
+        if (targets.length == 2) {
+            summary += ","+targets[1];
+        }
+        partMovement.setSummary(summary);
+        String description = null;
+        if (targets.length == 2) {
+            description = String.format(
+                    "%d号玩家%s翻看%d号底牌%s和%d底牌%s",
+                    player.getSeat(),
+                    player.getUser(),
+                    targets[0],
+                    deck.get(targets[0]),
+                    targets[1],
+                    deck.get(targets[1]));
+        } else {
+            description = String.format(
+                    "%d号玩家%s翻看%d号玩家%s",
+                    player.getSeat(),
+                    player.getUser(),
+                    targets[0],
+                    deck.get(targets[0]));
+        }
+        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        partMovement.setDescription(description);
+        partMovement.setSpell("预言家行动");
+        logs.add(partMovement.clone());
+
         player.endpoint().emit("syncGame", export(player));
-        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         player.setTargets(null);
         player.setStage(null);
 
@@ -1018,14 +1152,29 @@ public class Game {
         List<Movement> movements = player.getMovements();
         //强牌后查看
         Rob rob = new Rob(caller, target);
+        String targetPoker = deck.get(target);
         Movement partMovement = rob.cast(deck, player);
-        rob.setName("抢牌"+target+ "号");
+
         movements.add(partMovement);
         //
-        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        String summary = "抢走"+target+ "号牌";
+        partMovement.setSummary(summary);
+        String description = String.format(
+                "%d号玩家%s抢走%d号玩家%s",
+                player.getSeat(),
+                player.getUser(),
+                target,
+                targetPoker);
+        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        partMovement.setDescription(description);
+        partMovement.setSpell("强盗行动");
+        logs.add(partMovement.clone());
+
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);
         player.setStage(null);
+
+
 
         if (allComplete()) {
             nextStage();
@@ -1042,14 +1191,33 @@ public class Game {
         List<Movement> movements = player.getMovements();
         //交换后不查看
         Switch aSwitch = new Switch(caller, targets);
-        aSwitch.setName("换牌"+targets[0]+","+targets[1]);
+
+        String targetPoker1 = deck.get(targets[0]);
+        String targetPoker2 = deck.get(targets[1]);
+
         Movement partMovement = aSwitch.cast(deck, player);
         movements.add(partMovement);
-        //
-        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        /// log
+        String summary = "捣牌"+targets[0]+","+targets[1];
+        partMovement.setSummary(summary);
+        String description = String.format(
+                "%d号玩家%s交换%d号玩家%s和%d号玩家%s",
+                player.getSeat(),
+                player.getUser(),
+                targets[0],
+                targetPoker1,
+                targets[1],
+                targetPoker2);
+        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        partMovement.setDescription(description);
+        partMovement.setSpell("捣蛋鬼行动");
+        logs.add(partMovement.clone());
+
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);
         player.setStage(null);
+
+
 
         if (allComplete()) {
             nextStage();
@@ -1066,14 +1234,27 @@ public class Game {
         List<Movement> movements = player.getMovements();
         //交换但不能查看
         Switch aSwitch = new Switch(caller, caller, target);
-        aSwitch.setName("交换"+target);
+        String targetPoker = deck.get(target);
         Movement partMovement = aSwitch.cast(deck, player);
         movements.add(partMovement);
-        //
-        System.out.println("####玩家["+player.getUser()+"]["+player.getPoker()+"] 的视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        ///log
+        String summary = "交换"+target;
+        partMovement.setSummary(summary);
+        String description = String.format(
+                "%d号玩家%s换走%d号底牌%s",
+                player.getSeat(),
+                player.getUser(),
+                target,
+                targetPoker);
+        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
+        partMovement.setDescription(description);
+        partMovement.setSpell("酒鬼行动");
+        logs.add(partMovement.clone());
+
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);
         player.setStage(null);
+
 
         if (allComplete()) {
             nextStage();

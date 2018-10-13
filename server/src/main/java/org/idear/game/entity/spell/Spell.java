@@ -37,8 +37,9 @@ public abstract class Spell {
     }
 
     public Movement cast(LinkedHashMap<Integer, String> deck, Movement prev) {
-        List<Movement> movements = new LinkedList<>();
-        Movement movement = new Movement(this, prev);
+        Movement movement = new Movement(prev);
+        movement.setCaller(caster);
+        movement.setTargets(targets);
         for (Motion motion: this.motions) {
             motion.doing(deck, movement.getViewport());
         }
