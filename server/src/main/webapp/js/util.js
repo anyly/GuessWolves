@@ -189,3 +189,301 @@
         return '';
     };
 })();
+/**
+ * 动画
+ */
+(function () {
+    // window.PokerAnimate = function () {};
+    // PokerAnimate.prototype.
+
+    window.boom = function (ele, callback) {
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        var animate = $('<animate class="boom"></animate>');
+        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+            setTimeout(function (){
+                if (callback) {
+                    if (callback() == false) {
+                        return;
+                    }
+                }
+                animate.remove();
+            }, 300);
+        });
+        ele.before(animate);
+        return animate;
+    };
+    window.gleam = function (ele, callback) {
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        ele.addClass('gleam').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+            setTimeout(function () {
+                if (callback) {
+                    if (callback() == false) {
+                        return;
+                    }
+                }
+                ele.removeClass('gleam');
+            }, 300);
+        });
+    };
+    window.takePoker = function (ele, callback) {
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        var animate = $('<animate class="take-poker"></animate>');
+        animate.css('background-image', ele.css('background-image'));
+        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+            setTimeout(function (){
+                if (callback) {
+                    if (callback() == false) {
+                        return;
+                    }
+                }
+                animate.remove();
+            }, 300);
+        });
+        ele.before(animate);
+        return animate;
+    };
+    window.movePoker = function (ele, to, callback) {
+        if (!(to instanceof jQuery)) {
+            to = $(to);
+        }
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        var animate = $('<animate></animate>');
+        animate.css({
+            'z-index': '10',
+            'display': 'block',
+            'width': '100%',
+            'height': '100%',
+            'background-repeat': 'no-repeat',
+            'background-size': 'contain',
+            'background-position': 'center',
+            'background-image': ele.css('background-image'),
+            'transition':'all 1s ease'
+        });
+        // taret向caller移动
+        var x1 = ele.offset().left;
+        var y1 = ele.offset().top;
+        var x2 = to.offset().left;
+        var y2 = to.offset().top;
+
+        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+            setTimeout(function () {
+                if (callback) {
+                    if (callback() == false) {
+                        return;
+                    }
+                }
+                animate.remove();
+            }, 300);
+        });
+        ele.before(animate);
+        setTimeout(function () {
+            animate.css({
+                'transform': 'translate('+(x2 - x1)+'px,'+(y2 - y1 )+'px)'
+            });
+        });
+        return animate;
+    };
+    window.rob = function (oldPoker, newPoker, caller, target, callback) {
+        var caller_jq = $('page [seat='+caller+'] poker');
+        caller_jq.attr('value', oldPoker);
+        var target_jq = $('page [seat='+target+'] poker');
+        target_jq.attr('value', newPoker);
+        var animate = movePoker(caller_jq, target_jq, function () {
+            movePoker(target_jq, caller_jq, function () {
+                caller_jq.attr('value', newPoker);
+                target_jq.attr('value', oldPoker);
+                if (callback) {
+                    if (callback() == false) {
+                        return false;
+                    }
+                }
+                animate.remove();
+            });
+            return false;
+        });
+    };
+
+    window.Animate = {};
+    Animate.Shuffle = function (seat, poker) {
+        $('page [seat='+seat+'] poker').each(function () {
+            var self = $(this);
+            boom(self, function () {
+                self.attr('value', poker);
+            });
+        });
+    };
+    Animate.Wolves = function (seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        jq.attr('value', poker);
+        if (targets && targets.length>0) {
+            seat = parseInt(seat);
+            if (targets.indexOf(seat)>-1) {
+                gleam(jq, null);
+            } else if (seat == caller) {
+                takePoker(jq);
+            }
+        } else {
+            if (poker == '狼人' || poker == '化身狼人') {
+                gleam(jq, null);
+            }
+        }
+    };
+    Animate.Minion = function(seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        jq.attr('value', poker);
+        if (targets.indexOf(parseInt(seat))>-1) {
+            gleam(jq, null);
+        }
+        if (poker == '爪牙' || poker == '化身爪牙') {
+            takePoker(jq);
+        }
+
+    };
+    Animate.Mason = function (seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        jq.attr('value', poker);
+        seat = parseInt(seat);
+        if (targets.indexOf(seat)>-1) {
+            gleam(jq, null);
+        }
+    };
+    Animate.Seer = function (seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        jq.attr('value', poker);
+        seat = parseInt(seat);
+        if (seat == caller) {
+            takePoker(jq);
+        }
+        if (targets.indexOf(seat)>-1) {
+            gleam(jq, null);
+        }
+    };
+    Animate.Doppel = function(seat, poker, caller, target) {
+        var jq = $('page [seat='+seat+'] poker');
+        if (seat == target) {
+            var caller_jq = $('page [seat='+caller+'] poker');
+            caller_jq.attr('value', "化身幽灵");
+            jq.attr('value', poker);
+
+            movePoker(jq, caller_jq, function () {
+                caller_jq.attr('value', "化身"+poker);
+            });
+        } else if (seat == caller) {
+        } else {
+            jq.attr('value', poker);
+        }
+    };
+    var robber_old, robber_new;
+    Animate.Robber = function(seat, poker, caller, target) {
+        var jq = $('page [seat='+seat+'] poker');
+        if (seat == caller) {
+            robber_new = poker;
+            if (robber_old && robber_new) {
+                rob(robber_old, robber_new, caller, target, function () {
+                    robber_old = null; robber_new = null;
+                });
+            }
+        } else if (seat == target) {
+            robber_old = poker;
+            if (robber_old && robber_new) {
+                rob(robber_old, robber_new, caller, target, function () {
+                    robber_old = null; robber_new = null;
+                });
+            }
+        } else {
+            jq.attr('value', poker);
+        }
+    };
+    var taretsSeats = [];
+    var taretsPokers = [];
+    Animate.TroubleMarker = function(seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        if (seat == caller) {
+            jq.attr('value', poker);
+            takePoker(jq);
+        } else if (targets.indexOf(parseInt(seat))>-1) {
+            taretsSeats.push(seat);
+            taretsPokers.push(poker);
+            if (taretsPokers.length >= targets.length) {
+                var seat1 = taretsSeats[0];
+                var poker1 = taretsPokers[0];
+                taretsSeats = [];
+                taretsPokers = [];
+                var jq1 = $('page [seat='+seat1+'] poker');
+                jq1.attr('value', poker);
+                jq.attr('value', poker1);
+                movePoker(jq, jq1, function () {
+                    jq.attr('value', poker);
+                });
+                movePoker(jq1, jq, function () {
+                    jq1.attr('value', poker1);
+                });
+            }
+        } else {
+            jq.attr('value', poker);
+        }
+    };
+    var drunkSeats = [];
+    var drunkPokers = [];
+    Animate.Drunk = function(seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        if (seat == caller) {
+            //jq.attr('value', poker);
+            //takePoker(jq);
+        }
+        if (targets.indexOf(parseInt(seat))>-1) {
+            drunkSeats.push(seat);
+            drunkPokers.push(poker);
+            if (drunkPokers.length >= targets.length) {
+                var seat1 = drunkSeats[0];
+                var poker1 = drunkPokers[0];
+                drunkSeats = [];
+                drunkPokers = [];
+                var jq1 = $('page [seat='+seat1+'] poker');
+                jq1.attr('value', poker);
+                jq.attr('value', poker1);
+                movePoker(jq, jq1, function () {
+                    jq.attr('value', poker);
+                });
+                movePoker(jq1, jq, function () {
+                    jq1.attr('value', poker1);
+                });
+            }
+        } else {
+            jq.attr('value', poker);
+        }
+
+    };
+    Animate.Insomniac = function(seat, poker, caller, targets) {
+        var jq = $('page [seat='+seat+'] poker');
+        seat = parseInt(seat);
+        if (targets.indexOf(seat)>-1) {
+            if (poker == '失眠者' || poker == '化身失眠者') {
+                gleam(jq);
+            }  else {
+                jq.attr('value', '失眠者');
+                boom(jq, function () {
+                    jq.attr('value', poker);
+                });
+                return;
+            }
+        }
+        jq.attr('value', poker);
+    };
+    Animate.Speek = function(seat, poker, caller, target) {
+        var jq = $('page [seat='+seat+'] poker');
+        jq.attr('value', poker);
+        if (seat == caller) {
+            takePoker(jq);
+        }
+    };
+
+})();

@@ -189,10 +189,11 @@ public class Game {
             }
             Show show = new Show(index, indexArray);
             Movement partMovement = show.cast(deck, team);
+            partMovement.setSpell(poker+"行动");
             partMovement.setSummary(summary);
-            description += index+"号玩家"+team.getUser()+description;
+            String string = index+"号玩家"+team.getUser()+description;
             partMovement.setSummary(summary);
-            partMovement.setDescription(description);
+            partMovement.setDescription(string);
             team.getMovements().add(partMovement);
             team.endpoint().emit("syncGame", export(team));
             System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
@@ -201,11 +202,11 @@ public class Game {
         }
 
         Movement movement = new Movement(null);
+        movement.setSpell(poker+"行动");
         movement.setSummary(summary);
         movement.setDescription(description);
-        movement.setViewport(new LinkedHashMap<>(deck));
         movement.setTargets(indexArray);
-        logs.add(movement);
+        addLog(movement);
     }
 
     public Story waitForAction() {
@@ -233,6 +234,21 @@ public class Game {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 添加日志
+     * @param movement
+     */
+    private void addLog(Movement movement) {
+        movement.setViewport(new LinkedHashMap<>(deck));
+        logs.add(movement);
+        // 广播给观众
+        for (Player player:players.values()) {
+            if (player.getSeat() == null) {
+                player.endpoint().emit("notSeat", export(player));
+            }
+        }
     }
 
     public void init() {
@@ -304,8 +320,7 @@ public class Game {
                     }
                     movement.setDescription(description);
                     movement.setSpell("系统发牌");
-                    movement.setViewport(new LinkedHashMap<Integer, String>(deck));
-                    logs.add(movement);
+                    addLog(movement);
                     // 广播所有玩家,游戏开始
                     if (doppel == null) {
                         gameStart(null);
@@ -345,40 +360,53 @@ public class Game {
                 // 爪牙行动
                 .addChapter("MinionAction", ()-> {
                     List<Player> pls = findInitialByPokers("爪牙", "化身爪牙");
-                    for (Player player: pls) {
-                        List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
-                        String summary = null;
-                        String description = null;
-                        if (indexs.size()>0) {
-                            StringBuilder stringBuilder = new StringBuilder();
-                            StringBuilder stringBuilder1 = new StringBuilder();
-                            for (Integer i : indexs) {
-                                if (stringBuilder.length()>0) {
-                                    stringBuilder.append(",");
-                                    stringBuilder1.append(",");
-                                }
-                                stringBuilder.append(i);
-                                stringBuilder1.append(i+"号玩家");
+                    if (pls.size() == 0) {
+                        return true;
+                    }
+
+                    List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
+                    Integer[] indexArray = indexs.toArray(integers);
+                    String summary = null;
+                    String description = null;
+                    if (indexs.size()>0) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        StringBuilder stringBuilder1 = new StringBuilder();
+                        for (Integer i : indexs) {
+                            if (stringBuilder.length()>0) {
+                                stringBuilder.append(",");
+                                stringBuilder1.append(",");
                             }
-                            summary = "狼人"+stringBuilder.toString();
-                            description = "狼人"+stringBuilder1.toString();
-                        } else {
-                            summary = "没有狼人";
-                            description = "没有狼人";
+                            stringBuilder.append(i);
+                            stringBuilder1.append(i+"号玩家");
                         }
+                        summary = "狼人"+stringBuilder.toString();
+                        description = "狼人"+stringBuilder1.toString();
+                    } else {
+                        summary = "没有狼人";
+                        description = "没有狼人";
+                    }
+                    for (Player player: pls) {
                         // 爪牙看到狼
-                        Show show = new Show(player.getSeat(), indexs.toArray(integers));
+                        Show show = new Show(player.getSeat(), indexArray);
                         Movement partMovement = show.cast(deck, player);
                         partMovement.setSummary(summary);
-                        description += player.getSeat()+"号玩家"+player.getUser()+"发现"+description;
-                        partMovement.setDescription(description);
+                        String string = player.getSeat()+"号玩家"+player.getUser()+"发现"+description;
+                        partMovement.setDescription(string);
+                        partMovement.setSpell("爪牙行动");
                         player.getMovements().add(partMovement);
 
                         player.endpoint().emit("syncGame", export(player));
                         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
                         player.setTargets(null);
                         player.setStage(null);
+
                     }
+                    Movement movement = new Movement(null);
+                    movement.setSpell("爪牙行动");
+                    movement.setSummary(summary);
+                    movement.setDescription(description);
+                    movement.setTargets(indexArray);
+                    addLog(movement);
                     return  true;
                 })
 
@@ -441,20 +469,46 @@ public class Game {
                     String stage = "Insomniac";
                     List<Player> players = findInitialByPokers("失眠者", "化身失眠者");
                     if (players.size() > 0) {
+                        StringBuilder allSummary = new StringBuilder();
+                        StringBuilder allDescription = new StringBuilder();
+                        List<Integer> indexs = new LinkedList<>();
                         for (Player player : players) {
                             Integer seat = player.getSeat();
+                            indexs.add(seat);
                             // 失眠者 查看当前自己牌
                             Show show = new Show(seat, seat);
                             Movement partMovement = show.cast(deck, player);
                             player.getMovements().add(partMovement);
                             String poker = deck.get(seat);
+                            String summary = null;
+                            String description = null;
                             if (poker.equals("失眠者") || poker.equals("化身失眠者")) {
-                                show.setName("身份未调换");
+                                summary = "身份未调换";
+                                description = "身份未调换";
                             } else {
-                                show.setName("失 > "+ StringUtil.simplePokerName(poker));
+                                summary = "失变"+ StringUtil.simplePokerName(poker);
+                                description = "从失眠者变成"+poker;
                             }
-                            player.endpoint().emit(stage, null);
+                            String string = seat+"号玩家"+player.getUser() + description;
+                            if (allDescription.length()>0) {
+                                allDescription.append(",");
+                            }
+                            allDescription.append(string);
+                            partMovement.setDescription(string);
+                            if (allSummary.length()>0) {
+                                allSummary.append(",");
+                            }
+                            allSummary.append(summary);
+                            partMovement.setSummary(summary);
+                            partMovement.setSpell("失眠者行动");
+                            player.endpoint().emit("syncGame", export(player));
                         }
+                        Movement movement = new Movement(null);
+                        movement.setSpell("失眠者行动");
+                        movement.setSummary(allSummary.toString());
+                        movement.setDescription(allDescription.toString());
+                        movement.setTargets(indexs.toArray(integers));
+                        addLog(movement);
                     }
                     return true;
                 });
@@ -466,6 +520,14 @@ public class Game {
                     speekCurrentIndex = random.nextInt(players.size())+1;
                     speekStartIndex = speekCurrentIndex;
                     //speek();
+                    Movement movement = new Movement(null);
+                    movement.setSpell("开始发言");
+                    String summary = "随机选出"+speekStartIndex+"号第一个发言";
+                    movement.setCaller(speekStartIndex);
+                    movement.setSummary(summary);
+                    movement.setDescription(summary);
+                    movement.setTargets(null);
+                    addLog(movement);
                     return true;
                 })
                 // 发起投票
@@ -690,6 +752,48 @@ public class Game {
                         }
                     }
 
+                    ///logs
+                    Movement movement = new Movement(null);
+                    movement.setSpell("游戏结果");
+                    movement.setSummary(null);
+                    movement.setDescription(null);
+                    movement.setTargets(null);
+                    addLog(movement);
+                    ///日志排序
+                    String[] orderPokers = new String[] {
+                            "系统发牌",
+                            "化身幽灵行动",
+                            "狼人行动", "爪牙行动", "守夜人行动", "化身预言家行动", "预言家行动",
+                            "化身强盗行动",
+                            "强盗行动",
+                            "化身捣蛋鬼行动",
+                            "捣蛋鬼行动",
+                            "化身酒鬼行动",
+                            "酒鬼行动",
+                            "化身失眠者行动",
+                            "失眠者行动",
+                            "开始发言",
+                            "化身猎人行动",
+                            "猎人行动",
+                            "游戏结果"
+                    };
+                    Movement[] orderMovements = new Movement[orderPokers.length];
+                    LinkedList<Movement> newLogs = new LinkedList<>();
+                    for (Movement m: logs) {
+                        for (int i=0;i<orderPokers.length;i++) {
+                            String poker = orderPokers[i];
+                            if (m.getSpell().equals(poker)) {
+                                orderMovements[i] = m;
+                            }
+                        }
+                    }
+                    for (Movement m : orderMovements) {
+                        if (m != null) {
+                            newLogs.add(m);
+                        }
+                    }
+                    logs = newLogs;
+                    ///
                     finall();
                     // 清除就位，用于重新开始
                     for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
@@ -1020,16 +1124,16 @@ public class Game {
         partMovement.setSummary(summary);
         Player targetPlayer = desktop.get(target);
         String description = String.format(
-                "%d号玩家%s化身为%d号玩家%s的%s",
+                "%d号玩家%s化身为%d号玩家的%s",
                 player.getSeat(),
                 player.getUser(),
                 targetPlayer.getSeat(),
-                targetPlayer.getPoker(),
                 targetPoker);
         System.out.println("####" + description +"] 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         partMovement.setDescription(description);
         partMovement.setSpell("化身幽灵行动");
-        logs.add(partMovement.clone());
+        Movement movement = partMovement.clone();
+        addLog(movement);
 
         //player.endpoint().emit("syncGame", export(player));
         // 通知游戏开始
@@ -1078,7 +1182,8 @@ public class Game {
         }
         partMovement.setDescription(description);
         partMovement.setSpell("狼人行动");
-        logs.add(partMovement.clone());
+        Movement movement = partMovement.clone();
+        addLog(movement);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         player.endpoint().emit("syncGame", export(player));
 
@@ -1129,8 +1234,9 @@ public class Game {
         }
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         partMovement.setDescription(description);
-        partMovement.setSpell("预言家行动");
-        logs.add(partMovement.clone());
+        partMovement.setSpell(player.getPoker()+"行动");
+        Movement movement = partMovement.clone();
+        addLog(movement);
 
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);
@@ -1167,8 +1273,9 @@ public class Game {
                 targetPoker);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         partMovement.setDescription(description);
-        partMovement.setSpell("强盗行动");
-        logs.add(partMovement.clone());
+        partMovement.setSpell(player.getPoker()+"行动");
+        Movement movement = partMovement.clone();
+        addLog(movement);
 
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);
@@ -1210,8 +1317,9 @@ public class Game {
                 targetPoker2);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         partMovement.setDescription(description);
-        partMovement.setSpell("捣蛋鬼行动");
-        logs.add(partMovement.clone());
+        partMovement.setSpell(player.getPoker()+"行动");
+        Movement movement = partMovement.clone();
+        addLog(movement);
 
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);
@@ -1248,8 +1356,9 @@ public class Game {
                 targetPoker);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         partMovement.setDescription(description);
-        partMovement.setSpell("酒鬼行动");
-        logs.add(partMovement.clone());
+        partMovement.setSpell(player.getPoker()+"行动");
+        Movement movement = partMovement.clone();
+        addLog(movement);
 
         player.endpoint().emit("syncGame", export(player));
         player.setTargets(null);

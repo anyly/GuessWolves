@@ -28,6 +28,8 @@ game {
     align-items: center;
     flex-direction: column;
     overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
 }
 hr {
     width: 100%;
@@ -94,44 +96,53 @@ no {
     top:0;
     color: darkblue;
 }
-player[seat='1'] no:before {
+[seat='1'] .no:before {
     content: '1';
 }
-player[seat='2'] no:before {
+[seat='2'] .no:before {
     content: '2';
 }
-player[seat='3'] no:before {
+[seat='3'] .no:before {
     content: '3';
 }
-player[seat='4'] no:before {
+[seat='4'] .no:before {
     content: '4';
 }
-player[seat='5'] no:before {
+[seat='5'] .no:before {
     content: '5';
 }
-player[seat='6'] no:before {
+[seat='6'] .no:before {
     content: '6';
 }
-player[seat='7'] no:before {
+[seat='7'] .no:before {
     content: '7';
 }
-player[seat='8'] no:before {
+[seat='8'] .no:before {
     content: '8';
 }
-player[seat='9'] no:before {
+[seat='9'] .no:before {
     content: '9';
 }
-player[seat='10'] no:before {
+[seat='10'] .no:before {
     content: '10';
 }
-player[seat='11'] no:before {
+[seat='11'] .no:before {
     content: '11';
 }
-player[seat='12'] no:before {
+[seat='12'] .no:before {
     content: '12';
 }
-player[seat='13'] no:before {
+[seat='13'] .no:before {
     content: '13';
+}
+[seat='14'] .no:before {
+    content: '14';
+}
+[seat='15'] .no:before {
+    content: '15';
+}
+[seat='16'] .no:before {
+    content: '16';
 }
 ready {
     position: absolute;
@@ -329,26 +340,32 @@ mymenu>*, myaction>* {
 log {
     background: url("img/message.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 exit{
     background: url("img/exit.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 reset {
     background: url("img/refresh.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 restart {
     background: url("img/restart.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 settings {
     background: url("img/settings.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 myseat {
     background: url("img/myseat.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 room {
     height: 30px;
@@ -532,7 +549,7 @@ config {
     right: 0px;
     top: 45px;
     display: block;
-    color: #262832;
+    color: darkorange;
     font-size: 16px;
     width: 52px;
     /*height: 230px;*/
@@ -588,9 +605,6 @@ svg[name=tips] {
     width: 51px;
     height: 73px;
 }
-player svg[name=tips] {
-    margin-left: -2px;
-}
 mic {
     display: block;
     background: url("img/mic.png") no-repeat;
@@ -619,6 +633,9 @@ vote {
     margin-top: 4px;
 }
 
+poker[value=''] {
+    background-image: none;
+}
 poker[value=化身幽灵] {
     background-image: url('img/化身幽灵.png');
 }
@@ -661,6 +678,120 @@ player poker[value^=化身]:before {
     content: '化身';
 }
 /**/
+.take-poker {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+
+    animation: take-poker 4s ease both alternate;
+}
+@keyframes take-poker {
+    0% {
+        transform: scale(1);
+    }
+    30% {
+        transform: scale(1.3);
+    }
+    66% {
+        transform: scale(1.3);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+.open-eyes {
+    display: block;
+}
+/*闪烁动画*/
+.gleam {
+    display: block;
+    /*width: 45px;
+    height: 67px;
+    background-image: url('img/狼人.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    margin: 4px;*/
+    animation: gleam 1s ease both alternate 5;
+}
+@keyframes gleam {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+/*变牌*/
+.alter {
+    display: block;
+    width: 45px;
+    height: 67px;
+    /*background-image: url('img/狼人.png');*/
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    margin: 4px;
+    animation: alter 2s ease-in-out both;
+}
+.alter + poker {
+    /*animation: alter_poker 0.5s linear infinite;*/
+}
+@keyframes alter {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+@keyframes alter_poker {
+    0% {
+        background-color: yellow;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+/*爆炸动画*/
+.boom {
+    display: block;
+    width:100%;
+    height: 100%;
+    background: url("img/boom.png") no-repeat;
+    background-size: cover;
+    background-position-x: 0px;
+    animation: boom 1s steps(1) both;
+}
+@keyframes boom {
+     0%, 20%, 40% {
+         background-position-x: 0px;
+         transform: scale(1);
+     }
+    10%, 25%, 50% {
+        background-position-x: -53px;
+    }
+    30%, 60%, 65%, 75%, 85%{
+        background-position-x: -106px;
+    }
+    55%, 70%, 80%, 90% {
+        background-position-x: -159px;
+    }
+    100% {
+        background-position-x: -212px;
+        transform: scale(1);
+    }
+ }
+animate {
+    position: absolute;
+}
+.poker-parent {
+    position: relative;
+}
+/**/
 end {
 
 }
@@ -673,14 +804,14 @@ end {
     <game>
         <row-center style="margin: 0px 5px;">
             <discard>
-                <column>
-                    <poker></poker>
+                <column class="poker-parent">
+                    <poker class="no"></poker>
                 </column>
-                <column>
-                    <poker></poker>
+                <column class="poker-parent">
+                    <poker class="no"></poker>
                 </column>
-                <column>
-                    <poker></poker>
+                <column class="poker-parent">
+                    <poker class="no"></poker>
                 </column>
             </discard>
 
@@ -699,7 +830,7 @@ end {
     </pop>
 
 </page>
-<logger>
+<logger style="display: none;">
     <bar>
         <select id="filter">
             <option>全部</option>
@@ -707,10 +838,7 @@ end {
             <option>只看换牌</option>
         </select>
         <select id="stage">
-            <option>化身幽灵行动</option>
-            <option>发牌</option>
-            <option>强盗</option>
-            <option>捣蛋鬼</option>
+
         </select>
         <prev></prev>
         <next></next>
@@ -821,10 +949,10 @@ end {
 </levitate>
 
 <template>
-    <player seat="13">
+    <player>
         <column-center>
             <portrait>
-                <no></no>
+                <no class="no"></no>
                 <ready>
                     <cover></cover>
                     <span class="state"></span>
@@ -833,7 +961,9 @@ end {
             <name></name>
 
         </column-center>
-        <poker></poker>
+        <column class="poker-parent">
+            <poker></poker>
+        </column>
         <clue>
 
         </clue>
@@ -944,7 +1074,7 @@ end {
         }
         //
         $('discard poker').each(function (index) {
-            this.innerHTML = ''+(count+1+index);
+            $(this).parent().attr('seat', count+1+index);
         })
     }
     function readySitdown() {
@@ -980,7 +1110,7 @@ end {
         var stage = arguments.callee.name;
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         playerPokers.tipsPoker('blue').click(function () {
-            var seat = $(this).parents('player').attr('seat');
+            var seat = $(this).parents('[seat]').attr('seat');
             seat = parseInt(seat);
             websocket.http(stage, {
                 targets:[seat]
@@ -997,7 +1127,7 @@ end {
         var targets = [];
         publicPokers.tipsPoker('#202828').click(function () {
             var self = $(this);
-            var seat = self.html();
+            var seat = self.parents('[seat]').attr('seat');
             seat = parseInt(seat);
             var poker = data.deck[seat];
             targets.push(seat);
@@ -1026,7 +1156,7 @@ end {
         var publicPokers = $('discard poker');
         publicPokers.tipsPoker('#202828').click(function () {
             var self = $(this);
-            var seat = self.html();
+            var seat = self.parents('[seat]').attr('seat');
             seat = parseInt(seat);
 
             targets.push(seat);
@@ -1044,7 +1174,7 @@ end {
             self.cancelTips();
         });
         playerPokers.tipsPoker('blue').click(function () {
-            var seat = $(this).parents('player').attr('seat');
+            var seat = $(this).parents('[seat]').attr('seat');
             seat = parseInt(seat);
             websocket.http(stage, {
                 targets:[seat]
@@ -1065,7 +1195,7 @@ end {
         }
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         playerPokers.tipsPoker('blue').click(function () {
-            var seat = $(this).parents('player').attr('seat');
+            var seat = $(this).parents('[seat]').attr('seat');
             seat = parseInt(seat);
             websocket.http(stage, {
                 targets:[seat]
@@ -1102,7 +1232,7 @@ end {
         })*/
         .click(function () {
             var jq = $(this);
-            var seat = jq.parents('player').attr('seat');
+            var seat = jq.parents('[seat]').attr('seat');
             seat = parseInt(seat);
             targets.push(seat);
             if (targets.length == 1) {
@@ -1128,7 +1258,7 @@ end {
         var publicPokers = $('discard poker');
         publicPokers.tipsPoker('#202828').click(function () {
             var self = $(this);
-            var seat = self.html();
+            var seat = self.parents('[seat]').attr('seat');
             seat = parseInt(seat);
             websocket.http(stage, {
                 targets:[seat]
@@ -1224,6 +1354,9 @@ end {
             $('tips').html('化身酒鬼:点击你要交换的公共牌!');
             Drunk();
         },
+        Insomniac: function() {
+
+        },
         Speek: function (data) {
             $('tips').html('当前'+data.speekCurrentIndex+'号发言，第'+data.speekRound+'轮，每轮从'+data.speekStartIndex+'号开始!');
             $('player.speek').removeClass('speek');
@@ -1282,6 +1415,8 @@ end {
             });
         },
         Finally : function (data) {
+            ////加载日志
+            loadLog(data);
             /// 翻开所有牌
             var deck = data.deck;
             var desktop = data.desktop;
@@ -1289,13 +1424,7 @@ end {
                 var poker = deck[seat];
 
                 // 翻牌
-                $('player[seat='+seat+'] poker').attr('value', poker);
-                $('discard poker').each(function () {
-                    var jq = $(this);
-                    if (jq.html() == ''+seat) {
-                        jq.attr('value', poker);
-                    }
-                });
+                $('[seat='+seat+'] poker').attr('value', poker);
                 // 行动步骤
                 var info = desktop[seat];
                 if (info) {
@@ -1402,6 +1531,7 @@ end {
     websocket.admit("AsTroubleMarker", Guide.AsTroubleMarker);
     websocket.admit("Drunk", Guide.Drunk);
     websocket.admit("AsDrunk", Guide.AsDrunk);
+    websocket.admit("Insomniac", Guide.Insomniac);
     websocket.admit("WaitForAction", Guide.WaitForAction);
     websocket.admit("Speek", Guide.Speek);
     websocket.admit("Vote", Guide.Vote);
@@ -1460,6 +1590,20 @@ end {
         $('config').html(text);
     }
 
+    function loadLog(data) {
+        if (data['cache']) {
+            return;
+        }
+        $('logger').fadeIn();
+        var logs = data.logs;
+        $('#stage').prop('data', data).empty();
+        for (var i=0; i<logs.length; i++) {
+            var movement = logs[i];
+            $('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
+        }
+        $('#stage option:last-child').prop('selected', true);
+    }
+
     function loadGame(game) {
         var stage = game.stage;
         var desktop = game.desktop;
@@ -1504,10 +1648,12 @@ end {
                 var movements = info['movements'];
                 var movement = null;
                 var clue = $('player[value="'+user+'"] clue').empty();
+                //$('#stage').empty();
                 for (var i=0;i<movements.length;i++) {
                     movement = movements[i];
                     var summary = movement.summary;
                     clue.append('<tag>'+summary+'</tag>');
+                    //$('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
                 }
 
                 if (movement && movement['viewport']) {
@@ -1530,19 +1676,73 @@ end {
                                 poker = beforepoker;
                             }
                         }
-                        $('player[seat='+seat+'] poker').attr('value', poker);
-                        $('discard poker').each(function () {
-                            var jq = $(this);
-                            if (jq.html() == ''+seat) {
-                                jq.attr('value', poker);
-                            }
-                        });
+                        $('[seat='+seat+'] poker').attr('value', poker);
                     }
                 }
 
             }
         }
     }
+    ///上帝视角
+    $('#stage').change(function () {
+        var option = $(this).children('option:selected');
+        var movement = option.prop('movement');
+        if (movement.spell == '游戏结果') {
+            var data = $(this).prop('data');
+            data['cache'] = true;
+            Guide.Finally(data);
+        } else {
+            $('tips').html(movement.description);
+            var caller = movement.caller;
+            var targets = movement.targets;
+            var viewport = movement.viewport;
+            $('[seat] poker').removeAttr('value');
+            for (var seat in viewport) {
+                var poker = viewport[seat];
+                if (movement.spell == '系统发牌') {
+                    window.Animate.Shuffle(seat, poker);
+                } else if (movement.spell == '化身幽灵行动') {
+                    window.Animate.Doppel(seat, poker, caller, targets[0]);
+                } else if (movement.spell == '狼人行动') {
+                    window.Animate.Wolves(seat, poker, caller, targets);
+                }else if(movement.spell == '爪牙行动') {
+                    window.Animate.Minion(seat, poker, caller, targets);
+                } else if (movement.spell == '守夜人行动') {
+                    window.Animate.Mason(seat, poker, caller, targets);
+                } else if (movement.spell == '预言家行动' || movement.spell == '化身预言家行动') {
+                    window.Animate.Seer(seat, poker, caller, targets);
+                } else if (movement.spell == '强盗行动' || movement.spell == '化身强盗行动') {
+                    window.Animate.Robber(seat, poker, caller, targets);
+                } else if (movement.spell == '捣蛋鬼行动' || movement.spell == '化身捣蛋鬼行动') {
+                    window.Animate.TroubleMarker(seat, poker, caller, targets);
+                } else if (movement.spell == '酒鬼行动' || movement.spell == '化身酒鬼行动') {
+                    window.Animate.Drunk(seat, poker, caller, targets);
+                } else if (movement.spell == '失眠者行动') {
+                    window.Animate.Insomniac(seat, poker, caller, targets);
+                } else if (movement.spell == '开始发言') {
+                    window.Animate.Speek(seat, poker, caller);
+                } else {
+                    $('[seat='+seat+'] poker').attr('value', poker);// 清空牌面, 新写视角
+                }
+            }
+        }
+    });
+    $('prev').click(function () {
+        var option = $('#stage').children('option:selected');
+        var prev = option.prev();
+        if (prev.length >0) {
+            prev.prop('selected', true);
+            $('#stage').trigger('change');
+        }
+    });
+    $('next').click(function () {
+        var option = $('#stage').children('option:selected');
+        var next = option.next();
+        if (next.length > 0) {
+            next.prop('selected', true);
+            $('#stage').trigger('change');
+        }
+    });
     $('tips').draggable({
         scroll:false
     });
