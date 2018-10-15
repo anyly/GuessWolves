@@ -387,15 +387,35 @@
         if (seat == caller) {
             robber_new = poker;
             if (robber_old && robber_new) {
-                rob(robber_old, robber_new, caller, target, function () {
-                    robber_old = null; robber_new = null;
+                var _old = robber_old;
+                var _new = robber_new;
+                robber_old = null; robber_new = null;
+                var jq_old = $('page [seat='+target+'] poker');
+                var jq_new = jq;
+                jq_old.attr('value', _new);
+                movePoker(jq_old, jq_new, function () {
+                    jq_old.attr('value', _old);
+                });
+                jq_new.attr('value', _old);
+                movePoker(jq_new, jq_old, function () {
+                    jq_new.attr('value', _new);
                 });
             }
         } else if (seat == target) {
             robber_old = poker;
             if (robber_old && robber_new) {
-                rob(robber_old, robber_new, caller, target, function () {
-                    robber_old = null; robber_new = null;
+                var _old = robber_old;
+                var _new = robber_new;
+                robber_old = null; robber_new = null;
+                var jq_old = jq;
+                var jq_new = $('page [seat='+caller+'] poker');
+                jq_old.attr('value', _new);
+                movePoker(jq_old, jq_new, function () {
+                    jq_old.attr('value', _old);
+                });
+                jq_new.attr('value', _old);
+                movePoker(jq_new, jq_old, function () {
+                    jq_new.attr('value', _new);
                 });
             }
         } else {
