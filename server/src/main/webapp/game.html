@@ -1312,6 +1312,8 @@ end {
             $('tips').html('游戏开始了!');
             $('page poker').removeAttr('value');
             $('page clue').html('');
+            $('#stage').empty();
+            $('logger').fadeOut();
             loadGame(data);
         },
         Doppel: function () {
