@@ -11,8 +11,8 @@ $.fn.tipsPoker = function (color) {
         svg.appendChild(path);
         self.before(svg);
 
-        var width = self.outerWidth(true)-2;
-        var height = self.outerHeight(true)-2;
+        var width = 53-2;
+        var height = 75-2;
         jq_svg = $(svg);
         jq_svg.attr('name', 'tips');
         /*jq_svg.css({
