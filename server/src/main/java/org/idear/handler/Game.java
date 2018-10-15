@@ -195,7 +195,9 @@ public class Game {
             partMovement.setSummary(summary);
             partMovement.setDescription(string);
             team.getMovements().add(partMovement);
-            team.endpoint().emit("syncGame", export(team));
+            if (team.endpoint() != null) {
+                team.endpoint().emit("syncGame", export(team));
+            }
             System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
             team.setTargets(null);
             team.setStage(null);
@@ -229,7 +231,9 @@ public class Game {
         if (players.size() > 0) {
             for (Player player : players) {
                 player.setStage(stage);
-                player.endpoint().emit(stage, null);
+                if (player.endpoint() != null) {
+                    player.endpoint().emit(stage, null);
+                }
             }
             return true;
         }
@@ -245,8 +249,10 @@ public class Game {
         logs.add(movement);
         // 广播给观众
         for (Player player:players.values()) {
-            if (player.getSeat() == null) {
-                player.endpoint().emit("notSeat", export(player));
+            if (player.getSeat() != null) {
+                if (player.endpoint() != null) {
+                    player.endpoint().emit("notSeat", export(player));
+                }
             }
         }
     }
@@ -325,7 +331,9 @@ public class Game {
                     if (doppel == null) {
                         gameStart(null);
                     } else {
-                        doppel.endpoint().emit("GameStart", export(doppel));
+                        if (doppel.endpoint() != null) {
+                            doppel.endpoint().emit("GameStart", export(doppel));
+                        }
                     }
                     return true;
                 })
@@ -336,7 +344,9 @@ public class Game {
                     Player player = findInitialByPoker(poker);
                     if (player != null) {
                         player.setStage(stage);
-                        player.endpoint().emit(stage, null);
+                        if (player.endpoint() != null) {
+                            player.endpoint().emit(stage, null);
+                        }
                     }
                     return true;
                 });
@@ -351,7 +361,9 @@ public class Game {
                         Player player = findBySeat(indexs.get(0));
                         String stage = "Wolves";
                         player.setStage(stage);
-                        player.endpoint().emit(stage, export(player));
+                        if (player.endpoint() != null) {
+                            player.endpoint().emit(stage, export(player));
+                        }
                     } else {
                         partnerAction(indexs, "狼人");
                     }
@@ -395,7 +407,9 @@ public class Game {
                         partMovement.setSpell("爪牙行动");
                         player.getMovements().add(partMovement);
 
-                        player.endpoint().emit("syncGame", export(player));
+                        if (player.endpoint() != null) {
+                            player.endpoint().emit("syncGame", export(player));
+                        }
                         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
                         player.setTargets(null);
                         player.setStage(null);
@@ -501,7 +515,9 @@ public class Game {
                             allSummary.append(summary);
                             partMovement.setSummary(summary);
                             partMovement.setSpell("失眠者行动");
-                            player.endpoint().emit("syncGame", export(player));
+                            if (player.endpoint() != null) {
+                                player.endpoint().emit("syncGame", export(player));
+                            }
                         }
                         Movement movement = new Movement(null);
                         movement.setSpell("失眠者行动");
@@ -1135,7 +1151,6 @@ public class Game {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        //player.endpoint().emit("syncGame", export(player));
         // 通知游戏开始
         gameStart(null);
 
@@ -1185,7 +1200,9 @@ public class Game {
         Movement movement = partMovement.clone();
         addLog(movement);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
-        player.endpoint().emit("syncGame", export(player));
+        if (player.endpoint() != null) {
+            player.endpoint().emit("syncGame", export(player));
+        }
 
         player.setTargets(null);
         player.setStage(null);
@@ -1238,7 +1255,9 @@ public class Game {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        player.endpoint().emit("syncGame", export(player));
+        if (player.endpoint() != null) {
+            player.endpoint().emit("syncGame", export(player));
+        }
         player.setTargets(null);
         player.setStage(null);
 
@@ -1277,7 +1296,9 @@ public class Game {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        player.endpoint().emit("syncGame", export(player));
+        if (player.endpoint() != null) {
+            player.endpoint().emit("syncGame", export(player));
+        }
         player.setTargets(null);
         player.setStage(null);
 
@@ -1321,7 +1342,9 @@ public class Game {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        player.endpoint().emit("syncGame", export(player));
+        if (player.endpoint() != null) {
+            player.endpoint().emit("syncGame", export(player));
+        }
         player.setTargets(null);
         player.setStage(null);
 
@@ -1360,7 +1383,9 @@ public class Game {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        player.endpoint().emit("syncGame", export(player));
+        if (player.endpoint() != null) {
+            player.endpoint().emit("syncGame", export(player));
+        }
         player.setTargets(null);
         player.setStage(null);
 
