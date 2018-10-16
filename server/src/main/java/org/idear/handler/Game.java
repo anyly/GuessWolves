@@ -249,9 +249,9 @@ public class Game {
         logs.add(movement);
         // 广播给观众
         for (Player player:players.values()) {
-            if (player.getSeat() != null) {
+            if (player.getSeat() == null) {//
                 if (player.endpoint() != null) {
-                    player.endpoint().emit("notSeat", export(player));
+                    player.endpoint().emit("god", export(player));
                 }
             }
         }
@@ -279,8 +279,8 @@ public class Game {
                         int index = GameCenter.randomInt(pool.size());
                         String poker = pool.remove(index);
                         // 测试
-//                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "守夜人";
+                            if (seat==1)poker = "化身幽灵";
+                            if (seat==2)poker = "猎人";
 //                            if (seat==3)poker = "狼人";
 
                         System.out.println("发牌:"+seat+" = "+ poker);
@@ -605,7 +605,17 @@ public class Game {
                     }
                     // 有死亡的猎人
                     if (hunters.size() > 0) {
-                        playerAction("Hunter", "猎人", "化身猎人");
+                        String stage = "Hunter";
+                        List<Player> players = findInitialByPokers("猎人", "化身猎人");
+                        if (players.size() > 0) {
+                            for (Player player : players) {
+                                player.setStage(stage);
+                                if (player.endpoint() != null) {
+                                    player.endpoint().emit(stage, export(player));
+                                }
+                            }
+                            return true;
+                        }
                         return false;
                     }
                     return true;
@@ -1474,11 +1484,11 @@ public class Game {
      * @param kill
      */
     public void hunter(Player player, Integer kill) {
-        if (hunters.remove(player.getSeat())) {
-            hunterKill.put(player.getSeat(), kill);
-            deadth.add(kill);
-            player.setStage(null);
-        }
+        hunters.remove(player.getSeat());
+        hunterKill.put(player.getSeat(), kill);
+        deadth.add(kill);
+        player.setStage(null);
+
 
         if (allComplete()) {
             nextStage();

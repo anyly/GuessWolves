@@ -1293,6 +1293,10 @@ end {
             });
         });
     }
+    // 上帝视角
+    function god(data) {
+
+    }
 
     var Guide = {
         current: 'Ready',
@@ -1522,6 +1526,7 @@ end {
         }
     });
 
+    websocket.admit("god", god);
     websocket.admit("LeaveGame", leaveGame);
     websocket.admit("syncGame", loadGame);
     websocket.admit("GameStart", Guide.GameStart);
