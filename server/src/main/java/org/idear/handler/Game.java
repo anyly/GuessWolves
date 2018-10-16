@@ -251,7 +251,7 @@ public class Game {
         for (Player player:players.values()) {
             if (player.getSeat() == null) {//
                 if (player.endpoint() != null) {
-                    player.endpoint().emit("god", export(player));
+                    player.endpoint().emit("God", export(player));
                 }
             }
         }
@@ -533,7 +533,7 @@ public class Game {
                 // 发言
                 .addChapter("SpeekAction", ()-> {
                     Random random = new Random(System.currentTimeMillis());
-                    speekCurrentIndex = random.nextInt(players.size())+1;
+                    speekCurrentIndex = random.nextInt(desktop.size())+1;
                     speekStartIndex = speekCurrentIndex;
                     //speek();
                     Movement movement = new Movement(null);
@@ -548,7 +548,7 @@ public class Game {
                 })
                 // 发起投票
                 .addChapter("StartVote", ()->{
-                    LinkedList<Player> list = new LinkedList<>(players.values());
+                    LinkedList<Player> list = new LinkedList<>(desktop.values());
                     for (Player player : list) {
                         player.setStage("Vote");
                         PlayerEndpoint playerEndpoint = player.endpoint();
@@ -1094,7 +1094,7 @@ public class Game {
             if (player.getStage() != null) {
                 stage = player.getStage();
             } else if (player.getSeat() == null) {
-                stage = "notSeat";
+                stage = "God";
             }
         }
 

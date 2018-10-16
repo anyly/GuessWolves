@@ -375,6 +375,7 @@
 
             movePoker(jq, caller_jq, function () {
                 caller_jq.attr('value', "化身"+poker);
+                takePoker(caller_jq);
             });
         } else if (seat == caller) {
         } else {
@@ -399,6 +400,7 @@
                 jq_new.attr('value', _old);
                 movePoker(jq_new, jq_old, function () {
                     jq_new.attr('value', _new);
+                    takePoker(jq_new);
                 });
             }
         } else if (seat == target) {
@@ -472,6 +474,7 @@
                 jq.attr('value', poker1);
                 movePoker(jq, jq1, function () {
                     jq.attr('value', poker);
+                    takePoker(jq);
                 });
                 movePoker(jq1, jq, function () {
                     jq1.attr('value', poker1);

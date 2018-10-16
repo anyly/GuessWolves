@@ -89,6 +89,9 @@ portrait {
     background-position: center;
     position: relative;
 }
+portrait.myseat {
+    border: 1px solid rgb(255, 100, 131);
+}
 no {
     z-index: 200;
     position: absolute;
@@ -787,6 +790,7 @@ player poker[value^=化身]:before {
  }
 animate {
     position: absolute;
+    z-index: 1;
 }
 .poker-parent {
     position: relative;
@@ -998,14 +1002,14 @@ end {
         var portrait = self.find('portrait');
         portrait.css('background-image', 'url('+img+')');
         if (user == window.user) {
-            portrait.css('border', '1px #ff6483 solid');
+            portrait.toggleClass('myseat', true);
         }
         self.attr('value', user);
     }
     function leaveSeat(seat) {
         var self = $(seat);
         self.find('name').html('');
-        self.find('portrait').removeAttr('style');
+        self.find('portrait').removeAttr('style').removeAttr('class');
         self.removeAttr('value');
     }
     function changeSeat(seat, user, img) {
@@ -1149,13 +1153,16 @@ end {
         });
     }
     function Seer(as) {
+        var poker = "预言家";
         var stage = arguments.callee.name;
         if (as) {
             stage = 'as' + stage;
+            poker = '化身' + poker;
         }
         var playerPokers = $('player:not([value="'+user+'"]) poker');
         var targets = [];
         var publicPokers = $('discard poker');
+        //看公共牌两张
         publicPokers.tipsPoker('#202828').click(function () {
             var self = $(this);
             var seat = self.parents('[seat]').attr('seat');
@@ -1163,17 +1170,23 @@ end {
 
             targets.push(seat);
             if (targets.length == 1) {
+                self.cancelTips();
+                self.unbind();
+                // 禁止身份牌
                 playerPokers.cancelTips();
+                playerPokers.unbind();
+                $('tips').html(poker+':再选择查看一张公共牌!');
             }else if (targets.length == 2) {
                 websocket.http(stage, {
                     targets:targets
                 }, function () {
                     publicPokers.cancelTips();
+                    publicPokers.unbind();
+                    playerPokers.cancelTips();
                     playerPokers.unbind();
                     $('tips').html('等待行动...');
                 });
             }
-            self.cancelTips();
         });
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('[seat]').attr('seat');
@@ -1216,35 +1229,22 @@ end {
         }
         var targets = [];
         var playerPokers = $('player:not([value="'+user+'"]) poker');
-        playerPokers.tipsPoker('blue')
-        /*.castSpellBy('player poker', function (from, to) {
-            var fromSeat = $(from).parents('player').attr('seat');
-            fromSeat = parseInt(fromSeat);
-
-            var toSeat = $(to).parents('player').attr('seat');
-            toSeat = parseInt(toSeat);
-
-            websocket.http('targets', {
-                targets:[fromSeat, toSeat]
-            }, function () {
-                playerPokers.cancelTips();
-                cancelSpell();
-                $('tips').html('等待行动...');
-            });
-        })*/
-        .click(function () {
+        playerPokers.tipsPoker('blue').click(function () {
             var jq = $(this);
             var seat = jq.parents('[seat]').attr('seat');
             seat = parseInt(seat);
             targets.push(seat);
+
             if (targets.length == 1) {
                 jq.cancelTips();
+                jq.unbind();
                 $('tips').html('捣蛋鬼:再选择一张身份牌交换!');
             }else if (targets.length == 2) {
                 websocket.http(stage, {
                     targets:targets
                 }, function () {
                     playerPokers.cancelTips();
+                    playerPokers.unbind();
                     cancelSpell();
                     $('tips').html('等待行动...');
                 });
@@ -1293,11 +1293,8 @@ end {
             });
         });
     }
-    // 上帝视角
-    function god(data) {
 
-    }
-
+    var timestamp = -1;
     var Guide = {
         current: 'Ready',
         existUser: function () {
@@ -1307,6 +1304,22 @@ end {
         notExistGame: function () {
             alert('该房间号未创建！');
             window.location = 'index.html';
+        },
+        // 上帝视角
+        God: function (data) {
+            ////加载日志
+            loadLog(data);
+            //
+            var now = new Date().getTime();
+            var time = now - timestamp;
+            if (time >= 1500) {
+                $('#stage').trigger('change');
+            } else {
+                setTimeout(function () {
+                    $('#stage').trigger('change');
+                }, time);
+            }
+            timestamp = now;
         },
         WaitForAction: function () {
             $('tips').html('等待行动...');
@@ -1318,9 +1331,12 @@ end {
             $('tips').html('游戏开始了!');
             $('page poker').removeAttr('value');
             $('page clue').html('');
-            $('#stage').empty();
-            $('logger').fadeOut();
-            loadGame(data);
+
+            if ($('portrait.myseat').length > 0) {
+                $('#stage').empty();
+                $('logger').fadeOut();
+                loadGame(data);
+            }
         },
         Doppel: function () {
             $('tips').html('化身幽灵:点击你要复制的身份牌!');
@@ -1526,7 +1542,7 @@ end {
         }
     });
 
-    websocket.admit("god", god);
+    websocket.admit("God", Guide.God);
     websocket.admit("LeaveGame", leaveGame);
     websocket.admit("syncGame", loadGame);
     websocket.admit("GameStart", Guide.GameStart);
@@ -1701,6 +1717,7 @@ end {
             data['cache'] = true;
             Guide.Finally(data);
         } else {
+            $('player.dead').toggleClass('dead', false);
             $('tips').html(movement.description);
             var caller = movement.caller;
             var targets = movement.targets;
