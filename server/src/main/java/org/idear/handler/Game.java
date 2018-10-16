@@ -1078,6 +1078,22 @@ public class Game {
     }
 
     /**
+     * 同步连接状态
+     * @param caller
+     */
+    public synchronized void syncStatus(Player caller) {
+        LinkedList<Player> list = new LinkedList<>(players.values());
+        for (Player player: list) {
+            if (player != caller) {
+                PlayerEndpoint playerEndpoint = player.endpoint();
+                if (playerEndpoint != null) {
+                    playerEndpoint.emit("syncStatus", export(player));
+                }
+            }
+        }
+    }
+
+    /**
      * 游戏核心数据,用于输出同步给client
      * @return
      */

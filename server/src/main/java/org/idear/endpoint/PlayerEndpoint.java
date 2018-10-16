@@ -48,7 +48,7 @@ public class PlayerEndpoint extends UserEndpoint {
         } else {
             // 登录成功后, 同步给其他玩家
             if (player.getSeat() != null) {
-                game.synchronise(player);
+                game.syncStatus(player);
             }
 
             jsonObject = game.export(player);
@@ -113,7 +113,7 @@ public class PlayerEndpoint extends UserEndpoint {
             player.endpoint(null);
             // 断开连接,同步状态
             //if (player.getSeat() != null) {
-                game.synchronise(player);
+                game.syncStatus(player);
             //}
         }
 

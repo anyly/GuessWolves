@@ -1542,9 +1542,10 @@ end {
         }
     });
 
-    websocket.admit("God", Guide.God);
     websocket.admit("LeaveGame", leaveGame);
     websocket.admit("syncGame", loadGame);
+    websocket.admit("syncStatus", loadStatus);
+    websocket.admit("God", Guide.God);
     websocket.admit("GameStart", Guide.GameStart);
     websocket.admit("Doppel", Guide.Doppel);
     websocket.admit("Wolves", Guide.Wolves);
@@ -1627,6 +1628,27 @@ end {
             $('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
         }
         $('#stage option:last-child').prop('selected', true);
+    }
+
+    function loadStatus(game) {
+        var stage = game.stage;
+        var desktop = game.desktop;
+        for (var seat in desktop) {
+            var info = desktop[seat];
+            if (!info['user']) {
+                continue;
+            }
+            var domSeat = $('player[seat="'+seat+'"]').get(0);
+
+            if (stage != 'Ready') {
+                $('page player portrait').unbind();
+            }
+            if (info.disconnect) {
+                disconnectStatus(domSeat);
+            } else {
+                connectStatus(domSeat);
+            }
+        }
     }
 
     function loadGame(game) {
