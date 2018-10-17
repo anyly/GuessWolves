@@ -1822,9 +1822,15 @@ end {
         $('logger').fadeToggle();
     });
     $('exit').click(function (event) {
-        websocket.http('logout', null, function () {
+        if (websocket.readyState < 2) {// 未断开
+            websocket.http('logout', null, function () {
+                websocket.disconnect();
+                window.location = 'index.html#login';
+            });
+        } else {// 已断开
             window.location = 'index.html#login';
-        });
+        }
+
         event.stopPropagation();
     });
     $('reset').click(function (event) {

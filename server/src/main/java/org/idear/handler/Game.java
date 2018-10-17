@@ -118,8 +118,10 @@ public class Game {
             ready.remove(player);
 
             leaveGame(player);
-        } else {
+
             synchronise(player);
+        } else {
+            
         }
     }
 

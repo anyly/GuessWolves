@@ -51,11 +51,11 @@ public class HallEndpoint extends UserEndpoint {
         }
 
         JSONObject jsonObject = null;
-        if (exist) {
-            jsonObject = new JSONObject();
-            jsonObject.put("error", "用户名已存在");
-            return jsonObject;
-        }
+//        if (exist) {
+//            jsonObject = new JSONObject();
+//            jsonObject.put("error", "用户名已存在");
+//            return jsonObject;
+//        }
         return super.onLogin(data);
     }
 

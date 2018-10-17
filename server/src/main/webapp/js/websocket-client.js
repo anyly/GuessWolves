@@ -129,7 +129,15 @@
                 return this;
             }
             this.readyState = 2;
-            websocket.close(code, reason);
+            if (code) {
+                if (reason) {
+                    websocket.close(code, reason);
+                } else {
+                    websocket.close(code);
+                }
+            } else {
+                websocket.close();
+            }
             return this;
         };
 
