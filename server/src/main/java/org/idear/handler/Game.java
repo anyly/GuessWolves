@@ -1186,9 +1186,7 @@ public class Game {
         player.setStage(null);
 
 
-        if (allComplete()) {
-            nextStage();
-        }
+        nextStage();
     }
 
     /**
@@ -1234,9 +1232,8 @@ public class Game {
 
         player.setTargets(null);
         player.setStage(null);
-        if (allComplete()) {
-            nextStage();
-        }
+
+        nextStage();
     }
 
     /**
@@ -1289,9 +1286,7 @@ public class Game {
         player.setTargets(null);
         player.setStage(null);
 
-        if (allComplete()) {
-            nextStage();
-        }
+        nextStage();
     }
 
     /**
@@ -1331,10 +1326,7 @@ public class Game {
         player.setStage(null);
 
 
-
-        if (allComplete()) {
-            nextStage();
-        }
+        nextStage();
     }
 
     /**
@@ -1378,9 +1370,7 @@ public class Game {
 
 
 
-        if (allComplete()) {
-            nextStage();
-        }
+        nextStage();
     }
 
     /**
@@ -1418,9 +1408,7 @@ public class Game {
         player.setStage(null);
 
 
-        if (allComplete()) {
-            nextStage();
-        }
+        nextStage();
     }
 
     ///////////////////////////////////////////////
@@ -1491,9 +1479,8 @@ public class Game {
         player.setStage(null);
         votes.put(player.getSeat(), vote);
 
-        if (allComplete()) {
-            nextStage("AfterVote");
-        }
+
+        nextStage("AfterVote");
     }
 
     /**
@@ -1508,9 +1495,7 @@ public class Game {
         player.setStage(null);
 
 
-        if (allComplete()) {
-            nextStage();
-        }
+        nextStage();
     }
 
     /**
@@ -1551,7 +1536,9 @@ public class Game {
 
     private void nextStage(final String stage) {
         gameCenter.add( ()-> {
-            story.focus(stage);
+            if (allComplete()) {
+                story.focus(stage);
+            }
         });
     }
 }
