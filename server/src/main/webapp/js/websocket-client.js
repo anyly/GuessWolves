@@ -26,7 +26,7 @@
 
 
         window.onbeforeunload = function () {
-            websocket.close(600);
+            websocket.close();
         };
 
         /**
@@ -150,7 +150,7 @@
             }
             this.readyState = 3;
             websocket.onclose = function (code, reason , wasClean) {
-                if (code == 600) {
+                if (!code) {
                     return;
                 }
                 callback(code, reason , wasClean);
