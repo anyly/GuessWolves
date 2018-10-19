@@ -729,9 +729,14 @@ public class Game {
                                         camp.setWin(allWin);
                                         report.setAll(camp);
                                     }
+                                    String pokerDesc = deck.get(player.getSeat());
+                                    if (!player.getPoker().equals(pokerDesc)) {
+                                        pokerDesc = player.getPoker() +"->" + pokerDesc;
+                                    }
                                     JSONObject jsonObject = new JSONObject();
                                     jsonObject.put("user", player.getUser());
                                     jsonObject.put("seat", player.getSeat());
+                                    jsonObject.put("pokerDesc", pokerDesc);
                                     camp.getMembers().add(jsonObject);
                                 }
                             }
@@ -742,6 +747,10 @@ public class Game {
                             Player player = entry.getValue();
                             Integer seat = entry.getKey();
                             String poker = deck.get(seat);
+                            String pokerDesc = poker;
+                            if (!player.getPoker().equals(pokerDesc)) {
+                                pokerDesc = player.getPoker() +"->" + pokerDesc;
+                            }
                             String campName = GameCenter.camp.get(poker);
                             if ("城镇".equals(campName)) {
                                 Camp camp = report.getTown();
@@ -750,9 +759,11 @@ public class Game {
                                     camp.setWin(villagerWin);
                                     report.setTown(camp);
                                 }
+
                                 JSONObject jsonObject = new JSONObject();
                                 jsonObject.put("user", player.getUser());
                                 jsonObject.put("seat", player.getSeat());
+                                jsonObject.put("pokerDesc", pokerDesc);
                                 camp.getMembers().add(jsonObject);
                             } else if ("狼人".equals(campName)) {
                                 Camp camp = report.getWolves();
@@ -764,6 +775,7 @@ public class Game {
                                 JSONObject jsonObject = new JSONObject();
                                 jsonObject.put("user", player.getUser());
                                 jsonObject.put("seat", player.getSeat());
+                                jsonObject.put("pokerDesc", pokerDesc);
                                 camp.getMembers().add(jsonObject);
                             } else if ("皮匠".equals(campName)) {
                                 Camp camp = report.getCobbler();
@@ -775,6 +787,7 @@ public class Game {
                                 JSONObject jsonObject = new JSONObject();
                                 jsonObject.put("user", player.getUser());
                                 jsonObject.put("seat", player.getSeat());
+                                jsonObject.put("pokerDesc", pokerDesc);
                                 camp.getMembers().add(jsonObject);
                             }
                         }

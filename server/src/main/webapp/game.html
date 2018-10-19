@@ -224,7 +224,7 @@ tag {
     /*margin: 0 2px;*/
     display: block;
     color: blueviolet;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: bold;
 }
 tag:before {
@@ -597,8 +597,9 @@ tips>h4 {
     border-bottom: 1px #cccccc dashed;
     line-height: 30px;
 }
-tips>p {
+tips p {
     display: block;
+    width: 100%;
 }
 svg[name=tips] {
     position: absolute;
@@ -1444,6 +1445,7 @@ end {
             /// 翻开所有牌
             var deck = data.deck;
             var desktop = data.desktop;
+            var myseat;
             for (var seat in deck) {
                 var poker = deck[seat];
 
@@ -1452,6 +1454,9 @@ end {
                 // 行动步骤
                 var info = desktop[seat];
                 if (info) {
+                    if (info.user == user) {
+                        myseat = seat;
+                    }
                     var movements = info['movements'];
                     var movement = null;
                     var clue = $('player[value="'+info.user+'"] clue').empty();
@@ -1502,10 +1507,14 @@ end {
             var votes = data.votes;
             for (var seat in votes) {
                 var vote = votes[seat];
+                var red = '';
+                if (seat == myseat) {
+                    red = ' style="color:red;"';
+                }
                 if (vote) {
-                    string += seat+'号 =>'+vote+'号<br>';
+                    string += '<p'+red+'>'+seat+'号 =>'+vote+'号</p>';
                 } else {
-                    string += seat+'号弃权票<br>';
+                    string += '<p'+red+'>'+seat+'号弃权票</p>';
                 }
             }
             ///
@@ -1516,16 +1525,18 @@ end {
     };
     function camp(c) {
         if (!c) return '';
-        var string = c.name+':'+(c.win?'获胜':'落败')+'<br>';
+        var string = '<p style="margin: 3px 0;"># '+c.name+':'+(c.win?'获胜':'落败')+'</p>';
         for (var i=0;i<c.members.length;i++) {
             var member = c.members[i];
-            if (i!=0) {
-                string += ',';
+            if (user == member.user) {
+                string += '<p style="color:red;">'+member.seat+'号'+member.user+' ['+member.pokerDesc+']</p>';
+            } else {
+                string += '<p>'+member.seat+'号'+member.user+' ['+member.pokerDesc+']</p>';
             }
-            string += member.seat+'号'+member.user;
         }
         return string;
     }
+
 </script>
 <script>
     var wsprotocol = 'ws';
