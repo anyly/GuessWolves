@@ -1119,11 +1119,12 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('[seat]').attr('seat');
             seat = parseInt(seat);
+
+            playerPokers.cancelTips();
+            playerPokers.unbind();
             websocket.http(stage, {
                 targets:[seat]
             }, function () {
-                playerPokers.cancelTips();
-                playerPokers.unbind();
                 $('tips').html('等待行动...');
             });
         });
@@ -1138,10 +1139,11 @@ end {
             seat = parseInt(seat);
             var poker = data.deck[seat];
             targets.push(seat);
+
+            self.cancelTips();
+            self.unbind();
             if (poker == '狼人' || poker == '化身狼人') {
                 self.attr('value', poker);
-                self.cancelTips();
-                self.unbind();
                 return;
             }
             websocket.http(stage, {
@@ -1168,23 +1170,24 @@ end {
             var self = $(this);
             var seat = self.parents('[seat]').attr('seat');
             seat = parseInt(seat);
-
             targets.push(seat);
+
+            self.cancelTips();
+            self.unbind();
             if (targets.length == 1) {
-                self.cancelTips();
-                self.unbind();
                 // 禁止身份牌
                 playerPokers.cancelTips();
                 playerPokers.unbind();
                 $('tips').html(poker+':再选择查看一张公共牌!');
             }else if (targets.length == 2) {
+                publicPokers.cancelTips();
+                publicPokers.unbind();
+                playerPokers.cancelTips();
+                playerPokers.unbind();
+
                 websocket.http(stage, {
                     targets:targets
                 }, function () {
-                    publicPokers.cancelTips();
-                    publicPokers.unbind();
-                    playerPokers.cancelTips();
-                    playerPokers.unbind();
                     $('tips').html('等待行动...');
                 });
             }
@@ -1192,13 +1195,14 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('[seat]').attr('seat');
             seat = parseInt(seat);
+
+            publicPokers.cancelTips();
+            publicPokers.unbind();
+            playerPokers.cancelTips();
+            playerPokers.unbind();
             websocket.http(stage, {
                 targets:[seat]
             }, function () {
-                publicPokers.cancelTips();
-                publicPokers.unbind();
-                playerPokers.cancelTips();
-                playerPokers.unbind();
                 $('tips').html('等待行动...');
             });
         });
@@ -1213,11 +1217,12 @@ end {
         playerPokers.tipsPoker('blue').click(function () {
             var seat = $(this).parents('[seat]').attr('seat');
             seat = parseInt(seat);
+
+            playerPokers.cancelTips();
+            playerPokers.unbind();
             websocket.http(stage, {
                 targets:[seat]
             }, function () {
-                playerPokers.cancelTips();
-                playerPokers.unbind();
                 $('tips').html('等待行动...');
             });
         });
@@ -1236,17 +1241,16 @@ end {
             seat = parseInt(seat);
             targets.push(seat);
 
+            jq.cancelTips();
+            jq.unbind();
             if (targets.length == 1) {
-                jq.cancelTips();
-                jq.unbind();
                 $('tips').html('捣蛋鬼:再选择一张身份牌交换!');
             }else if (targets.length == 2) {
+                playerPokers.cancelTips();
+                playerPokers.unbind();
                 websocket.http(stage, {
                     targets:targets
                 }, function () {
-                    playerPokers.cancelTips();
-                    playerPokers.unbind();
-                    cancelSpell();
                     $('tips').html('等待行动...');
                 });
             }
@@ -1263,12 +1267,13 @@ end {
             var self = $(this);
             var seat = self.parents('[seat]').attr('seat');
             seat = parseInt(seat);
+
+            $('player[value='+user+'] poker').removeAttr('value');
+            publicPokers.cancelTips();
+            publicPokers.unbind();
             websocket.http(stage, {
                 targets:[seat]
             }, function () {
-                $('player[value='+user+'] poker').removeAttr('value');
-                publicPokers.cancelTips();
-                publicPokers.unbind();
                 $('tips').html('等待行动...');
             });
         });
@@ -1285,11 +1290,12 @@ end {
                 seat = jqplayer.attr('seat');
                 seat = parseInt(seat);
             }
+
+            playerPokers.cancelTips();
+            playerPokers.unbind();
             websocket.http(stage, {
                 vote:seat
             }, function () {
-                playerPokers.cancelTips();
-                playerPokers.unbind();
                 $('tips').html('等待投票...');
             });
         });
