@@ -167,7 +167,10 @@
             if (!isSupport()) {
                 return this;
             }
-            websocket.onerror = callback;
+            websocket.onerror = function () {
+                callback();
+                websocket.close();
+            };
             return this;
         };
 
