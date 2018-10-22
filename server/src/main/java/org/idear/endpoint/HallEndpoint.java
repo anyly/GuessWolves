@@ -3,6 +3,7 @@ package org.idear.endpoint;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import org.idear.handler.GameCenter;
+import org.idear.timeline.websocket.GameEndpoint;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -13,20 +14,22 @@ import java.util.LinkedList;
  * 大厅，负责创建和销毁房间
  */
 @ServerEndpoint("/hall")
-public class HallEndpoint extends UserEndpoint {
-    GameCenter gameCenter;
-    public HallEndpoint() {
-        gameCenter =  GameCenter.instance();
+public class HallEndpoint extends GameEndpoint {
+
+    @Override
+    public int onNewGame(JSONObject data) {
+        return super.onNewGame(data);
+
     }
 
-    public JSONObject onNewGame(JSONObject data) {
-        requireLogin();
-        LinkedList<String> setting = data.getObject("poker", new TypeReference<LinkedList<String>>(){});
-        int no = gameCenter.newGame(setting).getNo();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("no", no);
-        return jsonObject;
-    }
+//    public JSONObject onNewGame1(JSONObject data) {
+//        requireLogin();
+//        LinkedList<String> setting = data.getObject("poker", new TypeReference<LinkedList<String>>(){});
+//        int no = gameCenter.newGame(setting).getNo();
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("no", no);
+//        return jsonObject;
+//    }
 
     public JSONObject onFindGame(JSONObject data) {
         Integer no = data.getInteger("no");
