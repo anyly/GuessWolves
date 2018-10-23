@@ -529,10 +529,8 @@
     });
     $('#joinRoomBtn').click(function () {
         var no = $('#no').val();
-        websocket.http('findGame', {
-            no: no
-        }, function (data) {
-            if (data.exist) {
+        websocket.http('findGame', no, function (exist) {
+            if (exist) {
                 window.location = 'game.html#'+no;
             } else {
                 alert('该房间号不存在！');
