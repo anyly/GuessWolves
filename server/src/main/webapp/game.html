@@ -1096,14 +1096,14 @@ end {
                 if ($('player.ready[value="'+user+'"]').length>0) {
                     return;
                 }
-                websocket.http('sitdown', {
+                client.http('sitdown', {
                     seat: seat,
                 }, function () {
                     changeSeat(self.get(0), user, img);
                 });
             } else if (self.attr('value') == user) {
                 var ready = !self.hasClass('ready');
-                websocket.http('ready', {
+                client.http('ready', {
                     ready: ready
                 }, function () {
                     self.toggleClass('ready');
@@ -1123,7 +1123,7 @@ end {
 
             playerPokers.cancelTips();
             playerPokers.unbind();
-            websocket.http(stage, {
+            client.http(stage, {
                 targets:[seat]
             }, function () {
                 $('tips').html('等待行动...');
@@ -1147,7 +1147,7 @@ end {
                 self.attr('value', poker);
                 return;
             }
-            websocket.http(stage, {
+            client.http(stage, {
                 targets:targets
             }, function () {
                 publicPokers.cancelTips();
@@ -1186,7 +1186,7 @@ end {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
 
-                websocket.http(stage, {
+                client.http(stage, {
                     targets:targets
                 }, function () {
                     $('tips').html('等待行动...');
@@ -1201,7 +1201,7 @@ end {
             publicPokers.unbind();
             playerPokers.cancelTips();
             playerPokers.unbind();
-            websocket.http(stage, {
+            client.http(stage, {
                 targets:[seat]
             }, function () {
                 $('tips').html('等待行动...');
@@ -1221,7 +1221,7 @@ end {
 
             playerPokers.cancelTips();
             playerPokers.unbind();
-            websocket.http(stage, {
+            client.http(stage, {
                 targets:[seat]
             }, function () {
                 $('tips').html('等待行动...');
@@ -1249,7 +1249,7 @@ end {
             }else if (targets.length == 2) {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                websocket.http(stage, {
+                client.http(stage, {
                     targets:targets
                 }, function () {
                     $('tips').html('等待行动...');
@@ -1272,7 +1272,7 @@ end {
             $('player[value='+user+'] poker').removeAttr('value');
             publicPokers.cancelTips();
             publicPokers.unbind();
-            websocket.http(stage, {
+            client.http(stage, {
                 targets:[seat]
             }, function () {
                 $('tips').html('等待行动...');
@@ -1294,7 +1294,7 @@ end {
 
             playerPokers.cancelTips();
             playerPokers.unbind();
-            websocket.http(stage, {
+            client.http(stage, {
                 vote:seat
             }, function () {
                 $('tips').html('等待投票...');
@@ -1438,7 +1438,7 @@ end {
             playerPokers.tipsPoker('blue').click(function () {
                 var seat = $(this).parents('player').attr('seat');
                 seat = parseInt(seat);
-                websocket.http('hunter', {
+                client.http('hunter', {
                     target:seat
                 }, function () {
                     playerPokers.cancelTips();
@@ -1550,41 +1550,41 @@ end {
     if (window.location.protocol.indexOf('https')==0) {
         wsprotocol = 'wss'
     }
-    var websocket = new WebSocket(wsprotocol+'://'+window.location.basepath+'/game/'+no);
+    var client = new WebSocketClient(wsprotocol+'://'+window.location.basepath+'/game/'+no);
     /*切换重连*/
     document.addEventListener('webkitvisibilitychange',function(){
         if (document.webkitVisibilityState == 'visible') {
-            if (websocket.readyState >= 3) {
+            if (client.readyState >= 3) {
                 window.location.reload(true);
             }
         }
     });
 
-    websocket.admit("LeaveGame", leaveGame);
-    websocket.admit("syncGame", loadGame);
-    websocket.admit("syncStatus", loadStatus);
-    websocket.admit("God", Guide.God);
-    websocket.admit("GameStart", Guide.GameStart);
-    websocket.admit("Doppel", Guide.Doppel);
-    websocket.admit("Wolves", Guide.Wolves);
-    websocket.admit("Seer", Guide.Seer);
-    websocket.admit("AsSeer", Guide.AsSeer);
-    websocket.admit("Robber", Guide.Robber);
-    websocket.admit("AsRobber", Guide.AsRobber);
-    websocket.admit("TroubleMarker", Guide.TroubleMarker);
-    websocket.admit("AsTroubleMarker", Guide.AsTroubleMarker);
-    websocket.admit("Drunk", Guide.Drunk);
-    websocket.admit("AsDrunk", Guide.AsDrunk);
-    websocket.admit("Insomniac", Guide.Insomniac);
-    websocket.admit("WaitForAction", Guide.WaitForAction);
-    websocket.admit("Speek", Guide.Speek);
-    websocket.admit("Vote", Guide.Vote);
-    websocket.admit("ReturnVote", Guide.ReturnVote);
-    websocket.admit("Hunter", Guide.Hunter);
-    websocket.admit("Finally", Guide.Finally);
+    client.admit("LeaveGame", leaveGame);
+    client.admit("syncGame", loadGame);
+    client.admit("syncStatus", loadStatus);
+    client.admit("God", Guide.God);
+    client.admit("GameStart", Guide.GameStart);
+    client.admit("Doppel", Guide.Doppel);
+    client.admit("Wolves", Guide.Wolves);
+    client.admit("Seer", Guide.Seer);
+    client.admit("AsSeer", Guide.AsSeer);
+    client.admit("Robber", Guide.Robber);
+    client.admit("AsRobber", Guide.AsRobber);
+    client.admit("TroubleMarker", Guide.TroubleMarker);
+    client.admit("AsTroubleMarker", Guide.AsTroubleMarker);
+    client.admit("Drunk", Guide.Drunk);
+    client.admit("AsDrunk", Guide.AsDrunk);
+    client.admit("Insomniac", Guide.Insomniac);
+    client.admit("WaitForAction", Guide.WaitForAction);
+    client.admit("Speek", Guide.Speek);
+    client.admit("Vote", Guide.Vote);
+    client.admit("ReturnVote", Guide.ReturnVote);
+    client.admit("Hunter", Guide.Hunter);
+    client.admit("Finally", Guide.Finally);
 
-    websocket.onConnect(function () {
-        websocket.http('login', {
+    client.onConnect(function () {
+        client.http('login', {
             user: user,
             img: img
         }, function (data) {
@@ -1604,7 +1604,7 @@ end {
         });
     });
 
-    websocket.onDisconnect(function () {
+    client.onDisconnect(function () {
         connectFail();
     });
 
@@ -1840,9 +1840,9 @@ end {
         $('logger').fadeToggle();
     });
     $('exit').click(function (event) {
-        if (websocket.readyState < 2) {// 未断开
-            websocket.http('logout', null, function () {
-                websocket.disconnect();
+        if (client.readyState < 2) {// 未断开
+            client.http('logout', null, function () {
+                client.disconnect();
                 window.location = 'index.html#login';
             });
         } else {// 已断开
@@ -1865,7 +1865,7 @@ end {
         }
         var self = $('player[value='+user+']');
         var ready = !self.hasClass('restart');
-        websocket.http('restart', {
+        client.http('restart', {
             ready: ready
         }, function (data) {
             self.toggleClass('dead', false);
@@ -1897,7 +1897,7 @@ end {
         if (self.hasClass('quiet') || self.hasClass('noisy')) {
             self.removeClass('quiet noisy');
             // 结束发言
-            websocket.http('speek', {
+            client.http('speek', {
                 speek: '按不动'
             }, function () {
                 //$('tips').html('等待其他玩家发言...');

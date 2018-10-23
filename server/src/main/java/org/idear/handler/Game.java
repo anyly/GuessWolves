@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * Created by idear on 2018/9/29.
  */
-public class Game {
+public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     GameCenter gameCenter;
 
     private int no;// 房间号
@@ -104,11 +104,25 @@ public class Game {
     }
 
     /**
-     * 加入游戏
+     * 加入游戏,通知所有玩家,更新断线状态
      * @param player
      */
-    public void addPlayer(Player player) {
-        players.put(player.getUser(), player);
+    @Override
+    public synchronized void join(Player player) {
+        super.join(player);
+        syncStatus(player);
+    }
+
+    /**
+     * 离开游戏,通知所有玩家,更新断线状态
+     * @param player
+     */
+    @Override
+    public synchronized void leave(Player player) {
+        if ("Ready".equals(story.chapter())) {
+            super.leave(player);
+        }
+        syncStatus(player);
     }
 
     public void removePlayer(Player player) {
@@ -126,16 +140,16 @@ public class Game {
     }
 
 
-    public Game(int no, List<String> setting) {
-        this.no = no;
-        this.setting = setting;
-        gameCenter = GameCenter.instance();
-
-        init();
-    }
-
     public int getNo() {
         return no;
+    }
+
+
+
+    ////////
+    @Override
+    public com.idearfly.timeline.Story story() {
+        return null;
     }
 
     public List<String> getSetting() {

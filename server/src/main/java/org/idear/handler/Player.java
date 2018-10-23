@@ -13,10 +13,7 @@ import java.util.Map;
 /**
  * Created by idear on 2018/9/29.
  */
-public class Player {
-    private String user;// 用户名,唯一标志
-    private String img;// 头像
-    private PlayerEndpoint endpoint;// 连接端,null为断开连接
+public class Player extends com.idearfly.timeline.websocket.Player {
 
     private Integer seat;// 座位号
     private String poker;// 身份牌
@@ -35,28 +32,6 @@ public class Player {
     private List<Movement> movements= new LinkedList<>();// 行动结果, viewport为最后所看到的牌面
 
     public Player() {
-    }
-
-    public Player(String user, String img, PlayerEndpoint endpoint) {
-        this.user = user;
-        this.img = img;
-        this.endpoint = endpoint;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getImg() {
-        return img;
-    }
-
-    public void setImg(String img) {
-        this.img = img;
     }
 
     public Integer getSeat() {
@@ -83,16 +58,8 @@ public class Player {
         this.ready = ready;
     }
 
-    public PlayerEndpoint endpoint() {
-        return endpoint;
-    }
-
-    public void endpoint(PlayerEndpoint endpoint) {
-        this.endpoint = endpoint;
-    }
-
     public boolean getDisconnect() {
-        return endpoint == null;
+        return endpoint() == null;
     }
 
     public Integer[] getTargets() {

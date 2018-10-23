@@ -2,42 +2,20 @@ package org.idear.endpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import org.idear.handler.Game;
-import org.idear.handler.GameCenter;
+import com.idearfly.timeline.websocket.GameEndpoint;
 import org.idear.handler.Player;
 
 import javax.websocket.*;
-import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 /**
  * Created by idear on 2018/9/21.
  * 维护player实例
  */
-@ServerEndpoint("/game/{room}")
-public class PlayerEndpoint extends UserEndpoint {
-    private GameCenter gameCenter;
+@ServerEndpoint("/game/{no}")
+public class PlayerEndpoint extends GameEndpoint {
 
-    public PlayerEndpoint() {
-        gameCenter = GameCenter.instance();
-    }
-
-    private Game game;
-    private Player player;
-
-    @OnMessage
-    public void onMessage(String message, Session session) {
-        super.onMessage(message);
-    }
-
-    @OnOpen
-    public void onOpen(@PathParam("room") int room, Session session, EndpointConfig config) {
-        super.onOpen(session, config);
-        this.game = gameCenter.game(room);
-    }
-
-    @Override
-    public synchronized JSONObject onLogin(JSONObject data) {
+    public JSONObject onLogin1(JSONObject data) {
         JSONObject jsonObject = null;
         if ((jsonObject = loadGame()) != null) {
             // 加载游戏

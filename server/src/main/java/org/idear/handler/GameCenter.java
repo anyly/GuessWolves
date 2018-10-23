@@ -6,19 +6,12 @@ import java.util.*;
  * Created by idear on 2018/9/29.
  *
  */
-public class GameCenter extends Handler {
-    private static GameCenter _singleton = new GameCenter();
+public class GameCenter extends com.idearfly.timeline.websocket.GameCenter {
 
-    private GameCenter () {
+
+    public GameCenter(Class<? extends com.idearfly.timeline.websocket.Game> gameClass) {
+        super(gameClass);
         init();
-    }
-
-    public static GameCenter instance() {
-        return _singleton;
-    }
-
-    public static void loadFor() {
-
     }
 
     /**
