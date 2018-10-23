@@ -2,6 +2,7 @@ package org.idear.endpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.idearfly.timeline.websocket.Game;
 import com.idearfly.timeline.websocket.GameEndpoint;
 import org.idear.handler.Player;
 
@@ -15,87 +16,12 @@ import javax.websocket.server.ServerEndpoint;
 @ServerEndpoint("/game/{no}")
 public class PlayerEndpoint extends GameEndpoint {
 
-    public JSONObject onLogin1(JSONObject data) {
-        JSONObject jsonObject = null;
-        if ((jsonObject = loadGame()) != null) {
-            // 加载游戏
-        } else if ((jsonObject = loadUser(data)) != null) {
-            // 加载用户
-        } else if ((jsonObject = loadPlayer()) != null) {
-            // 加载玩家
-        } else {
-            // 登录成功后, 同步给其他玩家
-            if (player.getSeat() != null) {
-                game.syncStatus(player);
-            }
-
-            jsonObject = game.export(player);
-        }
-
-        return jsonObject;
-    }
-
-    /**
-     * 同步桌面
-     */
-//    private void syncGame() {
-//        if (this.player.getSeat() != null) {
-//            game.broadcast(player, "syncGame", game.export());
-//        }
-//    }
-
-    private JSONObject loadGame() {
-        if (game == null) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("stage", "notExistGame");
-            return jsonObject;
-        }
-        return null;
-    }
-
-    private JSONObject loadUser(JSONObject data) {
-        return super.onLogin(data);
-    }
-
-    private JSONObject loadPlayer() {
-        player = game.getPlayer(user);
-        if (player == null) {
-            player = new Player(user, img, this);
-            game.addPlayer(player);
-        } else {
-            //if (player.endpoint() == null) {
-                player.endpoint(this);
-                player.setImg(img);
-           // } else {
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.put("stage", "existUser");
-//                return jsonObject;
-            //}
-        }
-        return null;
-    }
-
-    @Override
-    public synchronized JSONObject onLogout(JSONObject data) {
-        if (player != null) {
-            game.removePlayer(player);
-        }
-        return super.onLogout(data);
-    }
-
-
-
-    @OnClose
-    public synchronized void onClose(Session session, CloseReason closeReason) {
+    public void onClose(Session session, CloseReason closeReason) {
+        super.onClose(session, closeReason);
         if (player != null) {
             player.endpoint(null);
-            // 断开连接,同步状态
-            //if (player.getSeat() != null) {
-                game.syncStatus(player);
-            //}
+            game.syncStatus(player);
         }
-
-        super.onClose(closeReason);
     }
 
 

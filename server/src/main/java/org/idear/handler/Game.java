@@ -2,8 +2,8 @@ package org.idear.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.idearfly.timeline.websocket.Endpoint;
 import org.idear.CoherentMap;
-import org.idear.endpoint.PlayerEndpoint;
 import org.idear.game.entity.Camp;
 import org.idear.game.entity.Movement;
 import org.idear.game.entity.Report;
@@ -110,7 +110,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     @Override
     public synchronized void join(Player player) {
         super.join(player);
-        syncStatus(player);
+        if (player.getSeat() != null) {
+            syncStatus(player);
+        }
     }
 
     /**
@@ -133,7 +135,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
 
             leaveGame(player);
 
-            synchronise(player);
+            syncGame(player);
         } else {
             
         }
@@ -567,9 +569,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
                     LinkedList<Player> list = new LinkedList<>(desktop.values());
                     for (Player player : list) {
                         player.setStage("Vote");
-                        PlayerEndpoint playerEndpoint = player.endpoint();
-                        if (playerEndpoint != null) {
-                            playerEndpoint.emit("Vote", export(player));
+                        Endpoint endpoint = player.endpoint();
+                        if (endpoint != null) {
+                            endpoint.emit("Vote", export(player));
                         }
                     }
                     return true;
@@ -999,9 +1001,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     public synchronized void broadcast(String action, JSONObject jsonObject) {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            PlayerEndpoint playerEndpoint = player.endpoint();
-            if (playerEndpoint != null) {
-                playerEndpoint.emit(action, jsonObject);
+            Endpoint endpoint = player.endpoint();
+            if (endpoint != null) {
+                endpoint.emit(action, jsonObject);
             }
         }
     }
@@ -1017,9 +1019,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
             if (player != caller) {
-                PlayerEndpoint playerEndpoint = player.endpoint();
-                if (playerEndpoint != null) {
-                    playerEndpoint.emit(action, jsonObject);
+                Endpoint endpoint = player.endpoint();
+                if (endpoint != null) {
+                    endpoint.emit(action, jsonObject);
                 }
             }
         }
@@ -1031,9 +1033,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     public synchronized void finall() {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            PlayerEndpoint playerEndpoint = player.endpoint();
-            if (playerEndpoint != null) {
-                playerEndpoint.emit("Finally", export(player));
+            Endpoint endpoint = player.endpoint();
+            if (endpoint != null) {
+                endpoint.emit("Finally", export(player));
             }
         }
     }
@@ -1044,9 +1046,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     public synchronized void speek() {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            PlayerEndpoint playerEndpoint = player.endpoint();
-            if (playerEndpoint != null) {
-                playerEndpoint.emit("Speek", export(player));
+            Endpoint endpoint = player.endpoint();
+            if (endpoint != null) {
+                endpoint.emit("Speek", export(player));
             }
         }
     }
@@ -1059,11 +1061,11 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player pl : list) {
             if (pl != player) {
-                PlayerEndpoint playerEndpoint = pl.endpoint();
-                if (playerEndpoint != null) {
+                Endpoint endpoint = pl.endpoint();
+                if (endpoint != null) {
                     JSONObject object = new JSONObject();
                     object.put("seat", player.getSeat());
-                    playerEndpoint.emit("LeaveGame", object);
+                    endpoint.emit("LeaveGame", object);
                 }
             }
         }
@@ -1076,9 +1078,9 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player : list) {
             if (player != caller) {
-                PlayerEndpoint playerEndpoint = player.endpoint();
-                if (playerEndpoint != null) {
-                    playerEndpoint.emit("GameStart", export(player));
+                Endpoint endpoint = player.endpoint();
+                if (endpoint != null) {
+                    endpoint.emit("GameStart", export(player));
                 }
             }
         }
@@ -1087,23 +1089,22 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     /**
      * 同步客户端
      */
-    public synchronized void synchronise() {
-        synchronise(null);
+    public synchronized void syncGame() {
+        syncAll("syncGame");
     }
 
     /**
      * 同步客户端
      */
-    public synchronized void synchronise(Player caller) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            if (player != caller) {
-                PlayerEndpoint playerEndpoint = player.endpoint();
-                if (playerEndpoint != null) {
-                    playerEndpoint.emit("syncGame", export(player));
-                }
-            }
-        }
+    public synchronized void syncGame(Player caller) {
+        syncOthers(caller, "syncGame");
+    }
+
+    /**
+     * 同步连接状态
+     */
+    public synchronized void syncStatus() {
+        syncAll("syncStatus");
     }
 
     /**
@@ -1111,15 +1112,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
      * @param caller
      */
     public synchronized void syncStatus(Player caller) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            if (player != caller) {
-                PlayerEndpoint playerEndpoint = player.endpoint();
-                if (playerEndpoint != null) {
-                    playerEndpoint.emit("syncStatus", export(player));
-                }
-            }
-        }
+        syncOthers(caller, "syncStatus");
     }
 
     /**
@@ -1443,25 +1436,25 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         if (speekCurrentIndex != player.getSeat()) {
             return;
         }
-        gameCenter.add(()->{
-            List<String> speaks = player.getSpeaks();
-            speaks.add(string);
-            speekCurrentIndex++;
-            if (speekCurrentIndex > desktop.size()) {
-                speekCurrentIndex = 1;
-                speekRound++;
-            }
-
-            if (speekRound > 3) {
-                speekRound = 3;
-                // 结束
-                story.focus("Speek");
-            } else {
-                // 下一个发言
-                speek();
-            }
-
-        });
+//        gameCenter.add(()->{
+//            List<String> speaks = player.getSpeaks();
+//            speaks.add(string);
+//            speekCurrentIndex++;
+//            if (speekCurrentIndex > desktop.size()) {
+//                speekCurrentIndex = 1;
+//                speekRound++;
+//            }
+//
+//            if (speekRound > 3) {
+//                speekRound = 3;
+//                // 结束
+//                story.focus("Speek");
+//            } else {
+//                // 下一个发言
+//                speek();
+//            }
+//
+//        });
     }
 
     /////////////////////////////////////////////
@@ -1562,10 +1555,10 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     }
 
     private void nextStage(final String stage) {
-        gameCenter.add( ()-> {
-            if (allComplete()) {
-                story.focus(stage);
-            }
-        });
+//        gameCenter.add( ()-> {
+//            if (allComplete()) {
+//                story.focus(stage);
+//            }
+//        });
     }
 }
