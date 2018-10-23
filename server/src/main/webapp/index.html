@@ -357,7 +357,7 @@
 <div class="findRoom dialog">
     <div class="wrap">
         <div class="inputRoom">
-            <label>房间号</label><input id="no" type="text" placeholder="请输入房间号"/><button id="joinRoomBtn" type="button">进入房间</button>
+            <label>房间号</label><input id="no" type="text" placeholder="请输入房间号"/><button id="joinGameBtn" type="button">进入房间</button>
         </div>
     </div>
 </div>
@@ -373,7 +373,7 @@
         login: function () {
             var param = formData('loginForm');
             $('#user_error').html('');
-            websocket.http("login", param, function(data) {
+            client.http("login", param, function(data) {
                 if (data && data.error){
                     $('#user_error').html(data.error);
                 } else {
@@ -395,8 +395,7 @@
             fadePage('home', 400);
             Guide.current = 'home';
         },
-        newGame : function (data) {
-            var no = data.no;
+        newGame : function (no) {
             window.location = 'game.html#'+no;
         } 
     };
@@ -440,20 +439,12 @@
     if (window.location.protocol.indexOf('https')==0) {
         wsprotocol = 'wss'
     }
-    var websocket = new WebSocket(wsprotocol+'://'+window.location.basepath+'/hall');
-    /*切换重连*/
-    document.addEventListener('webkitvisibilitychange',function(){
-        if (document.webkitVisibilityState == 'visible') {
-            if (websocket.readyState >= 3) {
-                window.location.reload(true);
-            }
-        }
-    });
+    var client = new WebSocketClient(wsprotocol+'://'+window.location.basepath+'/hall');
 
-    websocket.onError(function (e) {
+    client.onError(function (e) {
         //alert('1-'+JSON.stringify(e));
     });
-    websocket.onDisconnect(function () {
+    client.onDisconnect(function () {
         //alert("网络已断开，确认之后会重新连接！");
         connectFail();
     });
@@ -474,7 +465,7 @@
         $(this).parents('.mwin').fadeOut(400);
         if (Guide.current == 'home') {
             //Guide.login();// 修改图片
-            websocket.http('editImg', {
+            client.http('editImg', {
                 img: img
             }, function () {
                 var img = $('#img').val();
@@ -498,7 +489,7 @@
     });
     $('#logout').click(function () {
         var param = formData('loginForm');
-        websocket.http("logout", param, function () {
+        client.http("logout", param, function () {
             Guide.init();
         });
     });
@@ -519,7 +510,7 @@
             alert('必须至少4张牌!~');
             return;
         }
-        websocket.http('newGame', param, Guide.newGame);
+        client.newGame(Guide.newGame);
     });
     $('#cancelGame').click(function () {
         Guide.home();
@@ -527,12 +518,10 @@
     $('#findRoom').click(function () {
         $('.findRoom').fadeIn();
     });
-    $('#joinRoomBtn').click(function () {
+    $('#joinGameBtn').click(function () {
         var no = $('#no').val();
-        websocket.http('findGame', {
-            no: no
-        }, function (data) {
-            if (data.exist) {
+        client.http('findGame', no, function (exist) {
+            if (exist) {
                 window.location = 'game.html#'+no;
             } else {
                 alert('该房间号不存在！');
@@ -549,7 +538,7 @@
         $('#user').val(user);
         setImg(img);
     }
-    websocket.onConnect(function () {
+    client.onConnect(function () {
         var stage = getAnchor();
         if (stage != '') {
             if (Guide[stage]) {

@@ -1,3 +1,6 @@
 rootProject.name = 'GuessWolves'
 include 'server'
 //include ':android'
+includeFlat 'timeline'
+include 'timeline'
+include 'timeline:websocket'
