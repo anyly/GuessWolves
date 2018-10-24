@@ -2,7 +2,8 @@ package org.idear.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.idearfly.timeline.websocket.Endpoint;
+import com.idearfly.timeline.websocket.BaseEndpoint;
+import com.idearfly.timeline.websocket.BaseGame;
 import org.idear.CoherentMap;
 import org.idear.game.entity.Camp;
 import org.idear.game.entity.Movement;
@@ -18,7 +19,7 @@ import java.util.*;
 /**
  * Created by idear on 2018/9/29.
  */
-public class Game extends com.idearfly.timeline.websocket.Game<Player> {
+public class Game extends BaseGame<Player> {
     GameCenter gameCenter;
 
     private int no;// 房间号
@@ -26,13 +27,13 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
 
     /**
      * 玩家信息，进入房间后记录,包括观战
-     * user = Player
+     * user = BasePlayer
      */
     private Map<String, Player> players = new LinkedHashMap<>();
 
     /**
      * 就坐情况，用于游戏就绪
-     * seat = Player
+     * seat = BasePlayer
      */
     private CoherentMap<Integer, Player> desktop = new CoherentMap<>();
 
@@ -156,6 +157,10 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
 
     public List<String> getSetting() {
         return setting;
+    }
+
+    public void setSetting(List<String> setting) {
+        this.setting = setting;
     }
 
     /***
@@ -569,7 +574,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
                     LinkedList<Player> list = new LinkedList<>(desktop.values());
                     for (Player player : list) {
                         player.setStage("Vote");
-                        Endpoint endpoint = player.endpoint();
+                        BaseEndpoint endpoint = player.endpoint();
                         if (endpoint != null) {
                             endpoint.emit("Vote", export(player));
                         }
@@ -1001,7 +1006,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     public synchronized void broadcast(String action, JSONObject jsonObject) {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            Endpoint endpoint = player.endpoint();
+            BaseEndpoint endpoint = player.endpoint();
             if (endpoint != null) {
                 endpoint.emit(action, jsonObject);
             }
@@ -1019,7 +1024,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
             if (player != caller) {
-                Endpoint endpoint = player.endpoint();
+                BaseEndpoint endpoint = player.endpoint();
                 if (endpoint != null) {
                     endpoint.emit(action, jsonObject);
                 }
@@ -1033,7 +1038,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     public synchronized void finall() {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            Endpoint endpoint = player.endpoint();
+            BaseEndpoint endpoint = player.endpoint();
             if (endpoint != null) {
                 endpoint.emit("Finally", export(player));
             }
@@ -1046,7 +1051,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
     public synchronized void speek() {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player: list) {
-            Endpoint endpoint = player.endpoint();
+            BaseEndpoint endpoint = player.endpoint();
             if (endpoint != null) {
                 endpoint.emit("Speek", export(player));
             }
@@ -1061,7 +1066,7 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player pl : list) {
             if (pl != player) {
-                Endpoint endpoint = pl.endpoint();
+                BaseEndpoint endpoint = pl.endpoint();
                 if (endpoint != null) {
                     JSONObject object = new JSONObject();
                     object.put("seat", player.getSeat());
@@ -1078,12 +1083,26 @@ public class Game extends com.idearfly.timeline.websocket.Game<Player> {
         LinkedList<Player> list = new LinkedList<>(players.values());
         for (Player player : list) {
             if (player != caller) {
-                Endpoint endpoint = player.endpoint();
+                BaseEndpoint endpoint = player.endpoint();
                 if (endpoint != null) {
                     endpoint.emit("GameStart", export(player));
                 }
             }
         }
+    }
+
+    /**
+     * 同步座位
+     */
+    public synchronized void syncSeat() {
+        syncAll("syncSeat");
+    }
+
+    /**
+     * 同步座位
+     */
+    public synchronized void syncSeat(Player caller) {
+        syncOthers(caller, "syncSeat");
     }
 
     /**

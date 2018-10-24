@@ -2,11 +2,13 @@ package org.idear.endpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
-import com.idearfly.timeline.websocket.Game;
 import com.idearfly.timeline.websocket.GameEndpoint;
+import org.idear.handler.Game;
+import org.idear.handler.GameCenter;
 import org.idear.handler.Player;
 
-import javax.websocket.*;
+import javax.websocket.CloseReason;
+import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 /**
@@ -14,7 +16,7 @@ import javax.websocket.server.ServerEndpoint;
  * 维护player实例
  */
 @ServerEndpoint("/game/{no}")
-public class PlayerEndpoint extends GameEndpoint {
+public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     public void onClose(Session session, CloseReason closeReason) {
         super.onClose(session, closeReason);
@@ -22,12 +24,6 @@ public class PlayerEndpoint extends GameEndpoint {
             player.endpoint(null);
             game.syncStatus(player);
         }
-    }
-
-
-    @OnError
-    public void onError(Session session, Throwable error) {
-        super.onError(session, error);
     }
 
     /////////////////////////
@@ -40,7 +36,7 @@ public class PlayerEndpoint extends GameEndpoint {
         Integer seat = data.getInteger("seat");
         game.sitdown(seat, player);
         // 换座位,同步给其他人
-        game.synchronise(player);
+        game.syncSeat(player);
         return null;
     }
 
@@ -50,7 +46,7 @@ public class PlayerEndpoint extends GameEndpoint {
             // 游戏开始了
 
         }
-        game.synchronise(player);
+        game.syncStatus(player);
 
         return null;
     }
@@ -58,7 +54,7 @@ public class PlayerEndpoint extends GameEndpoint {
     public JSONObject onRestart(JSONObject data) {
         boolean readyStatus = data.getBoolean("ready");
         game.restart(player, readyStatus);
-        game.synchronise(player);
+        game.syncStatus(player);
 
         return null;
     }

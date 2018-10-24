@@ -1,16 +1,16 @@
 package org.idear.handler;
 
+import com.idearfly.timeline.websocket.BaseGameCenter;
+
 import java.util.*;
 
 /**
  * Created by idear on 2018/9/29.
  *
  */
-public class GameCenter extends com.idearfly.timeline.websocket.GameCenter {
+public class GameCenter extends BaseGameCenter<Game> {
 
-
-    public GameCenter(Class<? extends com.idearfly.timeline.websocket.Game> gameClass) {
-        super(gameClass);
+    public GameCenter() {
         init();
     }
 
@@ -70,7 +70,9 @@ public class GameCenter extends com.idearfly.timeline.websocket.GameCenter {
 
     public Game newGame(List<String> setting) {
         Integer no = nextNo();
-        Game game = new Game(no, setting);
+        Game game = new Game();
+        game.setNo(no);
+        game.setSetting(setting);
         games.put(no, game);
         return game;
     }

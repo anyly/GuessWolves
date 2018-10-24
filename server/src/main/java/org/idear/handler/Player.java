@@ -2,6 +2,7 @@ package org.idear.handler;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.idearfly.timeline.websocket.BasePlayer;
 import org.idear.endpoint.PlayerEndpoint;
 import org.idear.game.entity.Movement;
 
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * Created by idear on 2018/9/29.
  */
-public class Player extends com.idearfly.timeline.websocket.Player {
+public class Player extends BasePlayer {
 
     private Integer seat;// 座位号
     private String poker;// 身份牌
