@@ -1,5 +1,5 @@
-group 'org.idear'
-version '1.0-SNAPSHOT'
+group 'com.idearfly'
+version '1.0'
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
