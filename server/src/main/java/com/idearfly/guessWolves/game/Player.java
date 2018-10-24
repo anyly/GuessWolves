@@ -16,8 +16,6 @@ public class Player extends BasePlayer {
     private String poker;// 身份牌
     private boolean ready;// 是否就绪, 就绪好了就开始游戏
 
-    private String stage;//  玩家所处阶段, 无指定则与游戏总进度一直
-
     private Integer[] targets;// 行动时选择技能目标
 
     private List<String> speaks = new LinkedList<>();//发言阶段
@@ -89,14 +87,6 @@ public class Player extends BasePlayer {
 
     public void setWin(boolean win) {
         this.win = win;
-    }
-
-    public String getStage() {
-        return stage;
-    }
-
-    public void setStage(String stage) {
-        this.stage = stage;
     }
 
     public List<Movement> getMovements() {

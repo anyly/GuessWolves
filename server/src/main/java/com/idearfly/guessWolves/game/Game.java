@@ -2,6 +2,7 @@ package com.idearfly.guessWolves.game;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.idearfly.collection.CoherentMap;
 import com.idearfly.guessWolves.game.entity.Camp;
 import com.idearfly.guessWolves.game.entity.Movement;
@@ -10,9 +11,11 @@ import com.idearfly.guessWolves.game.entity.spell.Replicate;
 import com.idearfly.guessWolves.game.entity.spell.Rob;
 import com.idearfly.guessWolves.game.entity.spell.Show;
 import com.idearfly.guessWolves.game.entity.spell.Switch;
-import com.idearfly.guessWolves.handler.Story;
-import com.idearfly.timeline.websocket.BaseEndpoint;
+import com.idearfly.timeline.Event;
+import com.idearfly.timeline.Plot;
+import com.idearfly.timeline.Story;
 import com.idearfly.timeline.websocket.BaseGame;
+import com.idearfly.timeline.websocket.Log;
 import com.idearfly.util.StringUtil;
 
 import java.util.*;
@@ -21,20 +24,46 @@ import java.util.*;
  * Created by idear on 2018/9/29.
  */
 public class Game extends BaseGame<Player> {
-    GameCenter gameCenter;
+    //内部类
+    private class PlayerEvent extends Event {
+        List<Player> players;
 
-    private int no;// 房间号
-    private List<String> setting;// 选牌
+        public PlayerEvent(String name, String... pokers) {
+            super(name);
+            players = findInitialByPokers(pokers);
+        }
 
+        @Override
+        public boolean when() {
+            return players.size() > 0;
+        }
+
+        @Override
+        public boolean ending() {
+            for (Player player: players) {
+                if (player.getMission() == null) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public void doing() {
+            for (Player player : players) {
+                player.setMission(getName());
+                player.emit(getName(), null);
+            }
+        }
+    }
+    //[属性]
     /**
-     * 玩家信息，进入房间后记录,包括观战
-     * user = BasePlayer
+     * 选牌
      */
-    private Map<String, Player> players = new LinkedHashMap<>();
-
+    private List<String> setting;
     /**
      * 就坐情况，用于游戏就绪
-     * seat = BasePlayer
+     * seat = Player
      */
     private CoherentMap<Integer, Player> desktop = new CoherentMap<>();
 
@@ -73,7 +102,7 @@ public class Game extends BaseGame<Player> {
     /**
      * 猎人时间
      */
-    private List<Integer> hunters;
+    private List<Player> hunters;
 
     /**
      * 猎人枪杀
@@ -92,19 +121,757 @@ public class Game extends BaseGame<Player> {
     private Report report;
 
     /**
-     * 流程
-     */
-    private Story story;
-
-    /**
      * 记录步骤
      */
     private List<Movement> logs;
 
-    public Player getPlayer(String user) {
-        return players.get(user);
+    //[常量区]
+    private Integer[] integers = new Integer[]{};
+
+    //[Getter && Setter]
+/*
+        jsonObject.put("setting", setting);
+        jsonObject.put("desktop", desktop);
+        jsonObject.put("deck", deck);
+        jsonObject.put("playerCount", playerCount());
+        jsonObject.put("stage", stage);
+        jsonObject.put("speekStartIndex", speekStartIndex);
+        jsonObject.put("speekCurrentIndex", speekCurrentIndex);
+        jsonObject.put("speekRound", speekRound);
+        jsonObject.put("votes", votes);
+        jsonObject.put("report", report);
+        jsonObject.put("deadth", deadth);
+        jsonObject.put("hunterKill", hunterKill);
+        jsonObject.put("logs", logs);
+ */
+    public CoherentMap<Integer, Player> getDesktop() {
+        return desktop;
     }
 
+    public void setDesktop(CoherentMap<Integer, Player> desktop) {
+        this.desktop = desktop;
+    }
+
+    public LinkedHashMap<Integer, String> getDeck() {
+        return deck;
+    }
+
+    public void setDeck(LinkedHashMap<Integer, String> deck) {
+        this.deck = deck;
+    }
+
+    public int getSpeekStartIndex() {
+        return speekStartIndex;
+    }
+
+    public void setSpeekStartIndex(int speekStartIndex) {
+        this.speekStartIndex = speekStartIndex;
+    }
+
+    public int getSpeekCurrentIndex() {
+        return speekCurrentIndex;
+    }
+
+    public void setSpeekCurrentIndex(int speekCurrentIndex) {
+        this.speekCurrentIndex = speekCurrentIndex;
+    }
+
+    public int getSpeekRound() {
+        return speekRound;
+    }
+
+    public void setSpeekRound(int speekRound) {
+        this.speekRound = speekRound;
+    }
+
+    public Map<Integer, Integer> getVotes() {
+        return votes;
+    }
+
+    public void setVotes(Map<Integer, Integer> votes) {
+        this.votes = votes;
+    }
+
+    public Map<Integer, Integer> getHunterKill() {
+        return hunterKill;
+    }
+
+    public void setHunterKill(Map<Integer, Integer> hunterKill) {
+        this.hunterKill = hunterKill;
+    }
+
+    public Set<Integer> getDeadth() {
+        return deadth;
+    }
+
+    public void setDeadth(Set<Integer> deadth) {
+        this.deadth = deadth;
+    }
+
+    public Report getReport() {
+        return report;
+    }
+
+    public void setReport(Report report) {
+        this.report = report;
+    }
+
+    public List<Movement> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Movement> logs) {
+        this.logs = logs;
+    }
+
+    @Override
+    public void config(JSONObject config) {
+        super.config(config);
+        setting = config.getObject("setting", new TypeReference<List<String>>(){});
+    }
+
+    public List<String> getSetting() {
+        return setting;
+    }
+
+    public void setSetting(List<String> setting) {
+        this.setting = setting;
+    }
+
+    //[核心帧]
+    @Override
+    public Story story() {
+        return Story
+                .configuration()
+                .name("一夜终极狼人杀")
+                //系统发牌
+                .plot(new Event("Ready") {
+                    @Override
+                    public boolean when() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        return ready.size() == playerCount();
+                    }
+
+                    @Override
+                    public void doing() {
+
+                    }
+                })
+                .plot(new Plot("Shuffle") {
+                    @Override
+                    public void doing() {
+                        List<String> pool = new LinkedList(setting);
+
+                        List<Player> wolves = findByPokers();
+                        Player cobber = null;
+                        Player doppel = null;
+                        for (int seat=1; pool.size()>0; seat++) {
+                            int index = GameCenter.randomInt(pool.size());
+                            String poker = pool.remove(index);
+                            // 测试
+//                            if (seat==1)poker = "化身幽灵";
+//                            if (seat==2)poker = "猎人";
+//                            if (seat==3)poker = "狼人";
+
+                            Log.debug("发牌", seat+" = "+poker);
+                            initial.put(seat, poker);
+                            deck.put(seat, poker);
+                            // 回写到玩家身份上
+                            Player player = findBySeat(seat);
+                            if (player != null) {
+                                player.setPoker(poker);
+                                // 查看自己的牌
+                                Show show = new Show(seat, seat);
+                                Movement movement = show.cast(deck, player);
+                                player.getMovements().add(movement);
+                                ///log
+                                String summary = "初为"+ StringUtil.simplePokerName(poker);
+                                movement.setSummary(summary);
+                                movement.setDescription(seat+"号发牌后得到"+poker);
+                                movement.setSpell("系统发牌");
+                                // 确定执行顺序
+                                if (poker.equals("狼人")) {
+                                    wolves.add(player);
+                                } else if (poker.equals("皮匠")) {
+                                    cobber = player;
+                                } else if (poker.equals("化身幽灵")) {
+                                    doppel = player;
+                                }
+                            }
+                        }
+                        ///log
+                        Movement movement = new Movement(null);
+                        StringBuilder stringBuilder = new StringBuilder();
+                        if (wolves.size() > 0) {
+                            for (Player player: wolves) {
+                                stringBuilder.append(player.getSeat()+"号");
+                            }
+                            stringBuilder.append("玩家是狼人");
+                        } else {
+                            stringBuilder.append("没有狼人");
+                        }
+                        String description = "发牌,本局"+stringBuilder.toString();
+                        if (cobber != null) {
+                            description += ","+cobber.getSeat()+"玩家是皮匠";
+                        }
+                        movement.setDescription(description);
+                        movement.setSpell("系统发牌");
+                        addLog(movement);
+                        // 广播所有玩家,游戏开始
+                        if (doppel == null) {
+                            gameStart(null);
+                        } else {
+                            doppel.emit("GameStart", Game.this);
+                        }
+                    }
+                })
+                // 化身幽灵醒来
+                .plot(new Event("Doppel") {
+                    String poker;
+                    Player player;
+
+                    @Override
+                    public boolean when() {
+                        poker = "化身幽灵";
+                        Player player = findInitialByPoker(poker);
+                        if (player == null) {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        return player.getMission() == null;
+                    }
+
+                    @Override
+                    public void doing() {
+                        String stage = this.getName();
+                        player.setMission(stage);
+                        player.emit(stage, null);
+                    }
+                })
+                .plot(new Event("Wolves") {
+                    private List<Integer> indexs;
+                    private Player player;
+
+                    @Override
+                    public boolean when() {
+                        indexs = findInitialSeatsByPokers("狼人", "化身狼人");
+                        if (indexs.size()>0) {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        return player == null || player.getMission() == null;
+                    }
+
+                    @Override
+                    public void doing() {
+                        if (indexs.size() == 1) {
+                            player = findBySeat(indexs.get(0));
+                            String stage = getName();
+                            player.setMission(stage);
+                            if (player.endpoint() != null) {
+                                player.emit(stage, Game.this);
+                            }
+                        } else {
+                            partnerAction(indexs, "狼人");
+                        }
+                    }
+                })
+                // 爪牙行动
+                .plot(new Plot("Minion") {
+                    @Override
+                    public void doing() {
+                        List<Player> pls = findInitialByPokers("爪牙", "化身爪牙");
+                        if (pls.size() == 0) {
+                            return;
+                        }
+
+                        List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
+                        Integer[] indexArray = indexs.toArray(integers);
+                        String summary = null;
+                        String description = null;
+                        if (indexs.size() > 0) {
+                            StringBuilder stringBuilder = new StringBuilder();
+                            StringBuilder stringBuilder1 = new StringBuilder();
+                            for (Integer i : indexs) {
+                                if (stringBuilder.length() > 0) {
+                                    stringBuilder.append(",");
+                                    stringBuilder1.append(",");
+                                }
+                                stringBuilder.append(i);
+                                stringBuilder1.append(i + "号玩家");
+                            }
+                            summary = "狼人" + stringBuilder.toString();
+                            description = "狼人" + stringBuilder1.toString();
+                        } else {
+                            summary = "没有狼人";
+                            description = "没有狼人";
+                        }
+                        for (Player player : pls) {
+                            // 爪牙看到狼
+                            Show show = new Show(player.getSeat(), indexArray);
+                            Movement partMovement = show.cast(deck, player);
+                            partMovement.setSummary(summary);
+                            String string = player.getSeat() + "号玩家" + player.getUser() + "发现" + description;
+                            partMovement.setDescription(string);
+                            partMovement.setSpell("爪牙行动");
+                            player.getMovements().add(partMovement);
+
+                            if (player.endpoint() != null) {
+                                player.emit("syncGame", Game.this);
+                            }
+                            System.out.println("####" + description + " 视角为:" + JSON.toJSONString(player.getMovements().get(player.getMovements().size() - 1).getViewport()));
+                            player.setTargets(null);
+                            player.setMission(null);
+
+                        }
+                        Movement movement = new Movement(null);
+                        movement.setSpell("爪牙行动");
+                        movement.setSummary(summary);
+                        movement.setDescription(description);
+                        movement.setTargets(indexArray);
+                        addLog(movement);
+                    }
+                })
+
+                // 守夜人行动
+                .plot(new Plot("Mason") {
+                    @Override
+                    public void doing() {
+                        List<Integer> indexs = findInitialSeatsByPokers("守夜人", "化身守夜人");
+                        if (indexs.size() > 0) {
+                            partnerAction(indexs, "守夜人");
+                        }
+                    }
+                })
+
+                // 预言家醒来
+                .plot(new PlayerEvent("Seer", "预言家", "化身预言家"))
+
+                // 化身强盗醒来
+                .plot(new PlayerEvent("AsRobber", "化身强盗"))
+                // 强盗醒来
+                .plot(new PlayerEvent("Robber", "强盗"))
+
+                // 化身捣蛋鬼醒来
+                .plot(new PlayerEvent("AsTroubleMarker", "化身捣蛋鬼"))
+                // 捣蛋鬼醒来
+                .plot(new PlayerEvent("TroubleMarker", "捣蛋鬼"))
+
+                // 化身酒鬼醒来
+                .plot(new PlayerEvent("AsDrunk", "化身酒鬼"))
+                // 酒鬼醒来
+                .plot(new PlayerEvent("Drunk", "酒鬼"))
+
+                // 失眠者行动
+                .plot(new Plot("Insomniac") {
+                    @Override
+                    public void doing() {
+                        List<Player> players = findInitialByPokers("失眠者", "化身失眠者");
+                        if (players.size() > 0) {
+                            StringBuilder allSummary = new StringBuilder();
+                            StringBuilder allDescription = new StringBuilder();
+                            List<Integer> indexs = new LinkedList<>();
+                            for (Player player : players) {
+                                Integer seat = player.getSeat();
+                                indexs.add(seat);
+                                // 失眠者 查看当前自己牌
+                                Show show = new Show(seat, seat);
+                                Movement partMovement = show.cast(deck, player);
+                                player.getMovements().add(partMovement);
+                                String poker = deck.get(seat);
+                                String summary = null;
+                                String description = null;
+                                if (poker.equals("失眠者") || poker.equals("化身失眠者")) {
+                                    summary = "身份未调换";
+                                    description = "身份未调换";
+                                } else {
+                                    summary = "失变" + StringUtil.simplePokerName(poker);
+                                    description = "从失眠者变成" + poker;
+                                }
+                                String string = seat + "号玩家" + player.getUser() + description;
+                                if (allDescription.length() > 0) {
+                                    allDescription.append(",");
+                                }
+                                allDescription.append(string);
+                                partMovement.setDescription(string);
+                                if (allSummary.length() > 0) {
+                                    allSummary.append(",");
+                                }
+                                allSummary.append(summary);
+                                partMovement.setSummary(summary);
+                                partMovement.setSpell("失眠者行动");
+                                
+                                player.emit("syncGame", Game.this);
+                            }
+                            Movement movement = new Movement(null);
+                            movement.setSpell("失眠者行动");
+                            movement.setSummary(allSummary.toString());
+                            movement.setDescription(allDescription.toString());
+                            movement.setTargets(indexs.toArray(integers));
+                            addLog(movement);
+                        }
+                    }
+                })
+
+                // 发言
+                .plot(new Plot("Speek") {
+                    @Override
+                    public void doing() {
+                        Random random = new Random(System.currentTimeMillis());
+                        speekCurrentIndex = random.nextInt(desktop.size()) + 1;
+                        speekStartIndex = speekCurrentIndex;
+                        //speek();
+                        Movement movement = new Movement(null);
+                        movement.setSpell("开始发言");
+                        String summary = "随机选出" + speekStartIndex + "号第一个发言";
+                        movement.setCaller(speekStartIndex);
+                        movement.setSummary(summary);
+                        movement.setDescription(summary);
+                        movement.setTargets(null);
+                        addLog(movement);
+                    }
+                })
+
+                // 发起投票
+                .plot(new Event("Vote") {
+                    LinkedList<Player> players;
+
+                    @Override
+                    public boolean when() {
+                        players = new LinkedList<>(desktop.values());
+                        return players.size() > 0;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        for (Player player : players) {
+                            if (player.getMission() != null) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public void doing() {
+                        for (Player player : players) {
+                            player.setMission(getName());
+                            player.emit(getName(), Game.this);
+                        }
+                    }
+                })
+
+                // 死亡情况
+                .plot(new Plot("Deadth") {
+                    @Override
+                    public void doing() {
+                        Integer max = -1;
+                        List<Integer> scope = new LinkedList<>();
+                        Map<Integer, Integer> map = new LinkedHashMap();
+                        for (Map.Entry<Integer, Integer> entry: votes.entrySet()) {
+                            Integer vote = entry.getValue();// 投给谁
+                            int seat = entry.getKey();// 投票人
+
+                            if (vote == null || vote == 0) {
+                                continue;
+                            }
+                            Integer count = map.get(vote);
+                            if (count == null) {
+                                count = 1;
+                            } else {
+                                count = count + 1;
+                            }
+                            map.put(vote, count);
+
+                            if (count>max) {
+                                max = count;
+                                scope.clear();
+                                scope.add(vote);
+                            } else if (count == max){
+                                scope.add(vote);
+                            } else {
+
+                            }
+                        }
+                        deadth.addAll(scope);
+                    }
+                })
+
+                // 猎人权力
+                .plot(new Event("Hunter") {
+                    @Override
+                    public void doing() {
+                        String stage = getName();
+                        List<Player> players = findInitialByPokers("猎人", "化身猎人");
+
+                        for (Player player : players) {
+                            player.setMission(stage);
+                            player.emit(stage, Game.this);
+                        }
+                    }
+
+                    @Override
+                    public boolean when() {
+                        /// 猎人得票
+                        for (Integer seat: deadth) {
+                            String poker = deck.get(seat);
+                            if (poker.equals("猎人") || poker.equals("化身猎人")) {
+                                Player player = desktop.get(seat);
+                                hunters.add(player);
+                            }
+                        }
+                        // 有死亡的猎人
+                        return hunters.size()>0;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        for (Player player : hunters) {
+                            if (player.getMission() != null) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                })
+
+                // 计算胜负
+                .plot(new Plot("Result")  {
+                    @Override
+                    public void doing() {
+                        //狼阵营
+                        boolean wolvesWin = false;
+                        //村民阵营
+                        boolean villagerWin = false;
+                        //皮匠阵营
+                        boolean cobblerWin = false;
+                        // 所有人
+                        boolean allWin = false;
+
+                        //皮匠死亡
+                        boolean cobberDeadth = false;
+                        //狼人死亡
+                        boolean wolvesDeadth = false;
+
+
+
+                        //皮匠如果死亡, 皮匠一定赢
+                        for (Integer seat: deadth) {
+                            String poker = deck.get(seat);
+                            if (poker.equals("皮匠") || poker.equals("化身皮匠")) {
+                                cobberDeadth = true;
+                            }
+                            if (poker.equals("狼人") || poker.equals("化身狼人")) {
+                                wolvesDeadth = true;
+                            }
+                        }
+
+                        boolean hasWolves = false;
+                        for (Integer seat : desktop.keySet()) {
+                            String poker = deck.get(seat);
+                            if (poker.equals("狼人") || poker.equals("化身狼人")) {
+                                hasWolves = true;
+                                break;
+                            }
+                        }
+
+                        try {
+                            /**
+                             * 获胜条件入下:
+                             * <条件:皮匠死亡> = 皮匠获胜 => 狼输 , <条件1.有狼局 && 条件2.狼死亡> = 村民获胜, <条件1.无狼局>= 村民输
+                             * <条件;皮匠未死亡> = 皮匠输, <条件1.有狼局 && 条件2.狼死亡> = 村民获胜狼输, <条件1.有狼局 && 条件2.狼未死亡> = 村民输狼获胜, <条件1.无狼局 && 条件2.无死亡--平票或弃权票> = 所有人获胜, <条件1.无狼局 && 条件2.有死亡> = 所有人落败
+                             */
+
+
+
+                            // 皮匠死亡 => 皮匠获胜
+                            if (cobberDeadth) {
+                                cobblerWin = true;
+                                if (deadth.size() == 1) {// 皮匠单独赢
+                                    villagerWin = false;
+                                    wolvesWin = false;
+                                    report.setDescription("皮匠独赢");
+                                    throw new RuntimeException();
+                                }
+                            }
+
+                            if (cobblerWin) {
+                                wolvesWin = false;
+                                if (hasWolves) {
+                                    if (wolvesDeadth) {
+                                        villagerWin = true;
+                                        report.setDescription("皮匠狼都死");
+                                    } else {
+                                        villagerWin = false;
+                                        report.setDescription("皮匠死狼未死");
+                                    }
+                                } else {
+                                    villagerWin = false;
+                                    report.setDescription("皮匠死无狼局");
+                                }
+                                throw new RuntimeException();
+                            } else {
+                                if (hasWolves) {
+                                    if (wolvesDeadth) {
+                                        villagerWin = true;
+                                        wolvesWin = false;
+                                        report.setDescription("狼人被抓住了");
+                                    } else {
+                                        villagerWin = false;
+                                        wolvesWin = true;
+                                        report.setDescription("有狼未死");
+                                    }
+                                    throw new RuntimeException();
+                                } else {
+                                    if (deadth.size() == 0) {
+                                        report.setDescription("无狼局弃权票");
+                                        allWin = true;
+                                    } else if (deadth.size() == playerCount()) {
+                                        report.setDescription("无狼局平票");
+                                        allWin = true;
+                                    } else {
+                                        report.setDescription("无狼局有伤亡");
+                                        allWin = false;
+                                    }
+                                    // 所有人的获胜
+                                    for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
+                                        Player player = entry.getValue();
+                                        Camp camp = report.getAll();
+                                        if (camp == null) {
+                                            camp = new Camp("所有人");
+                                            camp.setWin(allWin);
+                                            report.setAll(camp);
+                                        }
+                                        String pokerDesc = deck.get(player.getSeat());
+                                        if (!player.getPoker().equals(pokerDesc)) {
+                                            pokerDesc = player.getPoker() +"->" + pokerDesc;
+                                        }
+                                        JSONObject jsonObject = new JSONObject();
+                                        jsonObject.put("user", player.getUser());
+                                        jsonObject.put("seat", player.getSeat());
+                                        jsonObject.put("pokerDesc", pokerDesc);
+                                        camp.getMembers().add(jsonObject);
+                                    }
+                                }
+                            }
+                        } catch (RuntimeException e) {
+                            // 分阵营获胜
+                            for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
+                                Player player = entry.getValue();
+                                Integer seat = entry.getKey();
+                                String poker = deck.get(seat);
+                                String pokerDesc = poker;
+                                if (!player.getPoker().equals(pokerDesc)) {
+                                    pokerDesc = player.getPoker() +"->" + pokerDesc;
+                                }
+                                String campName = GameCenter.camp.get(poker);
+                                if ("城镇".equals(campName)) {
+                                    Camp camp = report.getTown();
+                                    if (camp == null) {
+                                        camp = new Camp("城镇阵营");
+                                        camp.setWin(villagerWin);
+                                        report.setTown(camp);
+                                    }
+
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("user", player.getUser());
+                                    jsonObject.put("seat", player.getSeat());
+                                    jsonObject.put("pokerDesc", pokerDesc);
+                                    camp.getMembers().add(jsonObject);
+                                } else if ("狼人".equals(campName)) {
+                                    Camp camp = report.getWolves();
+                                    if (camp == null) {
+                                        camp = new Camp("狼人阵营");
+                                        camp.setWin(wolvesWin);
+                                        report.setWolves(camp);
+                                    }
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("user", player.getUser());
+                                    jsonObject.put("seat", player.getSeat());
+                                    jsonObject.put("pokerDesc", pokerDesc);
+                                    camp.getMembers().add(jsonObject);
+                                } else if ("皮匠".equals(campName)) {
+                                    Camp camp = report.getCobbler();
+                                    if (camp == null) {
+                                        camp = new Camp("皮匠阵营");
+                                        camp.setWin(cobblerWin);
+                                        report.setCobbler(camp);
+                                    }
+                                    JSONObject jsonObject = new JSONObject();
+                                    jsonObject.put("user", player.getUser());
+                                    jsonObject.put("seat", player.getSeat());
+                                    jsonObject.put("pokerDesc", pokerDesc);
+                                    camp.getMembers().add(jsonObject);
+                                }
+                            }
+                        }
+
+                        ///logs
+                        Movement movement = new Movement(null);
+                        movement.setSpell("游戏结果");
+                        movement.setSummary(null);
+                        movement.setDescription(null);
+                        movement.setTargets(null);
+                        addLog(movement);
+                        ///日志排序
+                        String[] orderPokers = new String[] {
+                                "系统发牌",
+                                "化身幽灵行动",
+                                "狼人行动", "爪牙行动", "守夜人行动", "化身预言家行动", "预言家行动",
+                                "化身强盗行动",
+                                "强盗行动",
+                                "化身捣蛋鬼行动",
+                                "捣蛋鬼行动",
+                                "化身酒鬼行动",
+                                "酒鬼行动",
+                                "化身失眠者行动",
+                                "失眠者行动",
+                                "开始发言",
+                                "化身猎人行动",
+                                "猎人行动",
+                                "游戏结果"
+                        };
+                        Movement[] orderMovements = new Movement[orderPokers.length];
+                        LinkedList<Movement> newLogs = new LinkedList<>();
+                        for (Movement m: logs) {
+                            for (int i=0;i<orderPokers.length;i++) {
+                                String poker = orderPokers[i];
+                                if (m.getSpell().equals(poker)) {
+                                    orderMovements[i] = m;
+                                }
+                            }
+                        }
+                        for (Movement m : orderMovements) {
+                            if (m != null) {
+                                newLogs.add(m);
+                            }
+                        }
+                        logs = newLogs;
+                        ///
+                        finall();
+                        // 清除就位，用于重新开始
+                        for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
+                            entry.getValue().setReady(false);
+                        }
+                        ready.clear();
+                    }
+                })
+                .construct();
+    }
+    //[被动类方法:供外部调用]
     /**
      * 加入游戏,通知所有玩家,更新断线状态
      * @param player
@@ -123,68 +890,21 @@ public class Game extends BaseGame<Player> {
      */
     @Override
     public synchronized void leave(Player player) {
-        if ("Ready".equals(story.chapter())) {
+        if ("Ready".equals(getStage())) {
             super.leave(player);
+            desktop.removeKey(player);
+            ready.remove(player);
         }
         syncStatus(player);
     }
-
-    public void removePlayer(Player player) {
-        if ("Ready".equals(story.chapter())) {
-            players.remove(player.getUser());
-            desktop.removeKey(player);
-            ready.remove(player);
-
-            leaveGame(player);
-
-            syncGame(player);
-        } else {
-            
-        }
-    }
-
-
-    public int getNo() {
-        return no;
-    }
-
-
-
-    ////////
-    @Override
-    public com.idearfly.timeline.Story story() {
-        return null;
-    }
-
-    public List<String> getSetting() {
-        return setting;
-    }
-
-    public void setSetting(List<String> setting) {
-        this.setting = setting;
-    }
-
-    /***
-     * 判断是否所有步骤完成
-     * @return
-     */
-    private synchronized boolean allComplete() {
-        for (Player player:desktop.values()) {
-            if (player.getStage() != null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private Integer[] integers = new Integer[]{};
 
     /**
      * 找同伙
      * @param indexs
      * @param poker
      */
-    private void partnerAction(List<Integer> indexs, String poker) {
+    private List<Player> partnerAction(List<Integer> indexs, String poker) {
+        List<Player> players = new LinkedList<>();
         Integer[] indexArray = indexs.toArray(integers);
         String summary = null;
         String description = null;
@@ -211,6 +931,7 @@ public class Game extends BaseGame<Player> {
             if (team == null) {
                 continue;
             }
+            players.add(team);
             Show show = new Show(index, indexArray);
             Movement partMovement = show.cast(deck, team);
             partMovement.setSpell(poker+"行动");
@@ -220,11 +941,9 @@ public class Game extends BaseGame<Player> {
             partMovement.setDescription(string);
             team.getMovements().add(partMovement);
             if (team.endpoint() != null) {
-                team.endpoint().emit("syncGame", export(team));
+                team.endpoint().emit("syncGame", Game.this);
             }
             System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
-            team.setTargets(null);
-            team.setStage(null);
         }
 
         Movement movement = new Movement(null);
@@ -233,35 +952,7 @@ public class Game extends BaseGame<Player> {
         movement.setDescription(description);
         movement.setTargets(indexArray);
         addLog(movement);
-    }
-
-    public Story waitForAction() {
-        return story.addChapter("WaitForAction", () -> {
-            if (allComplete()) {
-                return true;
-            }
-            return false;
-        });
-    }
-
-    /**
-     * 用户操作
-     * @param stage
-     * @param pokers
-     */
-    private boolean playerAction(String stage, String... pokers) {
-        // 找初始身份
-        List<Player> players = findInitialByPokers(pokers);
-        if (players.size() > 0) {
-            for (Player player : players) {
-                player.setStage(stage);
-                if (player.endpoint() != null) {
-                    player.endpoint().emit(stage, null);
-                }
-            }
-            return true;
-        }
-        return false;
+        return players;
     }
 
     /**
@@ -272,16 +963,15 @@ public class Game extends BaseGame<Player> {
         movement.setViewport(new LinkedHashMap<>(deck));
         logs.add(movement);
         // 广播给观众
-        for (Player player:players.values()) {
+        for (Player player:allPlayers.values()) {
             if (player.getSeat() == null) {//
-                if (player.endpoint() != null) {
-                    player.endpoint().emit("God", export(player));
-                }
+                player.emit("God", Game.this);
             }
         }
     }
 
-    public void init() {
+    @Override
+    public void reload() {
         initial = new LinkedHashMap<>();
         deck = new LinkedHashMap<>();
         speekMap = new LinkedHashMap<>();
@@ -291,582 +981,7 @@ public class Game extends BaseGame<Player> {
         deadth = new LinkedHashSet<>();
         report = new Report();
         logs = new LinkedList<>();
-        story = new Story()
-                .addChapter("Ready")
-                .addChapter("Shuffle", ()-> {
-                    List<String> pool = new LinkedList<>(setting);
-
-                    List<Player> wolves = findByPokers();
-                    Player cobber = null;
-                    Player doppel = null;
-                    for (int seat=1; pool.size()>0; seat++) {
-                        int index = GameCenter.randomInt(pool.size());
-                        String poker = pool.remove(index);
-                        // 测试
-//                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "猎人";
-//                            if (seat==3)poker = "狼人";
-
-                        System.out.println("发牌:"+seat+" = "+ poker);
-                        initial.put(seat, poker);
-                        deck.put(seat, poker);
-                        // 回写到玩家身份上
-                        Player player = findBySeat(seat);
-                        if (player != null) {
-                            player.setPoker(poker);
-                            // 查看自己的牌
-                            Show show = new Show(seat, seat);
-                            Movement movement = show.cast(deck, player);
-                            player.getMovements().add(movement);
-                            ///log
-                            String summary = "初为"+ StringUtil.simplePokerName(poker);
-                            movement.setSummary(summary);
-                            movement.setDescription(seat+"号发牌后得到"+poker);
-                            movement.setSpell("系统发牌");
-                            // 确定执行顺序
-                            if (poker.equals("狼人")) {
-                                wolves.add(player);
-                            } else if (poker.equals("皮匠")) {
-                                cobber = player;
-                            } else if (poker.equals("化身幽灵")) {
-                                doppel = player;
-                            }
-                        }
-                    }
-                    ///log
-                    Movement movement = new Movement(null);
-                    StringBuilder stringBuilder = new StringBuilder();
-                    if (wolves.size() > 0) {
-                        for (Player player: wolves) {
-                            stringBuilder.append(player.getSeat()+"号");
-                        }
-                        stringBuilder.append("玩家是狼人");
-                    } else {
-                        stringBuilder.append("没有狼人");
-                    }
-                    String description = "发牌,本局"+stringBuilder.toString();
-                    if (cobber != null) {
-                        description += ","+cobber.getSeat()+"玩家是皮匠";
-                    }
-                    movement.setDescription(description);
-                    movement.setSpell("系统发牌");
-                    addLog(movement);
-                    // 广播所有玩家,游戏开始
-                    if (doppel == null) {
-                        gameStart(null);
-                    } else {
-                        if (doppel.endpoint() != null) {
-                            doppel.endpoint().emit("GameStart", export(doppel));
-                        }
-                    }
-                    return true;
-                })
-                // 化身幽灵醒来
-                .addChapter("DoppelAction", ()-> {
-                    String stage = "Doppel";
-                    String poker = "化身幽灵";
-                    Player player = findInitialByPoker(poker);
-                    if (player != null) {
-                        player.setStage(stage);
-                        if (player.endpoint() != null) {
-                            player.endpoint().emit(stage, null);
-                        }
-                    }
-                    return true;
-                });
-
-        waitForAction()
-                // 狼人行动
-                .addChapter("WolvesAction", ()-> {
-                    List<Integer> indexs = findInitialSeatsByPokers("狼人", "化身狼人");
-                    if (indexs.size() == 0) {
-
-                    } else if (indexs.size() == 1) {
-                        Player player = findBySeat(indexs.get(0));
-                        String stage = "Wolves";
-                        player.setStage(stage);
-                        if (player.endpoint() != null) {
-                            player.endpoint().emit(stage, export(player));
-                        }
-                    } else {
-                        partnerAction(indexs, "狼人");
-                    }
-                    return true;
-                })
-                // 爪牙行动
-                .addChapter("MinionAction", ()-> {
-                    List<Player> pls = findInitialByPokers("爪牙", "化身爪牙");
-                    if (pls.size() == 0) {
-                        return true;
-                    }
-
-                    List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人");
-                    Integer[] indexArray = indexs.toArray(integers);
-                    String summary = null;
-                    String description = null;
-                    if (indexs.size()>0) {
-                        StringBuilder stringBuilder = new StringBuilder();
-                        StringBuilder stringBuilder1 = new StringBuilder();
-                        for (Integer i : indexs) {
-                            if (stringBuilder.length()>0) {
-                                stringBuilder.append(",");
-                                stringBuilder1.append(",");
-                            }
-                            stringBuilder.append(i);
-                            stringBuilder1.append(i+"号玩家");
-                        }
-                        summary = "狼人"+stringBuilder.toString();
-                        description = "狼人"+stringBuilder1.toString();
-                    } else {
-                        summary = "没有狼人";
-                        description = "没有狼人";
-                    }
-                    for (Player player: pls) {
-                        // 爪牙看到狼
-                        Show show = new Show(player.getSeat(), indexArray);
-                        Movement partMovement = show.cast(deck, player);
-                        partMovement.setSummary(summary);
-                        String string = player.getSeat()+"号玩家"+player.getUser()+"发现"+description;
-                        partMovement.setDescription(string);
-                        partMovement.setSpell("爪牙行动");
-                        player.getMovements().add(partMovement);
-
-                        if (player.endpoint() != null) {
-                            player.endpoint().emit("syncGame", export(player));
-                        }
-                        System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
-                        player.setTargets(null);
-                        player.setStage(null);
-
-                    }
-                    Movement movement = new Movement(null);
-                    movement.setSpell("爪牙行动");
-                    movement.setSummary(summary);
-                    movement.setDescription(description);
-                    movement.setTargets(indexArray);
-                    addLog(movement);
-                    return  true;
-                })
-
-                // 守夜人行动
-                .addChapter("MasonAction", () -> {
-                    List<Integer> indexs = findInitialSeatsByPokers("守夜人", "化身守夜人");
-                    if (indexs.size() > 0) {
-                        partnerAction(indexs, "守夜人");
-                    }
-                    return true;
-                })
-
-                // 预言家醒来
-                .addChapter("SeerAction", () -> {
-                    playerAction("Seer", "预言家", "化身预言家");
-                    return true;
-                });
-
-        // 拦截, 上面步骤为并行
-        waitForAction()
-                // 化身强盗醒来
-                .addChapter("AsRobberAction", () ->{
-                    playerAction("AsRobber", "化身强盗");
-                    return true;
-                });
-        waitForAction()
-                // 强盗醒来
-                .addChapter("RobberAction", () ->{
-                    playerAction("Robber", "强盗");
-                    return true;
-                });
-        waitForAction()
-                // 化身捣蛋鬼醒来
-                .addChapter("AsTroubleMarkerAction", ()-> {
-                    playerAction("AsTroubleMarker", "化身捣蛋鬼");
-                    return true;
-                });
-        waitForAction()
-                // 捣蛋鬼醒来
-                .addChapter("TroubleMarkerAction", ()-> {
-                    playerAction("TroubleMarker", "捣蛋鬼");
-                    return true;
-                });
-        waitForAction()
-                // 化身酒鬼醒来
-                .addChapter("AsDrunkAction", ()->{
-                    playerAction("AsDrunk", "化身酒鬼");
-                    return true;
-                });
-
-        waitForAction()
-                // 酒鬼醒来
-                .addChapter("DrunkAction", ()->{
-                    playerAction("Drunk", "酒鬼");
-                    return true;
-                })
-
-                // 失眠者行动
-                .addChapter("InsomniacAction", ()-> {
-                    String stage = "Insomniac";
-                    List<Player> players = findInitialByPokers("失眠者", "化身失眠者");
-                    if (players.size() > 0) {
-                        StringBuilder allSummary = new StringBuilder();
-                        StringBuilder allDescription = new StringBuilder();
-                        List<Integer> indexs = new LinkedList<>();
-                        for (Player player : players) {
-                            Integer seat = player.getSeat();
-                            indexs.add(seat);
-                            // 失眠者 查看当前自己牌
-                            Show show = new Show(seat, seat);
-                            Movement partMovement = show.cast(deck, player);
-                            player.getMovements().add(partMovement);
-                            String poker = deck.get(seat);
-                            String summary = null;
-                            String description = null;
-                            if (poker.equals("失眠者") || poker.equals("化身失眠者")) {
-                                summary = "身份未调换";
-                                description = "身份未调换";
-                            } else {
-                                summary = "失变"+ StringUtil.simplePokerName(poker);
-                                description = "从失眠者变成"+poker;
-                            }
-                            String string = seat+"号玩家"+player.getUser() + description;
-                            if (allDescription.length()>0) {
-                                allDescription.append(",");
-                            }
-                            allDescription.append(string);
-                            partMovement.setDescription(string);
-                            if (allSummary.length()>0) {
-                                allSummary.append(",");
-                            }
-                            allSummary.append(summary);
-                            partMovement.setSummary(summary);
-                            partMovement.setSpell("失眠者行动");
-                            if (player.endpoint() != null) {
-                                player.endpoint().emit("syncGame", export(player));
-                            }
-                        }
-                        Movement movement = new Movement(null);
-                        movement.setSpell("失眠者行动");
-                        movement.setSummary(allSummary.toString());
-                        movement.setDescription(allDescription.toString());
-                        movement.setTargets(indexs.toArray(integers));
-                        addLog(movement);
-                    }
-                    return true;
-                });
-        // 行动结束
-        waitForAction()
-                // 发言
-                .addChapter("SpeekAction", ()-> {
-                    Random random = new Random(System.currentTimeMillis());
-                    speekCurrentIndex = random.nextInt(desktop.size())+1;
-                    speekStartIndex = speekCurrentIndex;
-                    //speek();
-                    Movement movement = new Movement(null);
-                    movement.setSpell("开始发言");
-                    String summary = "随机选出"+speekStartIndex+"号第一个发言";
-                    movement.setCaller(speekStartIndex);
-                    movement.setSummary(summary);
-                    movement.setDescription(summary);
-                    movement.setTargets(null);
-                    addLog(movement);
-                    return true;
-                })
-                // 发起投票
-                .addChapter("StartVote", ()->{
-                    LinkedList<Player> list = new LinkedList<>(desktop.values());
-                    for (Player player : list) {
-                        player.setStage("Vote");
-                        BaseEndpoint endpoint = player.endpoint();
-                        if (endpoint != null) {
-                            endpoint.emit("Vote", export(player));
-                        }
-                    }
-                    return true;
-                })
-                // 结束投票
-                .addChapter("AfterVote")
-
-                // 死亡情况
-                .addChapter("Deadth", ()-> {
-                    Integer max = -1;
-                    List<Integer> scope = new LinkedList<>();
-                    Map<Integer, Integer> map = new LinkedHashMap();
-                    for (Map.Entry<Integer, Integer> entry: votes.entrySet()) {
-                        Integer vote = entry.getValue();// 投给谁
-                        int seat = entry.getKey();// 投票人
-
-                        if (vote == null || vote == 0) {
-                            continue;
-                        }
-                        Integer count = map.get(vote);
-                        if (count == null) {
-                            count = 1;
-                        } else {
-                            count = count + 1;
-                        }
-                        map.put(vote, count);
-
-                        if (count>max) {
-                            max = count;
-                            scope.clear();
-                            scope.add(vote);
-                        } else if (count == max){
-                            scope.add(vote);
-                        } else {
-
-                        }
-                    }
-                    deadth.addAll(scope);
-                    return true;
-                })
-                // 猎人权力
-                .addChapter("HunterAction", ()->{
-                    /// 猎人
-                    for (Integer seat: deadth) {
-                        String poker = deck.get(seat);
-                        if (poker.equals("猎人") || poker.equals("化身猎人")) {
-                            hunters.add(seat);
-                        }
-                    }
-                    // 有死亡的猎人
-                    if (hunters.size() > 0) {
-                        String stage = "Hunter";
-                        List<Player> players = findInitialByPokers("猎人", "化身猎人");
-                        if (players.size() > 0) {
-                            for (Player player : players) {
-                                player.setStage(stage);
-                                if (player.endpoint() != null) {
-                                    player.endpoint().emit(stage, export(player));
-                                }
-                            }
-                            return true;
-                        }
-                        return false;
-                    }
-                    return true;
-                });
-        // 猎人执行完毕
-        waitForAction()
-                // 计算胜负
-                .addChapter("Result", ()-> {
-                    //狼阵营
-                    boolean wolvesWin = false;
-                    //村民阵营
-                    boolean villagerWin = false;
-                    //皮匠阵营
-                    boolean cobblerWin = false;
-                    // 所有人
-                    boolean allWin = false;
-
-                    //皮匠死亡
-                    boolean cobberDeadth = false;
-                    //狼人死亡
-                    boolean wolvesDeadth = false;
-
-
-
-                    //皮匠如果死亡, 皮匠一定赢
-                    for (Integer seat: deadth) {
-                        String poker = deck.get(seat);
-                        if (poker.equals("皮匠") || poker.equals("化身皮匠")) {
-                            cobberDeadth = true;
-                        }
-                        if (poker.equals("狼人") || poker.equals("化身狼人")) {
-                            wolvesDeadth = true;
-                        }
-                    }
-
-                    boolean hasWolves = false;
-                    for (Integer seat : desktop.keySet()) {
-                        String poker = deck.get(seat);
-                        if (poker.equals("狼人") || poker.equals("化身狼人")) {
-                            hasWolves = true;
-                            break;
-                        }
-                    }
-
-                    try {
-                        /**
-                         * 获胜条件入下:
-                         * <条件:皮匠死亡> = 皮匠获胜 => 狼输 , <条件1.有狼局 && 条件2.狼死亡> = 村民获胜, <条件1.无狼局>= 村民输
-                         * <条件;皮匠未死亡> = 皮匠输, <条件1.有狼局 && 条件2.狼死亡> = 村民获胜狼输, <条件1.有狼局 && 条件2.狼未死亡> = 村民输狼获胜, <条件1.无狼局 && 条件2.无死亡--平票或弃权票> = 所有人获胜, <条件1.无狼局 && 条件2.有死亡> = 所有人落败
-                         */
-
-
-
-                        // 皮匠死亡 => 皮匠获胜
-                        if (cobberDeadth) {
-                            cobblerWin = true;
-                            if (deadth.size() == 1) {// 皮匠单独赢
-                                villagerWin = false;
-                                wolvesWin = false;
-                                report.setDescription("皮匠独赢");
-                                throw new RuntimeException();
-                            }
-                        }
-
-                        if (cobblerWin) {
-                            wolvesWin = false;
-                            if (hasWolves) {
-                                if (wolvesDeadth) {
-                                    villagerWin = true;
-                                    report.setDescription("皮匠狼都死");
-                                } else {
-                                    villagerWin = false;
-                                    report.setDescription("皮匠死狼未死");
-                                }
-                            } else {
-                                villagerWin = false;
-                                report.setDescription("皮匠死无狼局");
-                            }
-                            throw new RuntimeException();
-                        } else {
-                            if (hasWolves) {
-                                if (wolvesDeadth) {
-                                    villagerWin = true;
-                                    wolvesWin = false;
-                                    report.setDescription("狼人被抓住了");
-                                } else {
-                                    villagerWin = false;
-                                    wolvesWin = true;
-                                    report.setDescription("有狼未死");
-                                }
-                                throw new RuntimeException();
-                            } else {
-                                if (deadth.size() == 0) {
-                                    report.setDescription("无狼局弃权票");
-                                    allWin = true;
-                                } else if (deadth.size() == playerCount()) {
-                                    report.setDescription("无狼局平票");
-                                    allWin = true;
-                                } else {
-                                    report.setDescription("无狼局有伤亡");
-                                    allWin = false;
-                                }
-                                // 所有人的获胜
-                                for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
-                                    Player player = entry.getValue();
-                                    Camp camp = report.getAll();
-                                    if (camp == null) {
-                                        camp = new Camp("所有人");
-                                        camp.setWin(allWin);
-                                        report.setAll(camp);
-                                    }
-                                    String pokerDesc = deck.get(player.getSeat());
-                                    if (!player.getPoker().equals(pokerDesc)) {
-                                        pokerDesc = player.getPoker() +"->" + pokerDesc;
-                                    }
-                                    JSONObject jsonObject = new JSONObject();
-                                    jsonObject.put("user", player.getUser());
-                                    jsonObject.put("seat", player.getSeat());
-                                    jsonObject.put("pokerDesc", pokerDesc);
-                                    camp.getMembers().add(jsonObject);
-                                }
-                            }
-                        }
-                    } catch (RuntimeException e) {
-                        // 分阵营获胜
-                        for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
-                            Player player = entry.getValue();
-                            Integer seat = entry.getKey();
-                            String poker = deck.get(seat);
-                            String pokerDesc = poker;
-                            if (!player.getPoker().equals(pokerDesc)) {
-                                pokerDesc = player.getPoker() +"->" + pokerDesc;
-                            }
-                            String campName = GameCenter.camp.get(poker);
-                            if ("城镇".equals(campName)) {
-                                Camp camp = report.getTown();
-                                if (camp == null) {
-                                    camp = new Camp("城镇阵营");
-                                    camp.setWin(villagerWin);
-                                    report.setTown(camp);
-                                }
-
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("user", player.getUser());
-                                jsonObject.put("seat", player.getSeat());
-                                jsonObject.put("pokerDesc", pokerDesc);
-                                camp.getMembers().add(jsonObject);
-                            } else if ("狼人".equals(campName)) {
-                                Camp camp = report.getWolves();
-                                if (camp == null) {
-                                    camp = new Camp("狼人阵营");
-                                    camp.setWin(wolvesWin);
-                                    report.setWolves(camp);
-                                }
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("user", player.getUser());
-                                jsonObject.put("seat", player.getSeat());
-                                jsonObject.put("pokerDesc", pokerDesc);
-                                camp.getMembers().add(jsonObject);
-                            } else if ("皮匠".equals(campName)) {
-                                Camp camp = report.getCobbler();
-                                if (camp == null) {
-                                    camp = new Camp("皮匠阵营");
-                                    camp.setWin(cobblerWin);
-                                    report.setCobbler(camp);
-                                }
-                                JSONObject jsonObject = new JSONObject();
-                                jsonObject.put("user", player.getUser());
-                                jsonObject.put("seat", player.getSeat());
-                                jsonObject.put("pokerDesc", pokerDesc);
-                                camp.getMembers().add(jsonObject);
-                            }
-                        }
-                    }
-
-                    ///logs
-                    Movement movement = new Movement(null);
-                    movement.setSpell("游戏结果");
-                    movement.setSummary(null);
-                    movement.setDescription(null);
-                    movement.setTargets(null);
-                    addLog(movement);
-                    ///日志排序
-                    String[] orderPokers = new String[] {
-                            "系统发牌",
-                            "化身幽灵行动",
-                            "狼人行动", "爪牙行动", "守夜人行动", "化身预言家行动", "预言家行动",
-                            "化身强盗行动",
-                            "强盗行动",
-                            "化身捣蛋鬼行动",
-                            "捣蛋鬼行动",
-                            "化身酒鬼行动",
-                            "酒鬼行动",
-                            "化身失眠者行动",
-                            "失眠者行动",
-                            "开始发言",
-                            "化身猎人行动",
-                            "猎人行动",
-                            "游戏结果"
-                    };
-                    Movement[] orderMovements = new Movement[orderPokers.length];
-                    LinkedList<Movement> newLogs = new LinkedList<>();
-                    for (Movement m: logs) {
-                        for (int i=0;i<orderPokers.length;i++) {
-                            String poker = orderPokers[i];
-                            if (m.getSpell().equals(poker)) {
-                                orderMovements[i] = m;
-                            }
-                        }
-                    }
-                    for (Movement m : orderMovements) {
-                        if (m != null) {
-                            newLogs.add(m);
-                        }
-                    }
-                    logs = newLogs;
-                    ///
-                    finall();
-                    // 清除就位，用于重新开始
-                    for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
-                        entry.getValue().setReady(false);
-                    }
-                    ready.clear();
-                    return true;
-                })
-                .addChapter("Finally")
-        ;
+        super.reload();
     }
 
     //////////////////////////////////////////////
@@ -1000,96 +1115,24 @@ public class Game extends BaseGame<Player> {
     }
 
     /**
-     * 广播所有玩家
-     * @param action
-     * @param jsonObject
-     */
-    public synchronized void broadcast(String action, JSONObject jsonObject) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            BaseEndpoint endpoint = player.endpoint();
-            if (endpoint != null) {
-                endpoint.emit(action, jsonObject);
-            }
-        }
-    }
-
-
-    /**
-     * 广播,除了调用者本身的玩家
-     * @param caller
-     * @param action
-     * @param jsonObject
-     */
-    public synchronized void broadcast(Player caller, String action, JSONObject jsonObject) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            if (player != caller) {
-                BaseEndpoint endpoint = player.endpoint();
-                if (endpoint != null) {
-                    endpoint.emit(action, jsonObject);
-                }
-            }
-        }
-    }
-
-    /**
      * 广播结果
      */
     public synchronized void finall() {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            BaseEndpoint endpoint = player.endpoint();
-            if (endpoint != null) {
-                endpoint.emit("Finally", export(player));
-            }
-        }
+        syncAll("Finally");
     }
 
     /**
      * 轮流发言
      */
-    public synchronized void speek() {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player: list) {
-            BaseEndpoint endpoint = player.endpoint();
-            if (endpoint != null) {
-                endpoint.emit("Speek", export(player));
-            }
-        }
-    }
-
-    /**
-     * 离开游戏
-     * @param player
-     */
-    public synchronized void leaveGame(Player player) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player pl : list) {
-            if (pl != player) {
-                BaseEndpoint endpoint = pl.endpoint();
-                if (endpoint != null) {
-                    JSONObject object = new JSONObject();
-                    object.put("seat", player.getSeat());
-                    endpoint.emit("LeaveGame", object);
-                }
-            }
-        }
+    public synchronized void speek(Player caller) {
+        syncOthers(caller, "Speek");
     }
 
     /**
      * 离开游戏
      */
     public synchronized void gameStart(Player caller) {
-        LinkedList<Player> list = new LinkedList<>(players.values());
-        for (Player player : list) {
-            if (player != caller) {
-                BaseEndpoint endpoint = player.endpoint();
-                if (endpoint != null) {
-                    endpoint.emit("GameStart", export(player));
-                }
-            }
-        }
+        syncOthers(caller, "GameStart");
     }
 
     /**
@@ -1139,7 +1182,7 @@ public class Game extends BaseGame<Player> {
      * 游戏核心数据,用于输出同步给client
      * @return
      */
-    public JSONObject export(Player player) {
+    /*public JSONObject export(Player player) {
         String stage = story.chapter();
         if (stage == null) {
             // 游戏结束
@@ -1174,7 +1217,7 @@ public class Game extends BaseGame<Player> {
         jsonObject.put("logs", logs);
         //jsonObject.put("movements", movements);
         return jsonObject;
-    }
+    }*/
 
     /**
      * 玩家数量
@@ -1223,7 +1266,7 @@ public class Game extends BaseGame<Player> {
         gameStart(null);
 
         player.setTargets(null);
-        player.setStage(null);
+        player.setMission(null);
 
 
         nextStage();
@@ -1267,11 +1310,11 @@ public class Game extends BaseGame<Player> {
         addLog(movement);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
         if (player.endpoint() != null) {
-            player.endpoint().emit("syncGame", export(player));
+            player.emit("syncGame", Game.this);
         }
 
         player.setTargets(null);
-        player.setStage(null);
+        player.setMission(null);
 
         nextStage();
     }
@@ -1321,10 +1364,10 @@ public class Game extends BaseGame<Player> {
         addLog(movement);
 
         if (player.endpoint() != null) {
-            player.endpoint().emit("syncGame", export(player));
+            player.emit("syncGame", Game.this);
         }
         player.setTargets(null);
-        player.setStage(null);
+        player.setMission(null);
 
         nextStage();
     }
@@ -1360,10 +1403,10 @@ public class Game extends BaseGame<Player> {
         addLog(movement);
 
         if (player.endpoint() != null) {
-            player.endpoint().emit("syncGame", export(player));
+            player.emit("syncGame", Game.this);
         }
         player.setTargets(null);
-        player.setStage(null);
+        player.setMission(null);
 
 
         nextStage();
@@ -1403,10 +1446,10 @@ public class Game extends BaseGame<Player> {
         addLog(movement);
 
         if (player.endpoint() != null) {
-            player.endpoint().emit("syncGame", export(player));
+            player.emit("syncGame", Game.this);
         }
         player.setTargets(null);
-        player.setStage(null);
+        player.setMission(null);
 
 
 
@@ -1442,10 +1485,10 @@ public class Game extends BaseGame<Player> {
         addLog(movement);
 
         if (player.endpoint() != null) {
-            player.endpoint().emit("syncGame", export(player));
+            player.emit("syncGame", Game.this);
         }
         player.setTargets(null);
-        player.setStage(null);
+        player.setMission(null);
 
 
         nextStage();
@@ -1516,7 +1559,7 @@ public class Game extends BaseGame<Player> {
      */
     public void vote(Player player, Integer vote) {
         player.setVote(vote);
-        player.setStage(null);
+        player.setMission(null);
         votes.put(player.getSeat(), vote);
 
 
@@ -1532,7 +1575,7 @@ public class Game extends BaseGame<Player> {
         hunters.remove(player.getSeat());
         hunterKill.put(player.getSeat(), kill);
         deadth.add(kill);
-        player.setStage(null);
+        player.setMission(null);
 
 
         nextStage();
@@ -1550,7 +1593,7 @@ public class Game extends BaseGame<Player> {
             ready.remove(player);
         }
         if (ready.size() == playerCount()) {
-            init();
+            reload();
             //
             clearUserData();
             //开始
@@ -1562,7 +1605,7 @@ public class Game extends BaseGame<Player> {
 
     private void clearUserData() {
         for (Player player: desktop.values()) {
-            player.setStage(null);
+            player.setMission(null);
             player.setPoker(null);
             player.setTargets(null);
             player.setSpeaks(new LinkedList<>());

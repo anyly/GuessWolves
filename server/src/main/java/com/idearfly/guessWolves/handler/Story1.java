@@ -6,18 +6,18 @@ import java.util.LinkedList;
 /**
  * 故事, 分为多章节
  */
-public class Story {
+public class Story1 {
     private LinkedList<Chapter> chapters = new LinkedList<>();
     private LinkedList<String> keys = new LinkedList<>();
     private HashSet<String> pass = new HashSet<>();
 
-    public Story addChapter(String key, Chapter chapter) {
+    public Story1 addChapter(String key, Chapter chapter) {
         keys.add(key);
         chapters.add(chapter);
         return this;
     }
 
-    public Story addChapter(String key) {
+    public Story1 addChapter(String key) {
         return addChapter(key, null);
     }
 
