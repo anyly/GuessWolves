@@ -1,4 +1,4 @@
-group 'com.idearfly'
+group 'com.idearfly.guessWolves'
 version parent.version
 
 apply plugin: 'war'

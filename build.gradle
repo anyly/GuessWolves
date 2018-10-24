@@ -1,4 +1,4 @@
-group 'com.idearfly'
+group 'com.idearfly.guessWolves'
 version '1.0'
 
 tasks.withType(JavaCompile) {
