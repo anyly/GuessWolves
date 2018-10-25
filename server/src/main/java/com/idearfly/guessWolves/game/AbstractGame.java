@@ -31,6 +31,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         public PlayerEvent(String name, String... pokers) {
             super(name);
+            if (pokers == null || pokers.length == 0) {
+                throw new NullPointerException("the PlayEvent called \'" + name + "\" unspecified parameters \"pokers\"");
+            }
             this.pokers = pokers;
         }
 
@@ -42,8 +45,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         @Override
         public boolean ending() {
-            for (Player player: players) {
-                if (player.getMission() == null) {
+            ListIterator<Player> listIterator =  players.listIterator();
+            Player player = null;
+            while (listIterator.hasNext()) {
+                player = listIterator.next();
+                if (player.getMission() != null) {
                     return false;
                 }
             }
@@ -338,32 +344,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     }
                 })
                 // 化身幽灵醒来
-                .plot(new Event("Doppel") {
-                    String poker;
-                    Player player;
-
-                    @Override
-                    public boolean when() {
-                        poker = "化身幽灵";
-                        Player player = findInitialByPoker(poker);
-                        if (player == null) {
-                            return true;
-                        }
-                        return false;
-                    }
-
-                    @Override
-                    public boolean ending() {
-                        return player.getMission() == null;
-                    }
-
-                    @Override
-                    public void doing() {
-                        String stage = this.getName();
-                        player.setMission(stage);
-                        player.emit(stage, null);
-                    }
-                })
+                .plot(new PlayerEvent("Doppel", "化身幽灵"))
                 .plot(new Event("Wolves") {
                     private List<Integer> indexs;
                     private Player player;
@@ -426,7 +407,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             summary = "没有狼人";
                             description = "没有狼人";
                         }
-                        for (Player player : pls) {
+                        ListIterator<Player> listIterator =  pls.listIterator();
+                        Player player = null;
+                        while (listIterator.hasNext()) {
+                            player = listIterator.next();
                             // 爪牙看到狼
                             Show show = new Show(player.getSeat(), indexArray);
                             Movement partMovement = show.cast(deck, player);
@@ -491,7 +475,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             StringBuilder allSummary = new StringBuilder();
                             StringBuilder allDescription = new StringBuilder();
                             List<Integer> indexs = new LinkedList<>();
-                            for (Player player : players) {
+                            ListIterator<Player> listIterator =  players.listIterator();
+                            Player player = null;
+                            while (listIterator.hasNext()) {
+                                player = listIterator.next();
                                 Integer seat = player.getSeat();
                                 indexs.add(seat);
                                 // 失眠者 查看当前自己牌
@@ -564,7 +551,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public boolean ending() {
-                        for (Player player : players) {
+                        ListIterator<Player> listIterator =  players.listIterator();
+                        Player player = null;
+                        while (listIterator.hasNext()) {
+                            player = listIterator.next();
                             if (player.getMission() != null) {
                                 return false;
                             }
@@ -574,7 +564,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public void doing() {
-                        for (Player player : players) {
+                        ListIterator<Player> listIterator =  players.listIterator();
+                        Player player = null;
+                        while (listIterator.hasNext()) {
+                            player = listIterator.next();
                             player.setMission(getName());
                             player.emit(getName(), AbstractGame.this);
                         }

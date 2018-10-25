@@ -1,6 +1,6 @@
 package com.idearfly.guessWolves.endpoint;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.TypeReference;
 import com.idearfly.guessWolves.game.Game;
 import com.idearfly.guessWolves.game.GameCenter;
@@ -68,7 +68,7 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param jsonArray
      * @return
      */
-    public Game onDoppel(JSONObject jsonArray) {
+    public Game onDoppel(JSONArray jsonArray) {
         Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
         this.player.setTargets(targets);
         if (targets.length > 0) {
@@ -84,7 +84,7 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param jsonArray
      * @return
      */
-    public Game onWolves(JSONObject jsonArray) {
+    public Game onWolves(JSONArray jsonArray) {
         Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
         this.player.setTargets(targets);
         if (targets.length > 0) {
@@ -100,7 +100,7 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param jsonArray
      * @return
      */
-    public Game onSeer(JSONObject jsonArray) {
+    public Game onSeer(JSONArray jsonArray) {
         Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
         this.player.setTargets(targets);
         if (targets.length > 0) {
@@ -116,7 +116,7 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param jsonArray
      * @return
      */
-    public Game onRobber(JSONObject jsonArray) {
+    public Game onRobber(JSONArray jsonArray) {
         Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
         this.player.setTargets(targets);
         if (targets.length > 0) {
@@ -132,7 +132,7 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param jsonArray
      * @return
      */
-    public Game onTroubleMarker(JSONObject jsonArray) {
+    public Game onTroubleMarker(JSONArray jsonArray) {
         Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
         this.player.setTargets(targets);
         if (targets.length > 0) {
@@ -148,7 +148,7 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param jsonArray
      * @return
      */
-    public Game onDrunk(JSONObject jsonArray) {
+    public Game onDrunk(JSONArray jsonArray) {
         Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
         this.player.setTargets(targets);
         if (targets.length > 0) {

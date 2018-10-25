@@ -1121,7 +1121,7 @@ end {
             playerPokers.cancelTips();
             playerPokers.unbind();
             client.http(stage, [seat], function () {
-                $('tips').html('等待行动...');
+                $('tips').html('等待他人行动...');
             });
         });
     }
@@ -1142,10 +1142,10 @@ end {
                 self.attr('value', poker);
                 return;
             }
+            publicPokers.cancelTips();
+            publicPokers.unbind();
             client.http(stage, targets, function () {
-                publicPokers.cancelTips();
-                publicPokers.unbind();
-                $('tips').html('等待行动...');
+                $('tips').html('等待他人行动...');
             });
         });
     }
@@ -1180,7 +1180,7 @@ end {
                 playerPokers.unbind();
 
                 client.http(stage, targets, function () {
-                    $('tips').html('等待行动...');
+                    $('tips').html('等待他人行动...');
                 });
             }
         });
@@ -1193,7 +1193,7 @@ end {
             playerPokers.cancelTips();
             playerPokers.unbind();
             client.http(stage,[seat], function () {
-                $('tips').html('等待行动...');
+                $('tips').html('等待他人行动...');
             });
         });
     }
@@ -1211,7 +1211,7 @@ end {
             playerPokers.cancelTips();
             playerPokers.unbind();
             client.http(stage, [seat], function () {
-                $('tips').html('等待行动...');
+                $('tips').html('等待他人行动...');
             });
         });
     }
@@ -1237,7 +1237,7 @@ end {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
                 client.http(stage, targets, function () {
-                    $('tips').html('等待行动...');
+                    $('tips').html('等待他人行动...');
                 });
             }
         });
@@ -1258,7 +1258,7 @@ end {
             publicPokers.cancelTips();
             publicPokers.unbind();
             client.http(stage, [seat], function () {
-                $('tips').html('等待行动...');
+                $('tips').html('等待他人行动...');
             });
         });
     }
@@ -1307,7 +1307,7 @@ end {
             timestamp = now;
         },
         WaitForAction: function () {
-            $('tips').html('等待行动...');
+            $('tips').html('等待他人行动...');
         },
         Ready: function () {
             $('page player portrait').click(readySitdown);
@@ -1677,13 +1677,6 @@ end {
                 Guide[stage](game);
             }
         }
-        // 个人任务
-        var mission = game['mission'];
-        if (mission) {
-            if (Guide[mission]) {
-                Guide[mission](game);
-            }
-        }
 
         var desktop = game.desktop;
         var config = game['setting'];
@@ -1724,6 +1717,14 @@ end {
             }
             // 自我视角
             if (stage != 'Finally' && info['user'] == user) {
+                // 个人任务
+                var mission = info['mission'];
+                if (mission) {
+                    if (Guide[mission]) {
+                        Guide[mission](game);
+                    }
+                }
+
                 var movements = info['movements'];
                 var movement = null;
                 var clue = $('player[value="'+user+'"] clue').empty();
