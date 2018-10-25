@@ -1529,14 +1529,6 @@ end {
         wsprotocol = 'wss'
     }
     var client = new WebSocketClient(wsprotocol+'://'+window.location.basepath+'/game/'+no);
-    /*切换重连*/
-    document.addEventListener('webkitvisibilitychange',function(){
-        if (document.webkitVisibilityState == 'visible') {
-            if (client.readyState >= 3) {
-                window.location.reload(true);
-            }
-        }
-    });
 
     client.admit("LeaveGame", leaveGame);
     client.admit("syncGame", loadGame);

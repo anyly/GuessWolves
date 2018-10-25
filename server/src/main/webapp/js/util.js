@@ -510,3 +510,31 @@
     };
 
 })();
+
+(function () {
+    WebSocketClient.prototype.chain = function () {
+        var ws = this;
+        function Chain() {
+            var seq = [];
+            
+            function invoke() {
+                var fun = seq.shift();
+                fun();
+            }
+
+            this.http = function (action, param, callback) {
+                var fun = function () {
+                    ws.http(action, param, function () {
+                        callback.apply(ws, arguments);
+                        seq.shift();
+                        invoke();
+                    });
+                };
+                seq.push(fun);
+            };
+        }
+
+
+        return new Chain();
+    }
+})();
