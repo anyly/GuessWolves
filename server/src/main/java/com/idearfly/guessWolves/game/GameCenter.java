@@ -13,17 +13,6 @@ import java.util.Random;
  */
 public class GameCenter extends BaseGameCenter<Game> {
 
-    public GameCenter() {
-        init();
-    }
-
-    /**
-     * 房间号 = 游戏
-     */
-    private static Map<Integer, Game> games = new LinkedHashMap<>();
-
-    private static int noSeed = 1000;
-
     /**
      * 随机数
      */
@@ -62,26 +51,6 @@ public class GameCenter extends BaseGameCenter<Game> {
         camp.put("化身猎人", "城镇");
         camp.put("皮匠", "皮匠");
         camp.put("化身皮匠", "皮匠");
-    }
-    void init() {
-
-    }
-
-    private int nextNo() {
-        return ++noSeed;
-    }
-
-    public Game newGame(List<String> setting) {
-        Integer no = nextNo();
-        Game game = new Game();
-        game.setNo(no);
-        game.setSetting(setting);
-        games.put(no, game);
-        return game;
-    }
-
-    public Game game(int no) {
-        return games.get(no);
     }
 
 }

@@ -1096,16 +1096,12 @@ end {
                 if ($('player.ready[value="'+user+'"]').length>0) {
                     return;
                 }
-                client.http('sitdown', {
-                    seat: seat,
-                }, function () {
+                client.http('sitdown', seat, function () {
                     changeSeat(self.get(0), user, img);
                 });
             } else if (self.attr('value') == user) {
                 var ready = !self.hasClass('ready');
-                client.http('ready', {
-                    ready: ready
-                }, function () {
+                client.http('ready',ready, function () {
                     self.toggleClass('ready');
                 })
             }
@@ -1123,9 +1119,7 @@ end {
 
             playerPokers.cancelTips();
             playerPokers.unbind();
-            client.http(stage, {
-                targets:[seat]
-            }, function () {
+            client.http(stage, [seat], function () {
                 $('tips').html('等待行动...');
             });
         });
@@ -1147,9 +1141,7 @@ end {
                 self.attr('value', poker);
                 return;
             }
-            client.http(stage, {
-                targets:targets
-            }, function () {
+            client.http(stage, targets, function () {
                 publicPokers.cancelTips();
                 publicPokers.unbind();
                 $('tips').html('等待行动...');
@@ -1186,9 +1178,7 @@ end {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
 
-                client.http(stage, {
-                    targets:targets
-                }, function () {
+                client.http(stage, targets, function () {
                     $('tips').html('等待行动...');
                 });
             }
@@ -1201,9 +1191,7 @@ end {
             publicPokers.unbind();
             playerPokers.cancelTips();
             playerPokers.unbind();
-            client.http(stage, {
-                targets:[seat]
-            }, function () {
+            client.http(stage,[seat], function () {
                 $('tips').html('等待行动...');
             });
         });
@@ -1221,9 +1209,7 @@ end {
 
             playerPokers.cancelTips();
             playerPokers.unbind();
-            client.http(stage, {
-                targets:[seat]
-            }, function () {
+            client.http(stage, [seat], function () {
                 $('tips').html('等待行动...');
             });
         });
@@ -1249,9 +1235,7 @@ end {
             }else if (targets.length == 2) {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                client.http(stage, {
-                    targets:targets
-                }, function () {
+                client.http(stage, targets, function () {
                     $('tips').html('等待行动...');
                 });
             }
@@ -1272,9 +1256,7 @@ end {
             $('player[value='+user+'] poker').removeAttr('value');
             publicPokers.cancelTips();
             publicPokers.unbind();
-            client.http(stage, {
-                targets:[seat]
-            }, function () {
+            client.http(stage, [seat], function () {
                 $('tips').html('等待行动...');
             });
         });
@@ -1294,9 +1276,7 @@ end {
 
             playerPokers.cancelTips();
             playerPokers.unbind();
-            client.http(stage, {
-                vote:seat
-            }, function () {
+            client.http(stage, seat, function () {
                 $('tips').html('等待投票...');
             });
         });
@@ -1438,9 +1418,7 @@ end {
             playerPokers.tipsPoker('blue').click(function () {
                 var seat = $(this).parents('player').attr('seat');
                 seat = parseInt(seat);
-                client.http('hunter', {
-                    target:seat
-                }, function () {
+                client.http('hunter', seat, function () {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
                 });
@@ -1865,9 +1843,7 @@ end {
         }
         var self = $('player[value='+user+']');
         var ready = !self.hasClass('restart');
-        client.http('restart', {
-            ready: ready
-        }, function (data) {
+        client.http('restart', ready, function (data) {
             self.toggleClass('dead', false);
             self.toggleClass('restart');
         })

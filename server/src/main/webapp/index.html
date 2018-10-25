@@ -465,9 +465,7 @@
         $(this).parents('.mwin').fadeOut(400);
         if (Guide.current == 'home') {
             //Guide.login();// 修改图片
-            client.http('editImg', {
-                img: img
-            }, function () {
+            client.http('editImg', img, function () {
                 var img = $('#img').val();
                 var user = $('#user').val();
                 $('#img_bar').attr('src', img);
@@ -510,7 +508,7 @@
             alert('必须至少4张牌!~');
             return;
         }
-        client.newGame(Guide.newGame);
+        client.newGame(param, Guide.newGame);
     });
     $('#cancelGame').click(function () {
         Guide.home();
@@ -520,6 +518,12 @@
     });
     $('#joinGameBtn').click(function () {
         var no = $('#no').val();
+        no = parseInt(no);
+        if (isNaN(no)) {
+            alert('无效的房间号');
+            return;
+        }
+
         client.http('findGame', no, function (exist) {
             if (exist) {
                 window.location = 'game.html#'+no;
