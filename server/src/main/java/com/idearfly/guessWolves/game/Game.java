@@ -1,25 +1,7 @@
 package com.idearfly.guessWolves.game;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-import com.idearfly.collection.CoherentMap;
-import com.idearfly.guessWolves.game.entity.Camp;
-import com.idearfly.guessWolves.game.entity.Movement;
-import com.idearfly.guessWolves.game.entity.Report;
-import com.idearfly.guessWolves.game.entity.spell.Replicate;
-import com.idearfly.guessWolves.game.entity.spell.Rob;
-import com.idearfly.guessWolves.game.entity.spell.Show;
-import com.idearfly.guessWolves.game.entity.spell.Switch;
 import com.idearfly.timeline.Dispatcher;
-import com.idearfly.timeline.Event;
-import com.idearfly.timeline.Plot;
 import com.idearfly.timeline.Story;
-import com.idearfly.timeline.websocket.BaseGame;
-import com.idearfly.timeline.websocket.Log;
-import com.idearfly.util.StringUtil;
-
-import java.util.*;
 
 /**
  * Created by idear on 2018/9/29.

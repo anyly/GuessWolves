@@ -518,12 +518,12 @@
     });
     $('#joinGameBtn').click(function () {
         var no = $('#no').val();
-        no = parseInt(no);
-        if (isNaN(no)) {
+        if (!/^[0-9]+$/.test(no)) {
             alert('无效的房间号');
             return;
         }
 
+        no = parseInt(no);
         client.http('findGame', no, function (exist) {
             if (exist) {
                 window.location = 'game.html#'+no;

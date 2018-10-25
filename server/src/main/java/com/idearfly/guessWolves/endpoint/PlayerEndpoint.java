@@ -1,6 +1,5 @@
 package com.idearfly.guessWolves.endpoint;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.idearfly.guessWolves.game.Game;
@@ -11,9 +10,6 @@ import com.idearfly.timeline.websocket.GameEndpoint;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by idear on 2018/9/21.
@@ -21,13 +17,24 @@ import java.util.List;
  */
 @ServerEndpoint("/game/{no}")
 public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
+    /**
+     * 断线重连, 如果已就坐,同步座位状态
+     * @return
+     */
+    @Override
+    protected void resumeGame() {
+        if (player.getSeat() != null) {
+            // 已就坐,断线重连
+            game.syncStatus(player);
+        }
+    }
 
     public void onClose(Session session, CloseReason closeReason) {
-        super.onClose(session, closeReason);
         if (player != null) {
             player.endpoint(null);
             game.syncStatus(player);
         }
+        super.onClose(session, closeReason);
     }
 
     /////////////////////////

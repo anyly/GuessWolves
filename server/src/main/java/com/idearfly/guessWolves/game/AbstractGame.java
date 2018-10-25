@@ -240,6 +240,13 @@ public abstract class AbstractGame extends BaseGame<Player> {
         this.setting = setting;
     }
 
+    /**
+     * 玩家数量
+     * @return
+     */
+    public int getPlayerCount() {
+        return setting.size() - 3;
+    }
     //[核心帧]
     public Story.Configuration storyConfiguration() {
         return Story
@@ -254,7 +261,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public boolean ending() {
-                        return ready.size() == playerCount();
+                        return ready.size() == getPlayerCount();
                     }
 
                     @Override
@@ -740,7 +747,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                     if (deadth.size() == 0) {
                                         report.setDescription("无狼局弃权票");
                                         allWin = true;
-                                    } else if (deadth.size() == playerCount()) {
+                                    } else if (deadth.size() == getPlayerCount()) {
                                         report.setDescription("无狼局平票");
                                         allWin = true;
                                     } else {
@@ -1219,13 +1226,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         return jsonObject;
     }*/
 
-    /**
-     * 玩家数量
-     * @return
-     */
-    public int playerCount() {
-        return setting.size() - 3;
-    }
+
 
     ///////////////////////////////////////////////
     /**
@@ -1544,7 +1545,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         } else {
             ready.remove(player);
         }
-        if (ready.size() == playerCount()) {
+        if (ready.size() == getPlayerCount()) {
             //开始
             nextStage("Ready");
             return true;
@@ -1592,7 +1593,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         } else {
             ready.remove(player);
         }
-        if (ready.size() == playerCount()) {
+        if (ready.size() == getPlayerCount()) {
             reload();
             //
             clearUserData();

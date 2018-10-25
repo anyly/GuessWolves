@@ -983,12 +983,13 @@ end {
 <script src="js/game.js"></script>
 <script>
     var no = getAnchor();
-    if (no=='') {
-        alert('房间号无效！');
+    if (!/^[0-9]+$/.test(no)) {
+        alert('无效的房间号');
         window.location = 'index.html';
-    } else {
-        $('room').html('No.'+no);
     }
+    no = parseInt(no);
+    $('room').html('No.'+no);
+
     var user = localStorage.getItem('user');
     var img = localStorage.getItem('img');
     if (!user) {
@@ -1289,10 +1290,6 @@ end {
             alert('账号被占用,请重新登录！');
             window.location = 'index.html';
         },
-        notExistGame: function () {
-            alert('该房间号未创建！');
-            window.location = 'index.html';
-        },
         // 上帝视角
         God: function (data) {
             ////加载日志
@@ -1533,6 +1530,7 @@ end {
     client.admit("LeaveGame", leaveGame);
     client.admit("syncGame", loadGame);
     client.admit("syncStatus", loadStatus);
+    client.admit("syncSeat", loadSeat);
     client.admit("God", Guide.God);
     client.admit("GameStart", Guide.GameStart);
     client.admit("Doppel", Guide.Doppel);
@@ -1554,24 +1552,25 @@ end {
     client.admit("Finally", Guide.Finally);
 
     client.onConnect(function () {
-        client.http('login', {
-            user: user,
-            img: img
-        }, function (data) {
-            if (data['playerCount']) {
-                var playerCount = data.playerCount;
-                buildSeat(playerCount);
-
-                loadGame(data);
-            }
-
-            var stage = data.stage;
-            if (stage) {
-                if (Guide[stage]) {
-                    Guide[stage](data);
+        client
+            .chain()
+            .login(user, img, function (data) {
+                //登录成功
+            })
+            .joinGame(no, function (data) {
+                if (!data) {
+                    alert('该房间号未创建！');
+                    window.location = 'index.html';
+                    return;
                 }
-            }
-        });
+                //进入游戏
+                if (data['playerCount']) {
+                    var playerCount = data.playerCount;
+                    buildSeat(playerCount);
+
+                    loadGame(data);
+                }
+            });
     });
 
     client.onDisconnect(function () {
@@ -1618,6 +1617,18 @@ end {
         $('#stage option:last-child').prop('selected', true);
     }
 
+    function loadSeat(game) {
+        var desktop = game.desktop;
+        for (var seat in desktop) {
+            var info = desktop[seat];
+            if (!info['user']) {
+                continue;
+            }
+            var domSeat = $('player[seat="'+seat+'"]').get(0);
+            changeSeat(domSeat, info.user, info.img);
+        }
+    }
+
     function loadStatus(game) {
         var stage = game.stage;
         var desktop = game.desktop;
@@ -1628,8 +1639,27 @@ end {
             }
             var domSeat = $('player[seat="'+seat+'"]').get(0);
 
-            if (stage != 'Ready') {
+            if (stage == 'Ready') {
+                if (info.ready) {
+                    readyStatus(domSeat);
+                } else {
+                    notReadyStatus(domSeat);
+                }
+            } else if (stage == 'Finally') {
+                if (info.ready) {
+                    restartStatus(domSeat);
+                } else {
+                    notRestartStatus(domSeat);
+                }
+            } else {
+                if (stage) {
+                    Guide.current = stage;
+                }
+                // 删除换座位等事件
                 $('page player portrait').unbind();
+                notReadyStatus(domSeat);
+                notRestartStatus(domSeat);
+                notDeadStatus(domSeat);
             }
             if (info.disconnect) {
                 disconnectStatus(domSeat);
@@ -1640,7 +1670,21 @@ end {
     }
 
     function loadGame(game) {
-        var stage = game.stage;
+        // 游戏总进度
+        var stage = game['stage'];
+        if (stage) {
+            if (Guide[stage]) {
+                Guide[stage](game);
+            }
+        }
+        // 个人任务
+        var mission = game['mission'];
+        if (mission) {
+            if (Guide[mission]) {
+                Guide[mission](game);
+            }
+        }
+
         var desktop = game.desktop;
         var config = game['setting'];
         loadConfig(config);

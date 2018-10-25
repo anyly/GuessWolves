@@ -517,20 +517,176 @@
         function Chain() {
             var seq = [];
             
-            function invoke() {
+            var done = function () {
                 var fun = seq.shift();
-                fun();
-            }
+                if (fun) {
+                    fun();
+                }
+            };
+
+            this.interrupt = function () {
+                throw new Error('interrupt');
+            };
 
             this.http = function (action, param, callback) {
                 var fun = function () {
                     ws.http(action, param, function () {
-                        callback.apply(ws, arguments);
-                        seq.shift();
-                        invoke();
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
                     });
                 };
+                if (seq.length == 0) {
+                    fun();
+                }
                 seq.push(fun);
+                return this;
+            };
+
+            this.login = function (user, img, callback) {
+                var fun = function () {
+                    ws.login.call(ws, user, img, function () {
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
+                    });
+                };
+                if (seq.length == 0) {
+                    fun();
+                }
+                seq.push(fun);
+                return this;
+            };
+
+            this.logout = function (callback) {
+                var fun = function () {
+                    ws.logout.call(ws, function () {
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
+                    });
+                };
+                if (seq.length == 0) {
+                    fun();
+                }
+                seq.push(fun);
+                return this;
+            };
+
+            this.newGame = function (data, callback) {
+                var fun = function () {
+                    ws.newGame.call(ws, data, function () {
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
+                    });
+                };
+                if (seq.length == 0) {
+                    fun();
+                }
+                seq.push(fun);
+                return this;
+            };
+
+            this.removeGame = function (no, callback) {
+                var fun = function () {
+                    ws.removeGame.call(ws, no, function () {
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
+                    });
+                };
+                if (seq.length == 0) {
+                    fun();
+                }
+                seq.push(fun);
+                return this;
+            };
+
+            this.joinGame = function (no, callback) {
+                var fun = function () {
+                    ws.joinGame.call(ws, no, function () {
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
+                    });
+                };
+                if (seq.length == 0) {
+                    fun();
+                }
+                seq.push(fun);
+                return this;
+            };
+
+            this.leaveGame = function (callback) {
+                var fun = function () {
+                    ws.leaveGame.call(ws, function () {
+                        try {
+                            if (callback) {
+                                callback.apply(ws, arguments);
+                            }
+                            seq.shift();
+                            done();
+                        } catch (e) {
+                            if (e.message != 'interrupt') {
+                                throw e;
+                            }
+                        }
+                    });
+                };
+                if (seq.length == 0) {
+                    fun();
+                }
+                seq.push(fun);
+                return this;
             };
         }
 

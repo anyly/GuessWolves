@@ -21,6 +21,7 @@
     }
 
     window.WebSocketClient = function(url) {
+        var self = this;
         var websocket = null;
         var httplistener = {};
         var messagelistener = {};
@@ -66,7 +67,7 @@
                     messagelistener[action](object);
                 }
             } catch (e) {
-                console.error('admit error:"' + message + '"\n' + e);
+                console.error('admit error:"' + message + '"\n at ' + '\'' + e.script + '\'' + '第' +e.line + '行'+'第'+e.column+'列');
             }
         };
 
@@ -157,15 +158,7 @@
                 return this;
             }
             this.readyState = 2;
-            if (code) {
-                if (reason) {
-                    websocket.close(code, reason);
-                } else {
-                    websocket.close(code);
-                }
-            } else {
-                websocket.close();
-            }
+            websocket.close.apply(websocket, arguments);
             return this;
         };
 
@@ -182,7 +175,7 @@
                 if (!code) {
                     return;
                 }
-                callback(code, reason , wasClean);
+                callback.apply(self, arguments);
                 httplistener = {};
                 messagelistener = {};
             };
@@ -198,7 +191,6 @@
             }
             websocket.onerror = function (event) {
                 console.error(JSON.stringify(event));
-                //websocket.close();
                 if (callback) {
                     callback(event);
                 }
@@ -263,13 +255,6 @@
      * @param callback
      */
     WebSocketClient.prototype.removeGame = function (no, callback) {
-        if (arguments.length == 1) {
-            var obj = arguments[0];
-            if ((typeof obj=='function')&&obj.constructor==Function) {
-                callback = obj;
-                no = getNo();
-            }
-        }
         this.http('removeGame', no, callback);
         return this;
     };
@@ -278,13 +263,6 @@
      * 加入游戏
      */
     WebSocketClient.prototype.joinGame = function (no, callback) {
-        if (arguments.length == 1) {
-            var obj = arguments[0];
-            if ((typeof obj=='function')&&obj.constructor==Function) {
-                callback = obj;
-                no = getNo();
-            }
-        }
         this.http('joinGame', no, callback);
     };
 
