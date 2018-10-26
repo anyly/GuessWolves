@@ -47,6 +47,8 @@ public class Game extends AbstractGame {
                 .then("Hunter")
                 //游戏结果
                 .then("Result")
+                //重新开局
+                .then("Restart")
                 .construct();
     }
 }

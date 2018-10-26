@@ -137,21 +137,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
     private Integer[] integers = new Integer[]{};
 
     //[Getter && Setter]
-/*
-        jsonObject.put("setting", setting);
-        jsonObject.put("desktop", desktop);
-        jsonObject.put("deck", deck);
-        jsonObject.put("playerCount", playerCount());
-        jsonObject.put("stage", stage);
-        jsonObject.put("speekStartIndex", speekStartIndex);
-        jsonObject.put("speekCurrentIndex", speekCurrentIndex);
-        jsonObject.put("speekRound", speekRound);
-        jsonObject.put("votes", votes);
-        jsonObject.put("report", report);
-        jsonObject.put("deadth", deadth);
-        jsonObject.put("hunterKill", hunterKill);
-        jsonObject.put("logs", logs);
- */
     public CoherentMap<Integer, Player> getDesktop() {
         return desktop;
     }
@@ -267,7 +252,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public boolean ending() {
-                        return ready.size() == getPlayerCount();
+                        boolean readyStatus = ready.size() == getPlayerCount();
+                        if (readyStatus) {
+                            ready.clear();
+                        }
+                        return readyStatus;
                     }
 
                     @Override
@@ -288,8 +277,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             String poker = pool.remove(index);
                             // 测试
 //                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "猎人";
-//                            if (seat==3)poker = "狼人";
+//                            if (seat==2)poker = "酒鬼";
+//                            if (seat==3)poker = "捣蛋鬼";
 
                             Log.debug("发牌", seat+" = "+poker);
                             initial.put(seat, poker);
@@ -369,9 +358,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             player = findBySeat(indexs.get(0));
                             String stage = getName();
                             player.setMission(stage);
-                            if (player.endpoint() != null) {
-                                player.emit(stage, AbstractGame.this);
-                            }
+                            player.emit(stage, AbstractGame.this);
                         } else {
                             partnerAction(indexs, "狼人");
                         }
@@ -420,12 +407,13 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             partMovement.setSpell("爪牙行动");
                             player.getMovements().add(partMovement);
 
-                            if (player.endpoint() != null) {
-                                player.emit("syncGame", AbstractGame.this);
-                            }
-                            System.out.println("####" + description + " 视角为:" + JSON.toJSONString(player.getMovements().get(player.getMovements().size() - 1).getViewport()));
                             player.setTargets(null);
                             player.setMission(null);
+
+                            player.emit("syncGame", AbstractGame.this);
+
+                            System.out.println("####" + description + " 视角为:" + JSON.toJSONString(player.getMovements().get(player.getMovements().size() - 1).getViewport()));
+
 
                         }
                         Movement movement = new Movement(null);
@@ -650,7 +638,17 @@ public abstract class AbstractGame extends BaseGame<Player> {
                 })
 
                 // 计算胜负
-                .plot(new Plot("Result")  {
+                .plot(new Event("Result")  {
+                    @Override
+                    public boolean when() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        return ready.size() == getPlayerCount();
+                    }
+
                     @Override
                     public void doing() {
                         //狼阵营
@@ -760,10 +758,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                         if (!player.getPoker().equals(pokerDesc)) {
                                             pokerDesc = player.getPoker() +"->" + pokerDesc;
                                         }
+                                        player.setWin(allWin);
                                         JSONObject jsonObject = new JSONObject();
                                         jsonObject.put("user", player.getUser());
                                         jsonObject.put("seat", player.getSeat());
                                         jsonObject.put("pokerDesc", pokerDesc);
+                                        jsonObject.put("win", player.isWin());
                                         camp.getMembers().add(jsonObject);
                                     }
                                 }
@@ -786,11 +786,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                         camp.setWin(villagerWin);
                                         report.setTown(camp);
                                     }
-
+                                    player.setWin(villagerWin);
                                     JSONObject jsonObject = new JSONObject();
                                     jsonObject.put("user", player.getUser());
                                     jsonObject.put("seat", player.getSeat());
                                     jsonObject.put("pokerDesc", pokerDesc);
+                                    jsonObject.put("win", player.isWin());
                                     camp.getMembers().add(jsonObject);
                                 } else if ("狼人".equals(campName)) {
                                     Camp camp = report.getWolves();
@@ -799,10 +800,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                         camp.setWin(wolvesWin);
                                         report.setWolves(camp);
                                     }
+                                    player.setWin(wolvesWin);
                                     JSONObject jsonObject = new JSONObject();
                                     jsonObject.put("user", player.getUser());
                                     jsonObject.put("seat", player.getSeat());
                                     jsonObject.put("pokerDesc", pokerDesc);
+                                    jsonObject.put("win", player.isWin());
                                     camp.getMembers().add(jsonObject);
                                 } else if ("皮匠".equals(campName)) {
                                     Camp camp = report.getCobbler();
@@ -811,10 +814,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                         camp.setWin(cobblerWin);
                                         report.setCobbler(camp);
                                     }
+                                    player.setWin(cobblerWin);
                                     JSONObject jsonObject = new JSONObject();
                                     jsonObject.put("user", player.getUser());
                                     jsonObject.put("seat", player.getSeat());
                                     jsonObject.put("pokerDesc", pokerDesc);
+                                    jsonObject.put("win", player.isWin());
                                     camp.getMembers().add(jsonObject);
                                 }
                             }
@@ -862,12 +867,19 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         }
                         logs = newLogs;
                         ///
-                        finall();
+                        result();
                         // 清除就位，用于重新开始
                         for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
                             entry.getValue().setReady(false);
                         }
-                        ready.clear();
+                    }
+                })
+                .plot(new Plot("Restart") {
+                    @Override
+                    public void doing() {
+                        //清理数据重开
+                        clearUserData();
+                        replay();
                     }
                 });
     }
@@ -940,9 +952,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
             partMovement.setSummary(summary);
             partMovement.setDescription(string);
             team.getMovements().add(partMovement);
-            if (team.endpoint() != null) {
-                team.endpoint().emit("syncGame", AbstractGame.this);
-            }
+
+            team.emit("syncGame", AbstractGame.this);
+
             System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
         }
 
@@ -1117,8 +1129,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
     /**
      * 广播结果
      */
-    public synchronized void finall() {
-        syncAll("Finally");
+    public synchronized void result() {
+        syncAll("Result");
     }
 
     /**
@@ -1177,50 +1189,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
     public synchronized void syncStatus(Player caller) {
         syncOthers(caller, "syncStatus");
     }
-
-    /**
-     * 游戏核心数据,用于输出同步给client
-     * @return
-     */
-    /*public JSONObject export(Player player) {
-        String stage = story.chapter();
-        if (stage == null) {
-            // 游戏结束
-            stage = "Finally";
-        } else if (stage.equals("Ready")) {
-            // 游戏未开始
-            stage = "Ready";
-        } else {
-            // 游戏进行中
-            if (player.getStage() != null) {
-                stage = player.getStage();
-            } else if (player.getSeat() == null) {
-                stage = "God";
-            }
-        }
-
-        System.out.println("玩家[" + player.getUser() + "][" + player.getPoker() + "] 当前步骤[" + story.chapter() + "] 返回[" + stage + "]");
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("setting", setting);
-        jsonObject.put("desktop", desktop);
-        jsonObject.put("deck", deck);
-        jsonObject.put("playerCount", playerCount());
-        jsonObject.put("stage", stage);
-        jsonObject.put("speekStartIndex", speekStartIndex);
-        jsonObject.put("speekCurrentIndex", speekCurrentIndex);
-        jsonObject.put("speekRound", speekRound);
-        jsonObject.put("votes", votes);
-        jsonObject.put("report", report);
-        jsonObject.put("deadth", deadth);
-        jsonObject.put("hunterKill", hunterKill);
-        jsonObject.put("logs", logs);
-        //jsonObject.put("movements", movements);
-        return jsonObject;
-    }*/
-
-
-
     ///////////////////////////////////////////////
     /**
      * 化身操作
@@ -1256,14 +1224,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        // 通知游戏开始
-        gameStart(null);
-
         player.setTargets(null);
         player.setMission(null);
-
-
-        nextStage();
+        
+        // 通知游戏开始
+        gameStart(player);
     }
 
     /**
@@ -1303,14 +1268,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement movement = partMovement.clone();
         addLog(movement);
         System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(player.getMovements().get(player.getMovements().size()-1).getViewport()));
-        if (player.endpoint() != null) {
-            player.emit("syncGame", AbstractGame.this);
-        }
 
         player.setTargets(null);
         player.setMission(null);
 
-        nextStage();
+        player.emit("syncGame", AbstractGame.this);
+
     }
 
     /**
@@ -1357,13 +1320,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        if (player.endpoint() != null) {
-            player.emit("syncGame", AbstractGame.this);
-        }
         player.setTargets(null);
         player.setMission(null);
+        
+        player.emit("syncGame", AbstractGame.this);
 
-        nextStage();
     }
 
     /**
@@ -1396,14 +1357,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        if (player.endpoint() != null) {
-            player.emit("syncGame", AbstractGame.this);
-        }
         player.setTargets(null);
         player.setMission(null);
+        
+        player.emit("syncGame", AbstractGame.this);
 
-
-        nextStage();
     }
 
     /**
@@ -1439,15 +1397,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        if (player.endpoint() != null) {
-            player.emit("syncGame", AbstractGame.this);
-        }
         player.setTargets(null);
         player.setMission(null);
+        
+        player.emit("syncGame", AbstractGame.this);
 
-
-
-        nextStage();
     }
 
     /**
@@ -1478,14 +1432,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement movement = partMovement.clone();
         addLog(movement);
 
-        if (player.endpoint() != null) {
-            player.emit("syncGame", AbstractGame.this);
-        }
         player.setTargets(null);
         player.setMission(null);
+        
+        player.emit("syncGame", AbstractGame.this);
 
-
-        nextStage();
     }
 
     ///////////////////////////////////////////////
@@ -1531,19 +1482,13 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * @param readyStatus
      * @return
      */
-    public synchronized boolean setReadyStatus(Player player, boolean readyStatus) {
+    public synchronized void setReadyStatus(Player player, boolean readyStatus) {
         player.setReady(readyStatus);
         if (readyStatus) {
             ready.add(player);
         } else {
             ready.remove(player);
         }
-        if (ready.size() == getPlayerCount()) {
-            //开始
-            nextStage("Ready");
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -1555,9 +1500,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setVote(vote);
         player.setMission(null);
         votes.put(player.getSeat(), vote);
-
-
-        nextStage("AfterVote");
     }
 
     /**
@@ -1568,33 +1510,22 @@ public abstract class AbstractGame extends BaseGame<Player> {
     public void hunter(Player player, Integer kill) {
         hunters.remove(player.getSeat());
         hunterKill.put(player.getSeat(), kill);
-        deadth.add(kill);
         player.setMission(null);
+        deadth.add(kill);
 
-
-        nextStage();
     }
 
     /**
      * 重新开始
      * @param player
      */
-    public synchronized boolean restart(Player player, boolean readyStatus) {
+    public synchronized void setRestartStatus(Player player, boolean readyStatus) {
         player.setReady(readyStatus);
         if (readyStatus) {
             ready.add(player);
         } else {
             ready.remove(player);
         }
-        if (ready.size() == getPlayerCount()) {
-            reload();
-            //
-            clearUserData();
-            //开始
-            nextStage("Ready");
-            return true;
-        }
-        return false;
     }
 
     private void clearUserData() {
@@ -1607,15 +1538,4 @@ public abstract class AbstractGame extends BaseGame<Player> {
         }
     }
 
-    private void nextStage() {
-        nextStage("WaitForAction");
-    }
-
-    private void nextStage(final String stage) {
-//        gameCenter.add( ()-> {
-//            if (allComplete()) {
-//                story.focus(stage);
-//            }
-//        });
-    }
 }

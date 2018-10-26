@@ -50,15 +50,12 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
     }
 
     public void onReady(Boolean readyStatus) {
-        if (game.setReadyStatus(player, readyStatus)) {
-            // 游戏开始了
-
-        }
+        game.setReadyStatus(player, readyStatus);
         game.syncStatus(player);
     }
 
     public void onRestart(Boolean readyStatus) {
-        game.restart(player, readyStatus);
+        game.setRestartStatus(player, readyStatus);
         game.syncStatus(player);
     }
 

@@ -221,6 +221,10 @@ clue {
     overflow-y: auto;
     margin: 3px 0;
 }
+clue::-webkit-scrollbar {
+    width:0;
+    height:0;
+}
 tag {
     /*margin: 0 2px;*/
     display: block;
@@ -570,10 +574,12 @@ pop {
     bottom: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
     opacity: 0.9;
     z-index: 200;
+    width: 0;
+    height: 0;
 }
 tips {
     bottom: 10px;
@@ -584,8 +590,13 @@ tips {
     border-radius: 8px;
     padding: 0 20px;
     max-width: 320px;
+    min-width: 160px;
     max-height: 568px;
-    overflow-y: auto;
+    /*overflow-y: auto;*/
+}
+tips>h2 {
+    font-size: 14px;
+    line-height: 30px;
 }
 tips>h3 {
     font-size: 14px;
@@ -625,7 +636,7 @@ mic.noisy {
     background-image: url("img/mic_noisy.gif");
 }
 
-vote {
+vote, giveup {
     display: block;
     border: 1px #ccc solid;
     border-radius: 6px;
@@ -835,6 +846,7 @@ end {
         </tips>
         <mic style="display: none;"></mic>
         <vote style="display: none;">投票</vote>
+        <giveup style="display: none;">弃权</giveup>
     </pop>
 
 </page>
@@ -1111,279 +1123,186 @@ end {
     }
 </script>
 <script>
-    function Doppel() {
+    function vote() {
         var stage = arguments.callee.name;
-        var playerPokers = $('player:not([value="'+user+'"]) poker');
-        playerPokers.tipsPoker('blue').click(function () {
-            var seat = $(this).parents('[seat]').attr('seat');
+        $('tips').html('发起投票！--当然你也可以选择弃权');
+        var playerPokers = $('player poker').tipsPoker('blue').click(function () {
+            var jq = $(this);
+            var jqplayer = jq.parents('player');
+            var seat = jqplayer.attr('seat');
             seat = parseInt(seat);
 
+            $('giveup').fadeOut();
             playerPokers.cancelTips();
             playerPokers.unbind();
-            client.http(stage, [seat], function () {
-                $('tips').html('等待他人行动...');
+            client.http(stage, seat, function () {
+                $('tips').html('等待投票结果...');
             });
         });
     }
-    function Wolves(data) {
-        var stage = arguments.callee.name;
-        var publicPokers = $('discard poker');
-        var targets = [];
-        publicPokers.tipsPoker('#202828').click(function () {
-            var self = $(this);
-            var seat = self.parents('[seat]').attr('seat');
-            seat = parseInt(seat);
-            var poker = data.deck[seat];
-            targets.push(seat);
 
-            self.cancelTips();
-            self.unbind();
-            if (poker == '狼人' || poker == '化身狼人') {
-                self.attr('value', poker);
-                return;
-            }
-            publicPokers.cancelTips();
-            publicPokers.unbind();
-            client.http(stage, targets, function () {
-                $('tips').html('等待他人行动...');
-            });
-        });
-    }
-    function Seer(as) {
-        var poker = "预言家";
-        var stage = arguments.callee.name;
-        if (as) {
-            stage = 'as' + stage;
-            poker = '化身' + poker;
-        }
-        var playerPokers = $('player:not([value="'+user+'"]) poker');
-        var targets = [];
-        var publicPokers = $('discard poker');
-        //看公共牌两张
-        publicPokers.tipsPoker('#202828').click(function () {
-            var self = $(this);
-            var seat = self.parents('[seat]').attr('seat');
-            seat = parseInt(seat);
-            targets.push(seat);
+    var Story = {
+        Doppel : function () {
+            $('tips').html('化身幽灵:点击你要复制的身份牌!');
+            var stage = arguments.callee.name;
+            var playerPokers = $('player:not([value="' + user + '"]) poker');
+            playerPokers.tipsPoker('blue').click(function () {
+                var seat = $(this).parents('[seat]').attr('seat');
+                seat = parseInt(seat);
 
-            self.cancelTips();
-            self.unbind();
-            if (targets.length == 1) {
-                // 禁止身份牌
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                $('tips').html(poker+':再选择查看一张公共牌!');
-            }else if (targets.length == 2) {
+                client.http(stage, [seat], function () {
+                    $('tips').html('等待他人行动...');
+                });
+            });
+        },
+
+        Wolves : function (data) {
+            $('tips').html('孤狼:点击你要查看的公共牌!');
+            var stage = arguments.callee.name;
+            var publicPokers = $('discard poker');
+            var targets = [];
+            publicPokers.tipsPoker('#202828').click(function () {
+                var self = $(this);
+                var seat = self.parents('[seat]').attr('seat');
+                seat = parseInt(seat);
+                var poker = data.deck[seat];
+                targets.push(seat);
+
+                self.cancelTips();
+                self.unbind();
+                if (poker == '狼人' || poker == '化身狼人') {
+                    self.attr('value', poker);
+                    return;
+                }
+                publicPokers.cancelTips();
+                publicPokers.unbind();
+                client.http(stage, targets, function () {
+                    $('tips').html('等待他人行动...');
+                });
+            });
+        },
+
+        Seer : function () {
+            $('tips').html('预言家:点击你要查看的公共牌/身份牌!');
+            var poker = "预言家";
+            var stage = arguments.callee.name;
+
+            var playerPokers = $('player:not([value="' + user + '"]) poker');
+            var targets = [];
+            var publicPokers = $('discard poker');
+            //看公共牌两张
+            publicPokers.tipsPoker('#202828').click(function () {
+                var self = $(this);
+                var seat = self.parents('[seat]').attr('seat');
+                seat = parseInt(seat);
+                targets.push(seat);
+
+                self.cancelTips();
+                self.unbind();
+                if (targets.length == 1) {
+                    // 禁止身份牌
+                    playerPokers.cancelTips();
+                    playerPokers.unbind();
+                    $('tips').html(poker + ':再选择查看一张公共牌!');
+                } else if (targets.length == 2) {
+                    publicPokers.cancelTips();
+                    publicPokers.unbind();
+                    playerPokers.cancelTips();
+                    playerPokers.unbind();
+
+                    client.http(stage, targets, function () {
+                        $('tips').html('等待他人行动...');
+                    });
+                }
+            });
+            playerPokers.tipsPoker('blue').click(function () {
+                var seat = $(this).parents('[seat]').attr('seat');
+                seat = parseInt(seat);
+
                 publicPokers.cancelTips();
                 publicPokers.unbind();
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-
-                client.http(stage, targets, function () {
+                client.http(stage, [seat], function () {
                     $('tips').html('等待他人行动...');
                 });
-            }
-        });
-        playerPokers.tipsPoker('blue').click(function () {
-            var seat = $(this).parents('[seat]').attr('seat');
-            seat = parseInt(seat);
-
-            publicPokers.cancelTips();
-            publicPokers.unbind();
-            playerPokers.cancelTips();
-            playerPokers.unbind();
-            client.http(stage,[seat], function () {
-                $('tips').html('等待他人行动...');
             });
-        });
-    }
+        },
+        AsSeer : function () {
+            this.Seer();
+        },
 
-    function Robber(as) {
-        var stage = arguments.callee.name;
-        if (as) {
-            stage = 'as' + stage;
-        }
-        var playerPokers = $('player:not([value="'+user+'"]) poker');
-        playerPokers.tipsPoker('blue').click(function () {
-            var seat = $(this).parents('[seat]').attr('seat');
-            seat = parseInt(seat);
+        Robber : function () {
+            $('tips').html('强盗:点击你抢走的身份牌!');
+            var stage = arguments.callee.name;
+            var playerPokers = $('player:not([value="' + user + '"]) poker');
+            playerPokers.tipsPoker('blue').click(function () {
+                var seat = $(this).parents('[seat]').attr('seat');
+                seat = parseInt(seat);
 
-            playerPokers.cancelTips();
-            playerPokers.unbind();
-            client.http(stage, [seat], function () {
-                $('tips').html('等待他人行动...');
-            });
-        });
-    }
-    
-    function TroubleMarker(as) {
-        var stage = arguments.callee.name;
-        if (as) {
-            stage = 'as' + stage;
-        }
-        var targets = [];
-        var playerPokers = $('player:not([value="'+user+'"]) poker');
-        playerPokers.tipsPoker('blue').click(function () {
-            var jq = $(this);
-            var seat = jq.parents('[seat]').attr('seat');
-            seat = parseInt(seat);
-            targets.push(seat);
-
-            jq.cancelTips();
-            jq.unbind();
-            if (targets.length == 1) {
-                $('tips').html('捣蛋鬼:再选择一张身份牌交换!');
-            }else if (targets.length == 2) {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                client.http(stage, targets, function () {
+                client.http(stage, [seat], function () {
                     $('tips').html('等待他人行动...');
                 });
-            }
-        });
-    }
-
-    function Drunk(as) {
-        var stage = arguments.callee.name;
-        if (as) {
-            stage = 'as' + stage;
-        }
-        var publicPokers = $('discard poker');
-        publicPokers.tipsPoker('#202828').click(function () {
-            var self = $(this);
-            var seat = self.parents('[seat]').attr('seat');
-            seat = parseInt(seat);
-
-            $('player[value='+user+'] poker').removeAttr('value');
-            publicPokers.cancelTips();
-            publicPokers.unbind();
-            client.http(stage, [seat], function () {
-                $('tips').html('等待他人行动...');
             });
-        });
-    }
+        },
+        AsRobber : function() {
+            this.Robber();
+        },
 
-    function Vote() {
-        var stage = arguments.callee.name;
-        $('tips').html('发起投票！--投给自己为弃权票');
-        var playerPokers = $('player poker').tipsPoker('blue').click(function () {
-            var jq = $(this);
-            var seat = 0;
-            var jqplayer = jq.parents('player');
-            if (jqplayer.attr('value') != user) {
-                seat = jqplayer.attr('seat');
-                seat = parseInt(seat);
-            }
-
-            playerPokers.cancelTips();
-            playerPokers.unbind();
-            client.http(stage, seat, function () {
-                $('tips').html('等待投票...');
-            });
-        });
-    }
-
-    var timestamp = -1;
-    var Guide = {
-        current: 'Ready',
-        existUser: function () {
-            alert('账号被占用,请重新登录！');
-            window.location = 'index.html';
-        },
-        // 上帝视角
-        God: function (data) {
-            ////加载日志
-            loadLog(data);
-            //
-            var now = new Date().getTime();
-            var time = now - timestamp;
-            if (time >= 1500) {
-                $('#stage').trigger('change');
-            } else {
-                setTimeout(function () {
-                    $('#stage').trigger('change');
-                }, time);
-            }
-            timestamp = now;
-        },
-        WaitForAction: function () {
-            $('tips').html('等待他人行动...');
-        },
-        Ready: function () {
-            $('page player portrait').click(readySitdown);
-        },
-        GameStart: function(data) {
-            $('tips').html('游戏开始了!');
-            $('page poker').removeAttr('value');
-            $('page clue').html('');
-
-            if ($('portrait.myseat').length > 0) {
-                $('#stage').empty();
-                $('logger').fadeOut();
-                loadGame(data);
-            }
-        },
-        Doppel: function () {
-            $('tips').html('化身幽灵:点击你要复制的身份牌!');
-            Doppel();
-        },
-        Wolves : function (data) {
-            $('tips').html('孤狼:点击你要查看的公共牌!');
-            Wolves(data);
-        },
-        Seer: function () {
-            $('tips').html('预言家:点击你要查看的公共牌/身份牌!');
-            Seer();
-        },
-        AsSeer: function () {
-            $('tips').html('化身预言家:点击你要查看的公共牌/身份牌!');
-            Seer();
-        },
-        Robber: function () {
-            $('tips').html('强盗:点击你抢走的身份牌!');
-            Robber();
-        },
-        AsRobber: function () {
-            $('tips').html('化身强盗:点击你抢走的身份牌!');
-            Robber();
-        },
-        TroubleMarker: function () {
+        TroubleMarker : function () {
             $('tips').html('捣蛋鬼:点选你要交换的两张身份牌!');
-            TroubleMarker();
-        },
-        AsTroubleMarker: function () {
-            $('tips').html('化身捣蛋鬼:点选你要交换的两张身份牌!');
-            TroubleMarker();
-        },
-        Drunk: function () {
-            $('tips').html('酒鬼:点击你要交换的公共牌!');
-            Drunk();
-        },
-        AsDrunk: function () {
-            $('tips').html('化身酒鬼:点击你要交换的公共牌!');
-            Drunk();
-        },
-        Insomniac: function() {
+            var stage = arguments.callee.name;
+            var targets = [];
+            var playerPokers = $('player:not([value="' + user + '"]) poker');
+            playerPokers.tipsPoker('blue').click(function () {
+                var jq = $(this);
+                var seat = jq.parents('[seat]').attr('seat');
+                seat = parseInt(seat);
+                targets.push(seat);
 
+                jq.cancelTips();
+                jq.unbind();
+                if (targets.length == 1) {
+                    $('tips').html('捣蛋鬼:再选择一张身份牌交换!');
+                } else if (targets.length == 2) {
+                    playerPokers.cancelTips();
+                    playerPokers.unbind();
+                    client.http(stage, targets, function () {
+                        $('tips').html('等待他人行动...');
+                    });
+                }
+            });
         },
-        Speek: function (data) {
-            $('tips').html('当前'+data.speekCurrentIndex+'号发言，第'+data.speekRound+'轮，每轮从'+data.speekStartIndex+'号开始!');
-            $('player.speek').removeClass('speek');
-            //data.speekCurrentIndex;
-            var jq = $('player[seat='+data.speekCurrentIndex+']');
-            jq.addClass('speek');
-            if (jq.attr('value')==user) {
-                $('mic').fadeIn();
-            }
+        AsTroubleMarker : function () {
+            this.TroubleMarker();
         },
-        Vote: function (data) {
-            $('player.speek').removeClass('speek');
-            $('tips').html('随机选出'+data.speekStartIndex+'号第一个发言</br>三轮后点击按钮开始投票!');
-            $('vote').fadeIn();
+
+        Drunk : function () {
+            $('tips').html('酒鬼:点击你要交换的公共牌!');
+            var stage = arguments.callee.name;
+
+            var publicPokers = $('discard poker');
+            publicPokers.tipsPoker('#202828').click(function () {
+                var self = $(this);
+                var seat = self.parents('[seat]').attr('seat');
+                seat = parseInt(seat);
+
+                $('player[value=' + user + '] poker').removeAttr('value');
+                publicPokers.cancelTips();
+                publicPokers.unbind();
+                client.http(stage, [seat], function () {
+                    $('tips').html('等待他人行动...');
+                });
+            });
         },
-        ReturnVote : function () {
-            $('tips').html('等待其他玩家投票...');
+        AsDrunk : function () {
+            this.Drunk();
         },
+
         Hunter : function (data) {
             /// 死亡情况
             var deadth = data.deadth;
@@ -1421,13 +1340,71 @@ end {
                 });
             });
         },
-        Finally : function (data) {
+
+        Vote: function (data) {
+            $('player.speek').removeClass('speek');
+            $('tips').html('随机选出'+data.speekStartIndex+'号第一个发言</br>三轮后点击按钮开始投票!');
+            $('vote').fadeIn();
+        },
+
+        Speek: function (data) {
+            $('tips').html('当前'+data.speekCurrentIndex+'号发言，第'+data.speekRound+'轮，每轮从'+data.speekStartIndex+'号开始!');
+            $('player.speek').removeClass('speek');
+            //data.speekCurrentIndex;
+            var jq = $('player[seat='+data.speekCurrentIndex+']');
+            jq.addClass('speek');
+            if (jq.attr('value')==user) {
+                $('mic').fadeIn();
+            }
+        }
+    };
+
+    var timestamp = -1;
+    var Guide = {
+        current: 'Ready',
+        existUser: function () {
+            alert('账号被占用,请重新登录！');
+            window.location = 'index.html';
+        },
+        // 上帝视角
+        God: function (data) {
+            ////加载日志
+            loadLog(data);
+            //
+            var now = new Date().getTime();
+            var time = now - timestamp;
+            if (time >= 1500) {
+                $('#stage').trigger('change');
+            } else {
+                setTimeout(function () {
+                    $('#stage').trigger('change');
+                }, time);
+            }
+            timestamp = now;
+        },
+        Ready: function () {
+            $('page player portrait').click(readySitdown);
+        },
+        GameStart: function(data) {
+            $('tips').html('游戏开始了!');
+            $('page poker').removeAttr('value');
+            $('page clue').html('');
+
+            if ($('portrait.myseat').length > 0) {
+                $('#stage').empty();
+                $('logger').fadeOut();
+                loadGame(data);
+            }
+        },
+
+        Result : function (data) {
             ////加载日志
             loadLog(data);
             /// 翻开所有牌
             var deck = data.deck;
             var desktop = data.desktop;
             var myseat;
+            var mywin = false;
             for (var seat in deck) {
                 var poker = deck[seat];
 
@@ -1438,10 +1415,11 @@ end {
                 if (info) {
                     if (info.user == user) {
                         myseat = seat;
+                        mywin = info.win;
                     }
                     var movements = info['movements'];
                     var movement = null;
-                    var clue = $('player[value="'+info.user+'"] clue').empty();
+                    var clue = $('player[seat="'+info.seat+'"] clue').empty();
                     for (var i=0;i<movements.length;i++) {
                         movement = movements[i];
                         var summary = movement.summary;
@@ -1451,7 +1429,7 @@ end {
             }
             ///
             var report = data.report;
-            var string = '<h3>'+report.description+'！</h3>';
+            var string = '<h3><span style="color: red;">'+(mywin?'赢了!~':'输了!~')+'</span>'+report.description+'！</h3>';
             var all = report.all;
             var town = report.town;
             var wolves = report.wolves;
@@ -1533,23 +1511,20 @@ end {
     client.admit("syncSeat", loadSeat);
     client.admit("God", Guide.God);
     client.admit("GameStart", Guide.GameStart);
-    client.admit("Doppel", Guide.Doppel);
-    client.admit("Wolves", Guide.Wolves);
-    client.admit("Seer", Guide.Seer);
-    client.admit("AsSeer", Guide.AsSeer);
-    client.admit("Robber", Guide.Robber);
-    client.admit("AsRobber", Guide.AsRobber);
-    client.admit("TroubleMarker", Guide.TroubleMarker);
-    client.admit("AsTroubleMarker", Guide.AsTroubleMarker);
-    client.admit("Drunk", Guide.Drunk);
-    client.admit("AsDrunk", Guide.AsDrunk);
-    client.admit("Insomniac", Guide.Insomniac);
-    client.admit("WaitForAction", Guide.WaitForAction);
-    client.admit("Speek", Guide.Speek);
-    client.admit("Vote", Guide.Vote);
-    client.admit("ReturnVote", Guide.ReturnVote);
-    client.admit("Hunter", Guide.Hunter);
-    client.admit("Finally", Guide.Finally);
+    client.admit("Doppel", Story.Doppel);
+    client.admit("Wolves", Story.Wolves);
+    client.admit("Seer", Story.Seer);
+    client.admit("AsSeer", Story.AsSeer);
+    client.admit("Robber", Story.Robber);
+    client.admit("AsRobber", Story.AsRobber);
+    client.admit("TroubleMarker", Story.TroubleMarker);
+    client.admit("AsTroubleMarker", Story.AsTroubleMarker);
+    client.admit("Drunk", Story.Drunk);
+    client.admit("AsDrunk", Story.AsDrunk);
+    client.admit("Speek", Story.Speek);
+    client.admit("Vote", Story.Vote);
+    client.admit("Hunter", Story.Hunter);
+    client.admit("Result", Guide.Result);
 
     client.onConnect(function () {
         client
@@ -1645,7 +1620,7 @@ end {
                 } else {
                     notReadyStatus(domSeat);
                 }
-            } else if (stage == 'Finally') {
+            } else if (stage == 'Result') {
                 if (info.ready) {
                     restartStatus(domSeat);
                 } else {
@@ -1670,6 +1645,8 @@ end {
     }
 
     function loadGame(game) {
+        // 先清除角色,再设置
+        $('[seat] poker').removeAttr('value');
         // 游戏总进度
         var stage = game['stage'];
         if (stage) {
@@ -1681,6 +1658,7 @@ end {
         var desktop = game.desktop;
         var config = game['setting'];
         loadConfig(config);
+
         for (var seat in desktop) {
             var info = desktop[seat];
             if (!info['user']) {
@@ -1694,7 +1672,7 @@ end {
                 } else {
                     notReadyStatus(domSeat);
                 }
-            } else if (stage == 'Finally') {
+            } else if (stage == 'Result') {
                 if (info.ready) {
                     restartStatus(domSeat);
                 } else {
@@ -1716,18 +1694,18 @@ end {
                 connectStatus(domSeat);
             }
             // 自我视角
-            if (stage != 'Finally' && info['user'] == user) {
+            if (stage != 'Result' && info['user'] == user) {
                 // 个人任务
                 var mission = info['mission'];
                 if (mission) {
-                    if (Guide[mission]) {
-                        Guide[mission](game);
+                    if (Story[mission]) {
+                        Story[mission](game);
                     }
                 }
 
                 var movements = info['movements'];
                 var movement = null;
-                var clue = $('player[value="'+user+'"] clue').empty();
+                var clue = $('player[seat="'+seat+'"] clue').empty();
                 //$('#stage').empty();
                 for (var i=0;i<movements.length;i++) {
                     movement = movements[i];
@@ -1770,7 +1748,7 @@ end {
         if (movement.spell == '游戏结果') {
             var data = $(this).prop('data');
             data['cache'] = true;
-            Guide.Finally(data);
+            Guide.Result(data);
         } else {
             $('player.dead').toggleClass('dead', false);
             $('tips').html(movement.description);
@@ -1923,8 +1901,18 @@ end {
 
     });
     $('vote').click(function () {
-        $('vote').fadeOut();
-        Vote();
+        $('vote').fadeOut(0);
+        $('giveup').fadeIn(0);
+        vote();
+    });
+    $('giveup').click(function () {
+        $('giveup').fadeOut();
+        var playerPokers = $('player poker')
+        playerPokers.cancelTips();
+        playerPokers.unbind();
+        client.http('vote', 0, function () {
+            $('tips').html('等待投票结果...');
+        });
     });
 
 </script>
