@@ -290,7 +290,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             String poker = pool.remove(index);
                             // 测试
 //                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "酒鬼";
+//                            if (seat==2)poker = "猎人";
 //                            if (seat==3)poker = "捣蛋鬼";
 
                             Log.debug("发牌", seat+" = "+poker);
@@ -634,12 +634,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     @Override
                     public void doing() {
                         String stage = getName();
-                        List<Player> players = findInitialByPokers("猎人", "化身猎人");
 
-                        for (Player player : players) {
+                        for (Player player : hunters) {
                             player.setMission(stage);
                             player.emit(stage, AbstractGame.this);
                         }
+                        syncExclude("syncHunter", hunters);
                     }
 
                     @Override

@@ -1469,7 +1469,12 @@ end {
                 loadGame(data);
             }
         },
-
+        Vote : function () {
+            tips('等待投票结果...');
+        },
+        Hunter : function () {
+            tips('等待猎人发起技能...');
+        },
         Result : function (data) {
             ////加载日志
             loadLog(data);
@@ -1592,6 +1597,7 @@ end {
     client.admit("syncPoker", loadPoker);
     client.admit("syncStatus", loadStatus);
     client.admit("syncSeat", loadSeat);
+    client.admit("syncHunter", Guide.Hunter);
     client.admit("God", Guide.God);
     client.admit("GameStart", Guide.GameStart);
     client.admit("Doppel", Story.Doppel);
@@ -1797,6 +1803,8 @@ end {
         if (stage) {
             if (Guide[stage]) {
                 Guide[stage](game);
+            } else {
+                tips('等待他人行动...');
             }
         }
 
