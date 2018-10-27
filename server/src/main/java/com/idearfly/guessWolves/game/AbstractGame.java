@@ -933,12 +933,15 @@ public abstract class AbstractGame extends BaseGame<Player> {
      */
     @Override
     public synchronized void leave(Player player) {
+        // 游戏未开始前,离开房间,清空数据
         if ("Ready".equals(getStage())) {
             super.leave(player);
             desktop.removeKey(player);
             ready.remove(player);
+            emitOthers(player, "syncLeave", player.getUser());
         }
-        syncStatus(player);
+        // 游戏开始后,离开只当作断线处理
+        //syncStatus(player);
     }
 
     /**

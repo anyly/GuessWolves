@@ -1592,7 +1592,7 @@ end {
     }
     var client = new WebSocketClient(wsprotocol+'://'+window.location.basepath+'/game/'+no);
 
-    client.admit("LeaveGame", leaveGame);
+    client.admit("syncLeave", leaveGame);
     client.admit("syncGame", loadGame);
     client.admit("syncPoker", loadPoker);
     client.admit("syncStatus", loadStatus);
@@ -1641,9 +1641,8 @@ end {
         connectFail();
     });
 
-    function leaveGame(data) {
-        var seat = data.seat;
-        $('player[seat='+seat+']').removeAttr('class').find('portrait').removeAttr('style');
+    function leaveGame(user) {
+        $('player[value='+user+']').removeAttr('class').find('portrait').removeAttr('style');
     }
 
     function loadConfig(game) {
@@ -1912,15 +1911,10 @@ end {
         $('logger').fadeToggle();
     });
     $('exit').click(function (event) {
-        if (client.readyState < 2) {// 未断开
-            client.http('logout', null, function () {
-                client.disconnect();
-                window.location = 'index.html#login';
-            });
-        } else {// 已断开
+        client.leaveGame(function () {
+            //client.disconnect();
             window.location = 'index.html#login';
-        }
-
+        });
         event.stopPropagation();
     });
     $('reset').click(function (event) {
