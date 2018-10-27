@@ -53,14 +53,27 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     return false;
                 }
             }
+            after();
             return true;
         }
 
         @Override
         public void doing() {
-            for (Player player : players) {
+            ListIterator<Player> listIterator =  players.listIterator();
+            Player player = null;
+            while (listIterator.hasNext()) {
+                player = listIterator.next();
                 player.setMission(getName());
                 player.emit(getName(), null);
+            }
+        }
+
+        public void after() {
+            ListIterator<Player> listIterator =  players.listIterator();
+            Player player = null;
+            while (listIterator.hasNext()) {
+                player = listIterator.next();
+                player.emit("syncPoker", AbstractGame.this);
             }
         }
     }
@@ -333,7 +346,13 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     }
                 })
                 // 化身幽灵醒来
-                .plot(new PlayerEvent("Doppel", "化身幽灵"))
+                .plot(new PlayerEvent("Doppel", "化身幽灵") {
+                    @Override
+                    public void after() {
+                        super.after();
+                        syncExclude("GameStart", players);
+                    }
+                })
                 .plot(new Event("Wolves") {
                     private List<Integer> indexs;
                     private Player player;
@@ -349,17 +368,29 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public boolean ending() {
-                        return player == null || player.getMission() == null;
+                        if (indexs.size() == 1) {
+                            // 孤狼
+                            if (player.getMission() == null) {
+                                player.emit("syncPoker", AbstractGame.this);
+                                return true;
+                            }
+                        } else {
+                            // 群狼
+                            return true;
+                        }
+                        return false;
                     }
 
                     @Override
                     public void doing() {
                         if (indexs.size() == 1) {
+                            // 孤狼
                             player = findBySeat(indexs.get(0));
                             String stage = getName();
                             player.setMission(stage);
                             player.emit(stage, AbstractGame.this);
                         } else {
+                            // 群狼
                             partnerAction(indexs, "狼人");
                         }
                     }
@@ -410,7 +441,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             player.setTargets(null);
                             player.setMission(null);
 
-                            player.emit("syncGame", AbstractGame.this);
+                            player.emit("syncPoker", AbstractGame.this);
 
                             System.out.println("####" + description + " 视角为:" + JSON.toJSONString(player.getMovements().get(player.getMovements().size() - 1).getViewport()));
 
@@ -496,7 +527,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                 partMovement.setSummary(summary);
                                 partMovement.setSpell("失眠者行动");
 
-                                player.emit("syncGame", AbstractGame.this);
+                                player.emit("syncPoker", AbstractGame.this);
                             }
                             Movement movement = new Movement(null);
                             movement.setSpell("失眠者行动");
@@ -953,7 +984,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
             partMovement.setDescription(string);
             team.getMovements().add(partMovement);
 
-            team.emit("syncGame", AbstractGame.this);
+            team.emit("syncPoker", AbstractGame.this);
 
             System.out.println("####"+description+" 视角为:"+ JSON.toJSONString(team.getMovements().get(team.getMovements().size()-1).getViewport()));
         }
@@ -1137,14 +1168,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * 轮流发言
      */
     public synchronized void speek(Player caller) {
-        syncOthers(caller, "Speek");
+        syncOthers("Speek", caller);
     }
 
     /**
      * 离开游戏
      */
     public synchronized void gameStart(Player caller) {
-        syncOthers(caller, "GameStart");
+        syncOthers("GameStart", caller);
     }
 
     /**
@@ -1158,7 +1189,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * 同步座位
      */
     public synchronized void syncSeat(Player caller) {
-        syncOthers(caller, "syncSeat");
+        syncOthers("syncSeat", caller);
     }
 
     /**
@@ -1172,7 +1203,20 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * 同步客户端
      */
     public synchronized void syncGame(Player caller) {
-        syncOthers(caller, "syncGame");
+        syncOthers("syncGame", caller);
+    }
+    /**
+     * 同步牌面
+     */
+    public synchronized void syncPoker() {
+        syncPoker(null);
+    }
+
+    /**
+     * 同步牌面
+     */
+    public synchronized void syncPoker(Player caller) {
+        syncOthers("syncPoker", caller);
     }
 
     /**
@@ -1187,7 +1231,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * @param caller
      */
     public synchronized void syncStatus(Player caller) {
-        syncOthers(caller, "syncStatus");
+        syncOthers("syncStatus", caller);
     }
     ///////////////////////////////////////////////
     /**
@@ -1226,9 +1270,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         player.setTargets(null);
         player.setMission(null);
-        
-        // 通知游戏开始
-        gameStart(player);
     }
 
     /**
@@ -1271,8 +1312,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         player.setTargets(null);
         player.setMission(null);
-
-        player.emit("syncGame", AbstractGame.this);
 
     }
 
@@ -1322,8 +1361,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         player.setTargets(null);
         player.setMission(null);
-        
-        player.emit("syncGame", AbstractGame.this);
 
     }
 
@@ -1359,8 +1396,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         player.setTargets(null);
         player.setMission(null);
-        
-        player.emit("syncGame", AbstractGame.this);
 
     }
 
@@ -1399,8 +1434,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         player.setTargets(null);
         player.setMission(null);
-        
-        player.emit("syncGame", AbstractGame.this);
 
     }
 
@@ -1418,7 +1451,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Movement partMovement = aSwitch.cast(deck, player);
         movements.add(partMovement);
         ///log
-        String summary = "交换"+target;
+        String summary = "换"+target+"号底牌";
         partMovement.setSummary(summary);
         String description = String.format(
                 "%d号玩家%s换走%d号底牌%s",
@@ -1434,8 +1467,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
         player.setTargets(null);
         player.setMission(null);
-        
-        player.emit("syncGame", AbstractGame.this);
 
     }
 

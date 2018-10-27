@@ -1152,7 +1152,7 @@ end {
 
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                client.http(stage, [seat], function () {
+                client.http(stage, [seat], function (data) {
                     $('tips').html('等待他人行动...');
                 });
             });
@@ -1507,6 +1507,7 @@ end {
 
     client.admit("LeaveGame", leaveGame);
     client.admit("syncGame", loadGame);
+    client.admit("syncPoker", loadPoker);
     client.admit("syncStatus", loadStatus);
     client.admit("syncSeat", loadSeat);
     client.admit("God", Guide.God);
@@ -1557,7 +1558,8 @@ end {
         $('player[seat='+seat+']').removeAttr('class').find('portrait').removeAttr('style');
     }
 
-    function loadConfig(config) {
+    function loadConfig(game) {
+        var config = game['setting'];
         if (!config) {
             return;
         }
@@ -1592,54 +1594,120 @@ end {
         $('#stage option:last-child').prop('selected', true);
     }
 
+    function infoSeat(info) {
+        var seat = info.seat;
+        var domSeat = $('player[seat="'+seat+'"]').get(0);
+        changeSeat(domSeat, info.user, info.img);
+    }
+
     function loadSeat(game) {
         var desktop = game.desktop;
         for (var seat in desktop) {
             var info = desktop[seat];
-            if (!info['user']) {
-                continue;
+            infoSeat(info);
+        }
+    }
+
+    function infoStatus(info) {
+        var game = this;
+        var stage = game.stage;
+        var seat = info.seat;
+        var domSeat = $('player[seat="'+seat+'"]').get(0);
+
+        if (stage == 'Ready') {
+            if (info.ready) {
+                readyStatus(domSeat);
+            } else {
+                notReadyStatus(domSeat);
             }
-            var domSeat = $('player[seat="'+seat+'"]').get(0);
-            changeSeat(domSeat, info.user, info.img);
+        } else if (stage == 'Result') {
+            if (info.ready) {
+                restartStatus(domSeat);
+            } else {
+                notRestartStatus(domSeat);
+            }
+        } else {
+            if (stage) {
+                Guide.current = stage;
+            }
+            // 删除换座位等事件
+            $('page player portrait').unbind();
+            notReadyStatus(domSeat);
+            notRestartStatus(domSeat);
+            notDeadStatus(domSeat);
+        }
+        if (info.disconnect) {
+            disconnectStatus(domSeat);
+        } else {
+            connectStatus(domSeat);
         }
     }
 
     function loadStatus(game) {
-        var stage = game.stage;
         var desktop = game.desktop;
         for (var seat in desktop) {
             var info = desktop[seat];
-            if (!info['user']) {
-                continue;
-            }
-            var domSeat = $('player[seat="'+seat+'"]').get(0);
+            infoStatus.call(game, info);
+        }
+    }
 
-            if (stage == 'Ready') {
-                if (info.ready) {
-                    readyStatus(domSeat);
-                } else {
-                    notReadyStatus(domSeat);
-                }
-            } else if (stage == 'Result') {
-                if (info.ready) {
-                    restartStatus(domSeat);
-                } else {
-                    notRestartStatus(domSeat);
-                }
-            } else {
-                if (stage) {
-                    Guide.current = stage;
-                }
-                // 删除换座位等事件
-                $('page player portrait').unbind();
-                notReadyStatus(domSeat);
-                notRestartStatus(domSeat);
-                notDeadStatus(domSeat);
+    function infoPoker(info) {
+        var seat = info.seat;
+        var game = this;
+        // 个人任务
+        var mission = info['mission'];
+        if (mission) {
+            if (Story[mission]) {
+                Story[mission](game);
             }
-            if (info.disconnect) {
-                disconnectStatus(domSeat);
-            } else {
-                connectStatus(domSeat);
+        }
+
+        var movements = info['movements'];
+        var movement = null;
+        var clue = $('player[seat="'+seat+'"] clue').empty();
+        //$('#stage').empty();
+        for (var i=0;i<movements.length;i++) {
+            movement = movements[i];
+            var summary = movement.summary;
+            clue.append('<tag>'+summary+'</tag>');
+            //$('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
+        }
+
+        if (movement && movement['viewport']) {
+            var viewport = movement['viewport'];
+            for (var seat in viewport) {
+                var poker = viewport[seat];
+                if (poker == '化身幽灵') {
+
+                } else if (poker.indexOf('化身') == 0) {
+                    var afterpoker = poker.substr('化身'.length);// 化身以后
+                    var beforepoker = '化身幽灵';// 化身之前
+                    if (info.poker.indexOf('化身') == 0) {
+                        poker = viewport[seat];
+                    } else if (info.poker == '狼人' ||
+                        info.poker == '守夜人' ||
+                        info.poker == '爪牙'
+                    ) {// 查看同伴,看到化身之后
+                        poker = afterpoker;
+                    } else {
+                        poker = beforepoker;
+                    }
+                }
+                $('[seat='+seat+'] poker').attr('value', poker);
+            }
+        }
+    }
+
+    function loadPoker(game) {
+        // 先清除角色,再设置
+        $('[seat] poker').removeAttr('value');
+        var stage = game['stage'];
+        var desktop = game.desktop;
+        for (var seat in desktop) {
+            var info = desktop[seat];
+
+            if (stage != 'Result' && info['user'] == user) {
+                infoPoker.call(game, info);
             }
         }
     }
@@ -1655,89 +1723,18 @@ end {
             }
         }
 
+        loadConfig(game);
         var desktop = game.desktop;
-        var config = game['setting'];
-        loadConfig(config);
-
         for (var seat in desktop) {
             var info = desktop[seat];
-            if (!info['user']) {
-                continue;
-            }
-            var domSeat = $('player[seat="'+seat+'"]').get(0);
-            changeSeat(domSeat, info.user, info.img);
-            if (stage == 'Ready') {
-                if (info.ready) {
-                    readyStatus(domSeat);
-                } else {
-                    notReadyStatus(domSeat);
-                }
-            } else if (stage == 'Result') {
-                if (info.ready) {
-                    restartStatus(domSeat);
-                } else {
-                    notRestartStatus(domSeat);
-                }
-            } else {
-                if (stage) {
-                    Guide.current = stage;
-                }
-                // 删除换座位等事件
-                $('page player portrait').unbind();
-                notReadyStatus(domSeat);
-                notRestartStatus(domSeat);
-                notDeadStatus(domSeat);
-            }
-            if (info.disconnect) {
-                disconnectStatus(domSeat);
-            } else {
-                connectStatus(domSeat);
-            }
+
+            infoSeat.call(game, info);
+
+            infoStatus.call(game, info);
+
             // 自我视角
             if (stage != 'Result' && info['user'] == user) {
-                // 个人任务
-                var mission = info['mission'];
-                if (mission) {
-                    if (Story[mission]) {
-                        Story[mission](game);
-                    }
-                }
-
-                var movements = info['movements'];
-                var movement = null;
-                var clue = $('player[seat="'+seat+'"] clue').empty();
-                //$('#stage').empty();
-                for (var i=0;i<movements.length;i++) {
-                    movement = movements[i];
-                    var summary = movement.summary;
-                    clue.append('<tag>'+summary+'</tag>');
-                    //$('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
-                }
-
-                if (movement && movement['viewport']) {
-                    var viewport = movement['viewport'];
-                    for (var seat in viewport) {
-                        var poker = viewport[seat];
-                        if (poker == '化身幽灵') {
-
-                        } else if (poker.indexOf('化身') == 0) {
-                            var afterpoker = poker.substr('化身'.length);// 化身以后
-                            var beforepoker = '化身幽灵';// 化身之前
-                            if (info.poker.indexOf('化身') == 0) {
-                                poker = viewport[seat];
-                            } else if (info.poker == '狼人' ||
-                                info.poker == '守夜人' ||
-                                info.poker == '爪牙'
-                                ) {// 查看同伴,看到化身之后
-                                poker = afterpoker;
-                            } else {
-                                poker = beforepoker;
-                            }
-                        }
-                        $('[seat='+seat+'] poker').attr('value', poker);
-                    }
-                }
-
+                infoPoker.call(game, info);
             }
         }
     }
