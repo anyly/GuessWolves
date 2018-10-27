@@ -191,38 +191,34 @@ player.hunt portrait ready
     display: flex;
 }
 /* restart > hunt > dead > speek > ready */
-player.restart portrait ready span:before,
-player.restart.hunt portrait ready span:before,
-player.restart.dead portrait ready span:before,
-player.restart.speek portrait ready span:before,
-player.restart.ready portrait ready span:before
-{
-    content: '重开';
-}
-player.hunt portrait ready span:before,
-player.hunt.dead portrait ready span:before,
-player.hunt.speek portrait ready span:before,
-player.hunt.ready portrait ready span:before
-{
-    content: '猎杀';
-}
-player.dead portrait ready span:before,
-player.dead.speek portrait ready span:before,
-player.dead.ready portrait ready span:before
-{
-    content: '死亡';
-}
-player.speek portrait ready span:before,
-player.speek.ready portrait ready span:before
-{
-    content: '发言中';
-}
 player.ready portrait ready span:before {
     content: '就绪';
+    color: white;
+}
+player.speek portrait ready span:before
+{
+    content: '发言中';
+    color: white;
+}
+player.dead portrait ready span:before
+{
+    content: '死亡';
+    color: yellow;
+}
+player.hunt portrait ready span:before
+{
+    content: '猎杀';
+    color: orange;
+}
+player.restart portrait ready span:before
+{
+    content: '重开';
+    color: white;
 }
 /**/
 player.disconnect portrait ready span:after {
     content: '断线';
+    color: white;
 }
 name {
     font-size: 10px;
@@ -366,28 +362,34 @@ mymenu>*, myaction>* {
     height: 50px;
 }
 log {
+    background: url("img/message.svg") no-repeat;
     background-size: contain;
-    background: url("img/message.svg") no-repeat center;
+    background-position: center;
 }
 exit{
+    background: url("img/exit.svg") no-repeat;
     background-size: contain;
-    background: url("img/exit.svg") no-repeat center;
+    background-position: center;
 }
 reset {
+    background: url("img/refresh.svg") no-repeat;
     background-size: contain;
-    background: url("img/refresh.svg") no-repeat center;
+    background-position: center;
 }
 restart {
+    background: url("img/restart.svg") no-repeat;
     background-size: contain;
-    background: url("img/restart.svg") no-repeat center;
+    background-position: center;
 }
 settings {
+    background: url("img/settings.svg") no-repeat;
     background-size: contain;
-    background: url("img/settings.svg") no-repeat center;
+    background-position: center;
 }
 myseat {
+    background: url("img/myseat.svg") no-repeat;
     background-size: contain;
-    background: url("img/myseat.svg") no-repeat center;
+    background-position: center;
 }
 room {
     height: 30px;
@@ -427,6 +429,7 @@ logger prev {
     height: 31px;
     background: url("img/prev.svg") no-repeat;
     background-size: contain;
+    background-position: center;
     border-left: 1px white solid;
     border-right: 1px white solid;
 }
@@ -436,6 +439,7 @@ logger next {
     height: 31px;
     background: url("img/next.svg") no-repeat;
     background-size: contain;
+    background-position: center;
 }
 
 /**/
@@ -896,7 +900,7 @@ end {
     </game>
     <pop>
         <tips>
-            <content></content>
+            <content class="text-ellipsis"></content>
             <min>
                 <icon></icon>
             </min>
@@ -1371,6 +1375,7 @@ end {
         },
 
         Hunter : function (data) {
+            var string = '<h3>猎杀时刻!</h3>';
             /// 死亡情况
             var deadth = data.deadth;
             string += '<h4>死亡:</h4>';
@@ -1384,7 +1389,7 @@ end {
                 }
             }
             /// 投票
-            var string = '<h4>投票情况:</h4>';
+            string += '<h4>投票情况:</h4>';
             var votes = data.votes;
             for (var seat in votes) {
                 var vote = votes[seat];
@@ -1454,8 +1459,8 @@ end {
         },
         GameStart: function(data) {
             tips('游戏开始了!');
+            $('page player').removeAttr('value').removeAttr('class');
             $('page player portrait').unbind();
-            $('page poker').removeAttr('value');
             $('page clue').html('');
 
             if ($('portrait.myseat').length > 0) {
@@ -1527,6 +1532,7 @@ end {
                 for (var seat in hunterKill) {
                     var kill = hunterKill[seat];
                     string += seat+'号 kill '+kill+'号<br>';
+                    $('player[seat='+kill+']').addClass('hunt');
                 }
             }
 
@@ -1706,11 +1712,6 @@ end {
             if (stage) {
                 Guide.current = stage;
             }
-            // 删除换座位等事件
-            $('page player portrait').unbind();
-            notReadyStatus(domSeat);
-            notRestartStatus(domSeat);
-            notDeadStatus(domSeat);
         }
         if (info.disconnect) {
             disconnectStatus(domSeat);

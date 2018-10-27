@@ -265,7 +265,7 @@
             'background-size': 'contain',
             'background-position': 'center',
             'background-image': ele.css('background-image'),
-            'transition':'translate 1s ease'
+            'transition':'transform 1s ease'
         });
         // taret向caller移动
         var x1 = ele.offset().left;
