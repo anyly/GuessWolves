@@ -366,6 +366,7 @@
         current: 'init',
         init: function() {
             showPage('login');
+            $('#user').focus();
             $('.mwin').fadeOut();
             $('.dialog').fadeOut();
             Guide.current = 'init';
@@ -480,14 +481,19 @@
     $('#imgbtn, #img_bar').click(function () {
         $('.choiceimg').fadeIn();
     });
-    //$('#loginbtn').on("touchstart", Guide.login);
+    $('#user').on('keypress', function(e) {
+        var keycode = e.keyCode;
+        var searchName = $(this).val();
+        if(keycode == '13') {
+            $('#loginbtn').trigger('click');
+        }
+    });
     $('#loginbtn').click(function (event) {
         Guide.login();
         event.stopPropagation();
     });
     $('#logout').click(function () {
-        var param = formData('loginForm');
-        client.http("logout", param, function () {
+        client.logout(function () {
             Guide.init();
         });
     });
@@ -515,6 +521,14 @@
     });
     $('#findRoom').click(function () {
         $('.findRoom').fadeIn();
+        $('#no').focus();
+    });
+    $('#no').on('keypress', function(e) {
+        var keycode = e.keyCode;
+        var searchName = $(this).val();
+        if(keycode == '13') {
+            $('#joinGameBtn').trigger('click');
+        }
     });
     $('#joinGameBtn').click(function () {
         var no = $('#no').val();

@@ -1642,7 +1642,11 @@ end {
     });
 
     function leaveGame(user) {
-        $('player[value='+user+']').removeAttr('class').find('portrait').removeAttr('style');
+        $('player[value='+user+']').removeAttr('class').each(function () {
+            var pl = $(this);
+            pl.find('portrait').removeAttr('style');
+            pl.find('name').html('');
+        })
     }
 
     function loadConfig(game) {
