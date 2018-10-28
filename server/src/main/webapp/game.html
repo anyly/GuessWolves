@@ -23,7 +23,7 @@ page {
 }
 game {
     flex:1 0 0;
-    max-width :560px;
+    max-width :100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,7 +47,7 @@ discard>column {
 
 }
 poker {
-    background: url('img/discard.jpg') no-repeat;
+    background: url('img/default.png') no-repeat;
     background-size: contain;
     background-position: center;
     width: 45px;
@@ -76,6 +76,12 @@ player {
     color: darkblue;
     font-weight: bold;
 
+}
+seat>player {
+    flex: 0 0 50%;
+}
+seat player:nth-child(even) {
+    flex-direction: row-reverse;
 }
 portrait {
     display: block;
@@ -232,7 +238,7 @@ name {
 }
 clue {
     min-width: 50px;
-    max-width: 60px;
+    max-width: 100px;
     height: 69px;
     overflow-y: auto;
     margin: 3px 0;
@@ -572,14 +578,15 @@ sideslip.show + levitate .light .flare {
 
 config {
     position: absolute;
-    right: 0px;
-    top: 45px;
     display: block;
     color: darkorange;
     font-size: 16px;
     width: 52px;
-    /*height: 230px;*/
     background-color: #2028280a;
+}
+config img {
+    width: 60px;
+    height: 60px;
 }
 
 @keyframes act {
@@ -894,11 +901,15 @@ end {
 
         </row-center>
         <seat>
-
+            <column></column>
+            <column></column>
         </seat>
 
     </game>
     <pop>
+        <config>
+
+        </config>
         <tips>
             <content class="text-ellipsis"></content>
             <min>
@@ -926,9 +937,6 @@ end {
     </bar>
 
 </logger>
-<config>
-
-</config>
 
 <sideslip>
     <mine>
@@ -1149,10 +1157,19 @@ end {
         }
         var jq_seat = $('seat');
         var i = 1;
-        for (i=1; i<=seatCount; i++) {
+        var maxRow = Math.ceil(seatCount/2);
+        var ret = seatCount - maxRow;
+        for (i=1; i<=maxRow; i++) {
             var newNode = document.importNode(node, true);
             $(newNode).attr('seat', i);
             jq_seat.append(newNode);
+
+            if (ret>=1) {
+                var newNode = document.importNode(node, true);
+                $(newNode).attr('seat', ret+maxRow);
+                jq_seat.append(newNode);
+                ret--;
+            }
         }
         //
         $('discard poker').each(function (index) {
@@ -1667,6 +1684,7 @@ end {
         var text = '';
         for (var poker in object) {
             text += '<p>'+poker.substr(0, 2)+'x'+object[poker]+'</p>';
+            //text += '<p><img src="img/'+poker+'-标志.png"/>'/*+'x'+object[poker]*/+'</p>';
         }
         $('config').html(text);
     }

@@ -205,18 +205,23 @@
 
 }
 .gameSetting input[type=checkbox] {
-    width: 99px;
-    height: 134px;
+    width: 88px;
+    height: 128px;
 
-    background-size: 100%;
     -webkit-appearance: none;
     margin-right: 4px;
     margin-bottom: 4px;
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.gameSetting input[type=checkbox]:focus {
+    outline: none;
 }
 .gameSetting input[type=checkbox]:checked {
     outline: red auto 5px;
-    border: 2px red solid;
-    background-position: center;
+    border: 1px red solid;
 }
 .gameSetting input[type=checkbox][value=化身幽灵] {
     background-image: url('img/化身幽灵.png');
