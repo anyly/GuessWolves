@@ -201,7 +201,7 @@
             ele = $(ele);
         }
         var animate = $('<animate class="boom"></animate>');
-        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+        animate.one('webkitAnimationEnd animationend', function () {
             setTimeout(function (){
                 if (callback) {
                     if (callback() == false) {
@@ -218,7 +218,7 @@
         if (!(ele instanceof jQuery)) {
             ele = $(ele);
         }
-        ele.addClass('gleam').one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+        ele.addClass('gleam').one('webkitAnimationEnd animationend', function () {
             setTimeout(function () {
                 if (callback) {
                     if (callback() == false) {
@@ -235,7 +235,7 @@
         }
         var animate = $('<animate class="take-poker"></animate>');
         animate.css('background-image', ele.css('background-image'));
-        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
             setTimeout(function (){
                 if (callback) {
                     if (callback() == false) {
@@ -273,7 +273,7 @@
         var x2 = to.offset().left;
         var y2 = to.offset().top;
 
-        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend webkitTransitionEnd transitionend', function () {
+        animate.one('webkitTransitionEnd transitionend', function () {
             setTimeout(function () {
                 if (callback) {
                     if (callback() == false) {
@@ -284,11 +284,13 @@
             }, 300);
         });
         ele.before(animate);
+        var x = x2 - x1;
+        var y = y2 - y1;
         setTimeout(function () {
             animate.css({
-                'transform': 'translate('+(x2 - x1)+'px,'+(y2 - y1 )+'px)'
+                'transform': 'translate('+x+'px,'+y+'px)'
             });
-        });
+        }, 100);
         return animate;
     };
     window.rob = function (oldPoker, newPoker, caller, target, callback) {
@@ -518,7 +520,10 @@
             var seq = [];
             
             var done = function () {
-                var fun = seq.shift();
+                if (seq.length == 0) {
+                    return;
+                }
+                var fun = seq[0];
                 if (fun) {
                     fun();
                 }
@@ -693,4 +698,62 @@
 
         return new Chain();
     }
+})();
+(function () {
+    window.Timeline = function () {
+        var self = this;
+        var queue = [];
+        var datas = [];
+
+        self.next = function () {
+            var fun = queue.shift();
+            var data = datas.shift();
+            if (!fun) {
+                return self;
+            }
+            var re = fun.apply(self, data);
+            if (re) {
+                // return true;为跳过
+                queue.shift();
+                datas.shift();
+                self.next();
+            }
+            return self;
+        };
+        self.stop = function () {
+            throw new Error('stop');
+        };
+        self.then = function (fun) {
+            if (!fun) {
+                return self;
+            }
+            queue.push(fun);
+
+            var data = [];
+            for (var i=1; i<arguments.length; i++) {
+                data.push(arguments[i]);
+            }
+            datas.push(data);
+
+            if (queue.length == 1) {
+                self.next();
+            }
+            return self;
+        };
+        self.callFunction = function (callback) {
+            var fun = function () {
+                try {
+                    if (callback) {
+                        return callback();
+                    }
+                    self.next();
+                } catch (e) {
+                    if (e.message != 'stop') {
+                        throw e;
+                    }
+                }
+            };
+            return fun;
+        };
+    };
 })();

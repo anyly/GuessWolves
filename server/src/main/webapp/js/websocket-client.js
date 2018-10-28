@@ -67,7 +67,7 @@
                     messagelistener[action](object);
                 }
             } catch (e) {
-                console.error('admit error:"' + message + '"\n at ' + '\'' + e.script + '\'' + '第' +e.line + '行'+'第'+e.column+'列');
+                console.error('admit error:"' + message + '"\n > message >' + e.message + ' > stack > ' + e.stack);
             }
         };
 

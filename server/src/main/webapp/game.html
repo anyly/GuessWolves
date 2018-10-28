@@ -850,6 +850,7 @@ player poker[value^=化身]:before {
     background-size: cover;
     background-position-x: 0px;
     animation: boom 1s steps(1) both;
+    z-index: 100;
 }
 @keyframes boom {
      0%, 20%, 40% {
@@ -1231,6 +1232,7 @@ end {
         });
     }
 
+    var timeline = new Timeline();
     var Story = {
         Doppel : function () {
             tips('化身幽灵:点击你要复制的身份牌!');
@@ -1246,9 +1248,13 @@ end {
                     // 动画
                     var jq = $('[seat='+seat+'] poker');
                     var caller_jq = $('player[value='+user+'] poker');
-                    //movePoker(jq, caller_jq, function () {
-                        loadPoker(data);
-                    //});
+                    timeline.then(function (jq, caller_jq) {
+                        movePoker(jq, caller_jq, timeline.callFunction(function () {
+                            console.debug('movePoker ='+jq.attr('value')+' to '+caller_jq.attr('value'));
+                            loadPoker(data);
+                        }));
+                    }, jq, caller_jq);
+
                     //
                     tips('等待他人行动...');
                 });
@@ -1822,20 +1828,24 @@ end {
                 }
                 $('[seat='+seat+'] poker').each(function () {
                     var jq = $(this);
-                    if (poker == jq.attr('value')) {
-                        jq.attr('value', poker);
-                    } else {
-                        jq.attr('value', poker);
-                        //changePoker(jq, poker);
+                    if (poker != jq.attr('value')) {
+                        console.debug('before boom ='+jq.attr('value')+' to '+poker);
+                        //jq.attr('value', poker);
+                        timeline.then(function (jq, poker) {
+                            if (poker == jq.attr('value')) {
+                                return true;
+                            }
+                            var localPoker = poker;
+                            var localJq = jq;
+                            boom(localJq, timeline.callFunction(function () {
+                                console.debug('after boom ='+localJq.attr('value')+' to '+localPoker);
+                                localJq.attr('value', localPoker);
+                            }));
+                        }, jq, poker);
                     }
                 })
             }
         }
-    }
-    function changePoker(jq, poker) {
-        boom(jq, function () {
-            jq.attr('value', poker);
-        });
     }
 
     function loadPoker(game) {
