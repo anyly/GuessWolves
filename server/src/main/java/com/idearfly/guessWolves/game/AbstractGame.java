@@ -289,9 +289,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             int index = GameCenter.randomInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-                            if (seat==1)poker = "化身幽灵";
-                            if (seat==2)poker = "酒鬼";
-                            if (seat==3)poker = "猎人";
+//                            if (seat==1)poker = "化身幽灵";
+//                            if (seat==2)poker = "酒鬼";
+//                            if (seat==3)poker = "猎人";
 
                             Log.debug("发牌", seat+" = "+poker);
                             initial.put(seat, poker);
