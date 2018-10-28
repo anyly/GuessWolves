@@ -650,13 +650,15 @@ tips>content.text-ellipsis + min {
     height: 30px;
 }
 tips>content.text-ellipsis + min>icon {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 0px;
     border: 2px solid white;
-    border-bottom-width: 1px;
-    border-left-width: 1px;
+    border-bottom-width: 0;
+    border-left-width: 0;
     background-color: transparent;
+    margin-top: 2px;
+    transform: rotate(-45deg);
 }
 tips>content {
     display: block;
@@ -1241,6 +1243,13 @@ end {
                 playerPokers.cancelTips();
                 playerPokers.unbind();
                 client.http(stage, [seat], function (data) {
+                    // 动画
+                    var jq = $('[seat='+seat+'] poker');
+                    var caller_jq = $('player[value='+user+'] poker');
+                    //movePoker(jq, caller_jq, function () {
+                        loadPoker(data);
+                    //});
+                    //
                     tips('等待他人行动...');
                 });
             });
@@ -1266,7 +1275,8 @@ end {
                 }
                 publicPokers.cancelTips();
                 publicPokers.unbind();
-                client.http(stage, targets, function () {
+                client.http(stage, targets, function (data) {
+                    loadPoker(data);
                     tips('等待他人行动...');
                 });
             });
@@ -1300,7 +1310,8 @@ end {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
 
-                    client.http(stage, targets, function () {
+                    client.http(stage, targets, function (data) {
+                        loadPoker(data);
                         tips('等待他人行动...');
                     });
                 }
@@ -1313,7 +1324,8 @@ end {
                 publicPokers.unbind();
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                client.http(stage, [seat], function () {
+                client.http(stage, [seat], function (data) {
+                    loadPoker(data);
                     tips('等待他人行动...');
                 });
             });
@@ -1332,7 +1344,8 @@ end {
 
                 playerPokers.cancelTips();
                 playerPokers.unbind();
-                client.http(stage, [seat], function () {
+                client.http(stage, [seat], function (data) {
+                    loadPoker(data);
                     tips('等待他人行动...');
                 });
             });
@@ -1359,7 +1372,8 @@ end {
                 } else if (targets.length == 2) {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
-                    client.http(stage, targets, function () {
+                    client.http(stage, targets, function (data) {
+                        loadPoker(data);
                         tips('等待他人行动...');
                     });
                 }
@@ -1382,7 +1396,8 @@ end {
                 $('player[value=' + user + '] poker').removeAttr('value');
                 publicPokers.cancelTips();
                 publicPokers.unbind();
-                client.http(stage, [seat], function () {
+                client.http(stage, [seat], function (data) {
+                    loadPoker(data);
                     tips('等待他人行动...');
                 });
             });
@@ -1779,6 +1794,14 @@ end {
 
         if (movement && movement['viewport']) {
             var viewport = movement['viewport'];
+            // 先清除角色,再设置
+            $('[seat]').each(function () {
+                var jq = $(this);
+                var s = jq.attr('seat');
+                if (!viewport[s]) {
+                    jq.find('poker').removeAttr('value');
+                }
+            });
             for (var seat in viewport) {
                 var poker = viewport[seat];
                 if (poker == '化身幽灵') {
@@ -1797,14 +1820,25 @@ end {
                         poker = beforepoker;
                     }
                 }
-                $('[seat='+seat+'] poker').attr('value', poker);
+                $('[seat='+seat+'] poker').each(function () {
+                    var jq = $(this);
+                    if (poker == jq.attr('value')) {
+                        jq.attr('value', poker);
+                    } else {
+                        jq.attr('value', poker);
+                        //changePoker(jq, poker);
+                    }
+                })
             }
         }
     }
+    function changePoker(jq, poker) {
+        boom(jq, function () {
+            jq.attr('value', poker);
+        });
+    }
 
     function loadPoker(game) {
-        // 先清除角色,再设置
-        $('[seat] poker').removeAttr('value');
         var stage = game['stage'];
         var desktop = game.desktop;
         for (var seat in desktop) {
@@ -1933,10 +1967,14 @@ end {
         $('logger').fadeToggle();
     });
     $('exit').click(function (event) {
-        client.leaveGame(function () {
-            //client.disconnect();
+        if (client.readyState>1) {
             window.location = 'index.html#login';
-        });
+        } else {
+            client.leaveGame(function () {
+                //client.disconnect();
+                window.location = 'index.html#login';
+            });
+        }
         event.stopPropagation();
     });
     $('reset').click(function (event) {

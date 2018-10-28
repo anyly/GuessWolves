@@ -1274,7 +1274,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setTargets(null);
         player.setMission(null);
 
-        player.emit("syncPoker", AbstractGame.this);
+        
     }
 
     /**
@@ -1318,7 +1318,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setTargets(null);
         player.setMission(null);
 
-        player.emit("syncPoker", AbstractGame.this);
+        
     }
 
     /**
@@ -1368,7 +1368,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setTargets(null);
         player.setMission(null);
 
-        player.emit("syncPoker", AbstractGame.this);
+        
     }
 
     /**
@@ -1404,7 +1404,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setTargets(null);
         player.setMission(null);
 
-        player.emit("syncPoker", AbstractGame.this);
+        
     }
 
     /**
@@ -1443,7 +1443,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setTargets(null);
         player.setMission(null);
 
-        player.emit("syncPoker", AbstractGame.this);
+        
     }
 
     /**
@@ -1477,7 +1477,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         player.setTargets(null);
         player.setMission(null);
 
-        player.emit("syncPoker", AbstractGame.this);
+        
     }
 
     ///////////////////////////////////////////////
