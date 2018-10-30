@@ -3,7 +3,7 @@
  */
 $(function() {
     // 阻止双指放大
-    $(document).on('click gesturestart', function(event) {
+    $(document.body).on('click gesturestart', function(event) {
         return false;
     });
 });
