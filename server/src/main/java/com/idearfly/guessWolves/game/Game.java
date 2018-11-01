@@ -28,12 +28,11 @@ public class Game extends AbstractGame {
                 //深夜，顺序执行：强盗、捣蛋鬼、酒鬼、失眠者
                 //"MidNight"
                 .then("AsRobber")
-                .then("Robber")
-
                 .then("AsTroubleMarker")
-                .then("TroubleMarker")
-
                 .then("AsDrunk")
+
+                .then("Robber")
+                .then("TroubleMarker")
                 .then("Drunk")
 
                 .then("Insomniac")
