@@ -15,14 +15,6 @@ $.fn.tipsPoker = function (color) {
         var height = 75-2;
         jq_svg = $(svg);
         jq_svg.attr('name', 'tips');
-        /*jq_svg.css({
-            position: 'absolute',
-            'margin-top': '1px',
-            'margin-left': '-2px',
-            'z-index': -2,
-            width: width,
-            height: height
-        });*/
         jq_path = $(path);
         jq_path.attr({
             d:'M 0 0 V '+height+' H '+width+' V 0 Z'
@@ -134,30 +126,129 @@ var castSpell = function (callback, callerfilter, targetfilter) {
     });
 };
 
-// var castSpell = function (index, callback) {
-//     var from;
-//     $('page poker:eq('+index+')').draggable({
-//         containment: 'page',
-//         revert: 'invalid',
-//         helper: "clone",
-//         zIndex: 3000,
-//         cursor: "move",
-//         start: function (event, ui) {
-//         },
-//         drag: function (event, ui ) {
-//             from = this;
-//         },
-//         stop: function (event, ui ) {
-//
-//         }
-//     });
-//     $('page poker:not(":eq('+index+')")').droppable({
-//         accept: 'page poker:eq('+index+')',
-//         drop: function( event, ui ) {
-//             //$(from).draggable('disable');
-//             if (callback) {
-//                 callback(from, this);
-//             }
-//         }
-//     });
-// };
+(function () {
+    window.WolvesAnimation = {};
+    WolvesAnimation.boom = function (ele, callback) {
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        var animate = $('<animate></animate>');
+        animate.css({
+            'width': '100%',
+            'height': '100%',
+            'background': 'url("img/boom.png") no-repeat',
+            'background-size': 'cover',
+            'background-position-x': '0px',
+            'z-index': 100
+        });
+        ele.before(animate);
+        
+        createAnimation(
+            animate.get(0),
+            '0%, 20%, 35% {\n' +
+            ' background-position-x: 0px;\n' +
+            ' transform: scale(1);\n' +
+            '}\n' +
+            '10%, 30%, 40% {\n' +
+            '    background-position-x: -53px;\n' +
+            '}\n' +
+            '25%, 45%, 55%, 65%, 75%{\n' +
+            '    background-position-x: -106px;\n' +
+            '}\n' +
+            '50%, 60%, 70%, 80% {\n' +
+            '    background-position-x: -159px;\n' +
+            '}\n' +
+            '90%, 100% {\n' +
+            '    background-position-x: -212px;\n' +
+            '    transform: scale(1);\n' +
+            '}',
+            '1.3s steps(1) both',
+            function () {
+                animate.remove();
+                if (callback) {
+                    callback();
+                }
+            }
+        )
+    };
+    WolvesAnimation.gleam = function (ele, callback) {
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        CSSAnimation.gleam(ele.get(0), callback);
+    };
+    WolvesAnimation.bump = function (ele, callback) {
+        if (!(ele instanceof jQuery)) {
+            ele = $(ele);
+        }
+        CSSAnimation.bump(ele.get(0), callback);
+    };
+    WolvesAnimation.move = function (a, b, callback) {
+        if (!(a instanceof jQuery)) {
+            a = $(a);
+        }
+        if (!(b instanceof jQuery)) {
+            b = $(b);
+        }
+        var animateA = $('<animate></animate>');
+        animateA.css({
+            'z-index': '10',
+            'display': 'block',
+            'width': '100%',
+            'height': '100%',
+            'background-repeat': 'no-repeat',
+            'background-size': 'contain',
+            'background-position': 'center',
+            'background-image': a.css('background-image'),
+        });
+        a.before(animateA);
+
+        CSSAnimation.move(animateA.get(0), b.get(0), function () {
+            animateA.remove();
+            if (callback) {
+                callback();
+            }
+        });
+    };
+    WolvesAnimation.swap = function (a, b, callback) {
+        if (!(a instanceof jQuery)) {
+            a = $(a);
+        }
+        if (!(b instanceof jQuery)) {
+            b = $(b);
+        }
+        var animateA = $('<animate></animate>');
+        animateA.css({
+            'z-index': '10',
+            'display': 'block',
+            'width': '100%',
+            'height': '100%',
+            'background-repeat': 'no-repeat',
+            'background-size': 'contain',
+            'background-position': 'center',
+            'background-image': a.css('background-image'),
+        });
+        a.before(animateA);
+
+        var animateB = $('<animate></animate>');
+        animateB.css({
+            'z-index': '10',
+            'display': 'block',
+            'width': '100%',
+            'height': '100%',
+            'background-repeat': 'no-repeat',
+            'background-size': 'contain',
+            'background-position': 'center',
+            'background-image': b.css('background-image'),
+        });
+        b.before(animateB);
+
+        CSSAnimation.swap(animateA.get(0), animateB.get(0), function () {
+            animateA.remove();
+            animateB.remove();
+            if (callback) {
+                callback();
+            }
+        });
+    };
+})();

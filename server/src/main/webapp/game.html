@@ -8,6 +8,8 @@
     <script src="js/jquery-3.3.1.min.js"></script>
     <!--<script src="js/jquery.mobile-1.4.5.min.js"></script>-->
     <script src="js/websocket-client.js"></script>
+    <script src="js/timeline.js"></script>
+    <script src="js/css-animation.js"></script>
     <script src="js/util.js"></script>
     <link rel="stylesheet" href="css/base.css" type="text/css"/>
 <style>
@@ -761,115 +763,7 @@ player poker[value^=化身]:before {
     color: white;
     content: '化身';
 }
-/**/
-.take-poker {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
 
-    animation: take-poker 4s ease both alternate;
-}
-@keyframes take-poker {
-    0% {
-        transform: scale(1);
-    }
-    30% {
-        transform: scale(1.3);
-    }
-    66% {
-        transform: scale(1.3);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-.open-eyes {
-    display: block;
-}
-/*闪烁动画*/
-.gleam {
-    display: block;
-    /*width: 45px;
-    height: 67px;
-    background-image: url('img/狼人.png');
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
-    margin: 4px;*/
-    animation: gleam 1s ease both alternate 5;
-}
-@keyframes gleam {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
-/*变牌*/
-.alter {
-    display: block;
-    width: 45px;
-    height: 67px;
-    /*background-image: url('img/狼人.png');*/
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
-    margin: 4px;
-    animation: alter 2s ease-in-out both;
-}
-.alter + poker {
-    /*animation: alter_poker 0.5s linear infinite;*/
-}
-@keyframes alter {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
-@keyframes alter_poker {
-    0% {
-        background-color: yellow;
-    }
-    100% {
-        background-color: transparent;
-    }
-}
-/*爆炸动画*/
-.boom {
-    display: block;
-    width:100%;
-    height: 100%;
-    background: url("img/boom.png") no-repeat;
-    background-size: cover;
-    background-position-x: 0px;
-    animation: boom 1s steps(1) both;
-    z-index: 100;
-}
-@keyframes boom {
-     0%, 20%, 40% {
-         background-position-x: 0px;
-         transform: scale(1);
-     }
-    10%, 25%, 50% {
-        background-position-x: -53px;
-    }
-    30%, 60%, 65%, 75%, 85%{
-        background-position-x: -106px;
-    }
-    55%, 70%, 80%, 90% {
-        background-position-x: -159px;
-    }
-    100% {
-        background-position-x: -212px;
-        transform: scale(1);
-    }
- }
 animate {
     position: absolute;
     z-index: 1;
@@ -1247,13 +1141,14 @@ end {
                     // 动画
                     var jq = $('[seat='+seat+'] poker');
                     var caller_jq = $('player[value='+user+'] poker');
-                    timeline.then(function (jq, caller_jq) {
-                        movePoker(jq, caller_jq, timeline.callFunction(function () {
-                            console.debug('movePoker ='+jq.attr('value')+' to '+caller_jq.attr('value'));
-                            loadPoker(data);
-                        }));
-                    }, jq, caller_jq);
-
+                    timeline
+                        .then((function (jq, caller_jq) {
+                            return function() {
+                                WolvesAnimation.move(jq, caller_jq, this.asyncFunction(function () {
+                                }));
+                            };
+                        })(jq, caller_jq))
+                    ;
                     //
                     tips('等待他人行动...');
                 });
@@ -1344,13 +1239,22 @@ end {
             var stage = arguments.callee.name;
             var playerPokers = $('player:not([value="' + user + '"]) poker');
             playerPokers.tipsPoker('blue').click(function () {
-                var seat = $(this).parents('[seat]').attr('seat');
+                var jq = $(this);
+                var caller = $('[value='+user+'] poker');
+                var seat = jq.parents('[seat]').attr('seat');
                 seat = parseInt(seat);
 
                 playerPokers.cancelTips();
                 playerPokers.unbind();
                 client.http(stage, [seat], function (data) {
-                    loadPoker(data);
+                    timeline
+                        .then((function (jq, caller) {
+                            WolvesAnimation.move(jq, caller, this.asyncFunction());
+                        })(jq, caller))
+                        .then(function () {
+                            loadPoker(data);
+                        })
+                    ;
                     tips('等待他人行动...');
                 });
             });
@@ -1807,6 +1711,7 @@ end {
                     jq.find('poker').removeAttr('value');
                 }
             });
+            var meanwhiles = [];
             for (var seat in viewport) {
                 var poker = viewport[seat];
                 if (poker == '化身幽灵') {
@@ -1828,22 +1733,20 @@ end {
                 $('[seat='+seat+'] poker').each(function () {
                     var jq = $(this);
                     if (poker != jq.attr('value')) {
-                        console.debug('before boom ='+jq.attr('value')+' to '+poker);
                         //jq.attr('value', poker);
-                        timeline.then(function (jq, poker) {
-                            if (poker == jq.attr('value')) {
-                                return true;
-                            }
-                            var localPoker = poker;
-                            var localJq = jq;
-                            boom(localJq, timeline.callFunction(function () {
-                                console.debug('after boom ='+localJq.attr('value')+' to '+localPoker);
-                                localJq.attr('value', localPoker);
-                            }));
-                        }, jq, poker);
+                        meanwhiles.push((function (jq, poker) {
+                            return function () {
+                                if (poker != jq.attr('value')) {
+                                    WolvesAnimation.boom(jq, this.asyncFunction(function () {
+                                        jq.attr('value', poker);
+                                    }));
+                                }
+                            };
+                        })(jq, poker));
                     }
-                })
+                });
             }
+            timeline.meanwhile.apply(timeline, meanwhiles);
         }
     }
 
@@ -1864,13 +1767,16 @@ end {
         $('[seat] poker').removeAttr('value');
         // 游戏总进度
         var stage = game['stage'];
-        if (stage) {
-            if (Guide[stage]) {
-                Guide[stage](game);
-            } else {
-                tips('等待他人行动...');
-            }
+        if (!stage) {
+            // 游戏结束
+            stage = 'Result';
         }
+        if (Guide[stage]) {
+            Guide[stage](game);
+        } else {
+            tips('等待他人行动...');
+        }
+
 
         loadConfig(game);
         var desktop = game.desktop;

@@ -203,131 +203,11 @@ $(function() {
  * 动画
  */
 (function () {
-    // window.PokerAnimate = function () {};
-    // PokerAnimate.prototype.
-
-    window.boom = function (ele, callback) {
-        if (!(ele instanceof jQuery)) {
-            ele = $(ele);
-        }
-        var animate = $('<animate class="boom"></animate>');
-        animate.one('webkitAnimationEnd animationend', function () {
-            setTimeout(function (){
-                if (callback) {
-                    if (callback() == false) {
-                        return;
-                    }
-                }
-                animate.remove();
-            }, 300);
-        });
-        ele.before(animate);
-        return animate;
-    };
-    window.gleam = function (ele, callback) {
-        if (!(ele instanceof jQuery)) {
-            ele = $(ele);
-        }
-        ele.addClass('gleam').one('webkitAnimationEnd animationend', function () {
-            setTimeout(function () {
-                if (callback) {
-                    if (callback() == false) {
-                        return;
-                    }
-                }
-                ele.removeClass('gleam');
-            }, 300);
-        });
-    };
-    window.takePoker = function (ele, callback) {
-        if (!(ele instanceof jQuery)) {
-            ele = $(ele);
-        }
-        var animate = $('<animate class="take-poker"></animate>');
-        animate.css('background-image', ele.css('background-image'));
-        animate.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-            setTimeout(function (){
-                if (callback) {
-                    if (callback() == false) {
-                        return;
-                    }
-                }
-                animate.remove();
-            }, 300);
-        });
-        ele.before(animate);
-        return animate;
-    };
-    window.movePoker = function (ele, to, callback) {
-        if (!(to instanceof jQuery)) {
-            to = $(to);
-        }
-        if (!(ele instanceof jQuery)) {
-            ele = $(ele);
-        }
-        var animate = $('<animate></animate>');
-        animate.css({
-            'z-index': '10',
-            'display': 'block',
-            'width': '100%',
-            'height': '100%',
-            'background-repeat': 'no-repeat',
-            'background-size': 'contain',
-            'background-position': 'center',
-            'background-image': ele.css('background-image'),
-            'transition':'transform 1s ease'
-        });
-        // taret向caller移动
-        var x1 = ele.offset().left;
-        var y1 = ele.offset().top;
-        var x2 = to.offset().left;
-        var y2 = to.offset().top;
-
-        animate.one('webkitTransitionEnd transitionend', function () {
-            setTimeout(function () {
-                if (callback) {
-                    if (callback() == false) {
-                        return;
-                    }
-                }
-                animate.remove();
-            }, 300);
-        });
-        ele.before(animate);
-        var x = x2 - x1;
-        var y = y2 - y1;
-        setTimeout(function () {
-            animate.css({
-                'transform': 'translate('+x+'px,'+y+'px)'
-            });
-        }, 100);
-        return animate;
-    };
-    window.rob = function (oldPoker, newPoker, caller, target, callback) {
-        var caller_jq = $('page [seat='+caller+'] poker');
-        caller_jq.attr('value', oldPoker);
-        var target_jq = $('page [seat='+target+'] poker');
-        target_jq.attr('value', newPoker);
-        var animate = movePoker(caller_jq, target_jq, function () {
-            movePoker(target_jq, caller_jq, function () {
-                caller_jq.attr('value', newPoker);
-                target_jq.attr('value', oldPoker);
-                if (callback) {
-                    if (callback() == false) {
-                        return false;
-                    }
-                }
-                animate.remove();
-            });
-            return false;
-        });
-    };
-
     window.Animate = {};
     Animate.Shuffle = function (seat, poker) {
         $('page [seat='+seat+'] poker').each(function () {
             var self = $(this);
-            boom(self, function () {
+            WolvesAnimation.boom(self, function () {
                 self.attr('value', poker);
             });
         });
@@ -338,13 +218,13 @@ $(function() {
         if (targets && targets.length>0) {
             seat = parseInt(seat);
             if (targets.indexOf(seat)>-1) {
-                gleam(jq, null);
+                WolvesAnimation.gleam(jq, null);
             } else if (seat == caller) {
-                takePoker(jq);
+                WolvesAnimation.bump(jq);
             }
         } else {
             if (poker == '狼人' || poker == '化身狼人') {
-                gleam(jq, null);
+                WolvesAnimation.gleam(jq, null);
             }
         }
     };
@@ -352,10 +232,10 @@ $(function() {
         var jq = $('page [seat='+seat+'] poker');
         jq.attr('value', poker);
         if (targets.indexOf(parseInt(seat))>-1) {
-            gleam(jq, null);
+            WolvesAnimation.gleam(jq, null);
         }
         if (poker == '爪牙' || poker == '化身爪牙') {
-            takePoker(jq);
+            WolvesAnimation.bump(jq);
         }
 
     };
@@ -372,7 +252,7 @@ $(function() {
         jq.attr('value', poker);
         seat = parseInt(seat);
         if (seat == caller) {
-            takePoker(jq);
+            WolvesAnimation.bump(jq);
         }
         if (targets.indexOf(seat)>-1) {
             gleam(jq, null);
@@ -385,9 +265,9 @@ $(function() {
             caller_jq.attr('value', "化身幽灵");
             jq.attr('value', poker);
 
-            movePoker(jq, caller_jq, function () {
+            WolvesAnimation.move(jq, caller_jq, function () {
                 caller_jq.attr('value', "化身"+poker);
-                takePoker(caller_jq);
+                WolvesAnimation.bump(caller_jq);
             });
         } else if (seat == caller) {
         } else {
@@ -406,13 +286,12 @@ $(function() {
                 var jq_old = $('page [seat='+target+'] poker');
                 var jq_new = jq;
                 jq_old.attr('value', _new);
-                movePoker(jq_old, jq_new, function () {
-                    jq_old.attr('value', _old);
-                });
                 jq_new.attr('value', _old);
-                movePoker(jq_new, jq_old, function () {
-                    jq_new.attr('value', _new);
-                    takePoker(jq_new);
+                WolvesAnimation.swap(jq_old, jq_new, function () {
+                    jq_old.attr('value', _old);
+                    WolvesAnimation.bump(jq_new, function () {
+                        jq_new.attr('value', _new);
+                    });
                 });
             }
         } else if (seat == target) {
@@ -424,12 +303,12 @@ $(function() {
                 var jq_old = jq;
                 var jq_new = $('page [seat='+caller+'] poker');
                 jq_old.attr('value', _new);
-                movePoker(jq_old, jq_new, function () {
-                    jq_old.attr('value', _old);
-                });
                 jq_new.attr('value', _old);
-                movePoker(jq_new, jq_old, function () {
-                    jq_new.attr('value', _new);
+                WolvesAnimation.swap(jq_old, jq_new, function () {
+                    jq_old.attr('value', _old);
+                    WolvesAnimation.bump(jq_new, function () {
+                        jq_new.attr('value', _new);
+                    });
                 });
             }
         } else {
@@ -442,7 +321,7 @@ $(function() {
         var jq = $('page [seat='+seat+'] poker');
         if (seat == caller) {
             jq.attr('value', poker);
-            takePoker(jq);
+            WolvesAnimation.bump(jq);
         } else if (targets.indexOf(parseInt(seat))>-1) {
             taretsSeats.push(seat);
             taretsPokers.push(poker);
@@ -454,10 +333,8 @@ $(function() {
                 var jq1 = $('page [seat='+seat1+'] poker');
                 jq1.attr('value', poker);
                 jq.attr('value', poker1);
-                movePoker(jq, jq1, function () {
+                WolvesAnimation.swap(jq, jq1, function () {
                     jq.attr('value', poker);
-                });
-                movePoker(jq1, jq, function () {
                     jq1.attr('value', poker1);
                 });
             }
@@ -471,7 +348,7 @@ $(function() {
         var jq = $('page [seat='+seat+'] poker');
         if (seat == caller) {
             //jq.attr('value', poker);
-            //takePoker(jq);
+            //WolvesAnimation.bump(jq);
         }
         if (targets.indexOf(parseInt(seat))>-1) {
             drunkSeats.push(seat);
@@ -484,11 +361,9 @@ $(function() {
                 var jq1 = $('page [seat='+seat1+'] poker');
                 jq1.attr('value', poker);
                 jq.attr('value', poker1);
-                movePoker(jq, jq1, function () {
+                WolvesAnimation.swap(jq, jq1, function () {
                     jq.attr('value', poker);
-                    takePoker(jq);
-                });
-                movePoker(jq1, jq, function () {
+                    WolvesAnimation.bump(jq);
                     jq1.attr('value', poker1);
                 });
             }
@@ -505,7 +380,7 @@ $(function() {
                 gleam(jq);
             }  else {
                 jq.attr('value', '失眠者');
-                boom(jq, function () {
+                WolvesAnimation.boom(jq, function () {
                     jq.attr('value', poker);
                 });
                 return;
@@ -517,7 +392,7 @@ $(function() {
         var jq = $('page [seat='+seat+'] poker');
         jq.attr('value', poker);
         if (seat == caller) {
-            takePoker(jq);
+            WolvesAnimation.bump(jq);
         }
     };
 
@@ -708,62 +583,4 @@ $(function() {
 
         return new Chain();
     }
-})();
-(function () {
-    window.Timeline = function () {
-        var self = this;
-        var queue = [];
-        var datas = [];
-
-        self.next = function () {
-            var fun = queue.shift();
-            var data = datas.shift();
-            if (!fun) {
-                return self;
-            }
-            var re = fun.apply(self, data);
-            if (re) {
-                // return true;为跳过
-                queue.shift();
-                datas.shift();
-                self.next();
-            }
-            return self;
-        };
-        self.stop = function () {
-            throw new Error('stop');
-        };
-        self.then = function (fun) {
-            if (!fun) {
-                return self;
-            }
-            queue.push(fun);
-
-            var data = [];
-            for (var i=1; i<arguments.length; i++) {
-                data.push(arguments[i]);
-            }
-            datas.push(data);
-
-            if (queue.length == 1) {
-                self.next();
-            }
-            return self;
-        };
-        self.callFunction = function (callback) {
-            var fun = function () {
-                try {
-                    if (callback) {
-                        return callback();
-                    }
-                    self.next();
-                } catch (e) {
-                    if (e.message != 'stop') {
-                        throw e;
-                    }
-                }
-            };
-            return fun;
-        };
-    };
 })();
