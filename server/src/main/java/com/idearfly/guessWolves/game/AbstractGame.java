@@ -12,7 +12,6 @@ import com.idearfly.guessWolves.game.entity.spell.Rob;
 import com.idearfly.guessWolves.game.entity.spell.Show;
 import com.idearfly.guessWolves.game.entity.spell.Switch;
 import com.idearfly.timeline.Event;
-import com.idearfly.timeline.Film;
 import com.idearfly.timeline.Plot;
 import com.idearfly.timeline.Story;
 import com.idearfly.timeline.websocket.BaseGame;
@@ -290,9 +289,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             int index = GameCenter.randomInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "酒鬼";
-//                            if (seat==3)poker = "猎人";
+//                            if (seat==1)poker = "化身幽灵";
+//                            if (seat==2)poker = "预言家";
+//                            if (seat==3)poker = "酒鬼";
 
                             Log.debug("发牌", seat+" = "+poker);
                             initial.put(seat, poker);

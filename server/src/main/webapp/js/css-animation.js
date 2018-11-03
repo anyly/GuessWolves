@@ -202,11 +202,11 @@
         }
         //////
         var rect1 = a.getBoundingClientRect();
-        var x1 = rect1.x;
-        var y1 = rect1.y;
+        var x1 = rect1.left;
+        var y1 = rect1.top;
         var rect2 = b.getBoundingClientRect();
-        var x2 = rect2.x;
-        var y2 = rect2.y;
+        var x2 = rect2.left;
+        var y2 = rect2.top;
 
         if (!playStyle) {
             playStyle = '2.5s ease-in-out forwards';
@@ -225,7 +225,7 @@
             playStyle,
             function () {
                 this.clear();
-                if (++count == 2) {
+                if (++count == 2 && callback) {
                     callback.apply(this, arguments);
                 }
             }
@@ -240,7 +240,7 @@
             playStyle,
             function () {
                 this.clear();
-                if (++count == 2) {
+                if (++count == 2 && callback) {
                     callback.apply(this, arguments);
                 }
             }
@@ -255,16 +255,19 @@
         }
         //////
         var rect1 = a.getBoundingClientRect();
-        var x1 = rect1.x;
-        var y1 = rect1.y;
+        var x1 = rect1.left;
+        var y1 = rect1.top;
         var rect2 = b.getBoundingClientRect();
-        var x2 = rect2.x;
-        var y2 = rect2.y;
+        var x2 = rect2.left;
+        var y2 = rect2.top;
 
         createAnimation(
             a,
-            '100% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); }',
-            '1s ease',
+            '0% {box-shadow: 0px 0px 0px #000;}'+
+            '15%, 30% {transform: translate(10px, 0px); box-shadow: -10px 10px 5px #888888;}'+
+            '75%, 90% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); }'+
+            '100% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); box-shadow: 0px 0px 0px #000;}',
+            '2.5s ease-in-out',
             callback
         );
     };

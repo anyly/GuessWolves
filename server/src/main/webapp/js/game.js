@@ -202,9 +202,11 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             'background-image': a.css('background-image'),
         });
         a.before(animateA);
+        a.css('opacity', 0);
 
         CSSAnimation.move(animateA.get(0), b.get(0), function () {
             animateA.remove();
+            a.css('opacity', '');
             if (callback) {
                 callback();
             }
@@ -229,6 +231,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             'background-image': a.css('background-image'),
         });
         a.before(animateA);
+        a.css('opacity', 0);
 
         var animateB = $('<animate></animate>');
         animateB.css({
@@ -242,10 +245,13 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             'background-image': b.css('background-image'),
         });
         b.before(animateB);
+        b.css('opacity', 0);
 
         CSSAnimation.swap(animateA.get(0), animateB.get(0), function () {
             animateA.remove();
+            a.css('opacity', '');
             animateB.remove();
+            b.css('opacity', '');
             if (callback) {
                 callback();
             }

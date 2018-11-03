@@ -1,6 +1,8 @@
 function Timeline() {
     var self = this;
     var plots = [];
+    var needWait = false;
+    self.plots = plots;
 
     self.stop = function() {
         var e = new Error();
@@ -14,6 +16,13 @@ function Timeline() {
         }
         //console.debug('name: '+plot.name);
         plot.apply(self);
+        // 是否有等待点
+        if (needWait) {
+            needWait = false;
+        } else {
+            plots.shift();
+            self.next();
+        }
     };
     self.then = function (plot) {
         if (typeof(plot) != 'function') {
@@ -27,10 +36,14 @@ function Timeline() {
         }
         return self;
     };
-    self.meanwhile = function (...meanwhiles) {
+    self.meanwhile = function (fun1, fun2) {
         var count = 0;
+        var meanwhiles = arguments;
+        var flag = false;
 
-        var asyncFunction = function (callback) {
+        var timepoint = function (callback) {
+            flag = true;
+            needWait = true;
             var fun = function () {
                 if (callback) {
                     callback.apply(this, arguments);
@@ -44,14 +57,24 @@ function Timeline() {
             return fun;
         };
 
-
         var plot = function meanwhile() {
             for (var i=0; i<meanwhiles.length; i++) {
                 meanwhiles[i].apply({
                     stop: self.stop,
-                    asyncFunction: asyncFunction,
+                    timepoint: timepoint,
                     next: self.next
                 });
+
+                if (!flag) {
+                    if (++count==meanwhiles.length) {
+                        plots.shift();
+                        self.next();
+                        break;
+                    }
+                } else {
+                    flag = false;
+                }
+
             }
         };
         plots.push(plot);
@@ -61,7 +84,8 @@ function Timeline() {
         }
         return self;
     };
-    self.asyncFunction = function (callback) {
+    self.timepoint = function (callback) {
+        needWait = true;
         var fun = function () {
             try {
                 if (callback) {

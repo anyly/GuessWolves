@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>css动画测试</title>
+    <script src="js/timeline.js"></script>
+    <script src="js/css-animation.js"></script>
+    <style>
+        .block>* {
+            width:200px;
+            height:200px;
+            text-align: center;
+            line-height: 200px;
+        }
+
+        /*@-webkit-keyframes css-animation-0 {
+            100% { transform: translate(581px, 457px); }
+        }*/
+    </style>
+</head>
+<body>
+
+<div class="block" style="width:100%;height: 300px;">
+    <div style="position: absolute;left:20px;top:20px;background-color: green; /*animation: css-animation-0 1s ease;*/" id="a">A</div>
+    <div style="position: absolute;right:20px;bottom:20px;background-color: red;"  id="b">B</div>
+</div>
+<p>
+    <button onclick="CSSAnimation.move('#a', '#b', function() {
+        document.querySelector('#tips').innerHTML = 'a移动到b';
+    });">移动</button>
+    <button onclick="CSSAnimation.swap('#a', '#b', function() {
+        document.querySelector('#tips').innerHTML = 'a与b交换';
+    });">交换</button>
+    <button onclick="CSSAnimation.gleam('#a', function() {
+        document.querySelector('#tips').innerHTML = 'a闪烁了';
+    });">闪烁</button>
+    <button onclick="CSSAnimation.bump('#b', function() {
+        document.querySelector('#tips').innerHTML = 'a凸大了';
+    });">凸大</button>
+    <button onclick="CSSAnimation.float('#a', function() {
+        document.querySelector('#tips').innerHTML = 'a漂浮了';
+    });">漂浮</button>
+    <button onclick="allAni();">综合测试</button>
+</p>
+<p id="tips"></p>
+<script>
+    var out = 0;
+    function allAni() {
+        function addup() {
+            //setTimeout(function () {
+                out++;
+            //});
+        }
+        addup();
+
+        var timeline = new Timeline()
+            .then((function (out) {
+                return function one() {
+                    addup();
+                    CSSAnimation.move('#a', '#b', this.asyncFunction(function() {
+                        console.debug('串行move，第' + out + '个动画');
+                    }));
+                };
+            })(1))
+            .then((function (out) {
+                return function two() {
+                    addup();
+                    CSSAnimation.swap('#a', '#b', this.asyncFunction(function () {
+                        console.debug('串行swap，第' + out + '个动画');
+                    }));
+                };
+            })(2))
+            .meanwhile(
+                (function (out) {
+                    return function three() {
+                        addup();
+                        CSSAnimation.gleam('#b', this.asyncFunction(function () {
+                            console.debug('并行gleam，第' + out + '个动画');
+                        }));
+                    };
+                })(3),
+                (function (out) {
+                    return function four() {
+                        addup();
+                        CSSAnimation.bump('#a', this.asyncFunction(function () {
+                            console.debug('并行bump，第' + out + '个动画');
+                        }));
+                    }
+                })(4),
+                function () {
+                    console.debug("并行,无回调环节");
+                }
+            )
+            .then((function (out) {
+                return function five() {
+                    addup();
+                    CSSAnimation.float('#a', this.asyncFunction(function () {
+                        console.debug('串行float,第' + out + '个动画');
+                    }));
+                };
+            })(5))
+            .then(function () {
+                console.debug("串行,无回调环节");
+            })
+        ;
+    }
+
+
+</script>
+</body>
+</html>
