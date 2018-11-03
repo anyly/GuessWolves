@@ -3,7 +3,6 @@ package com.idearfly.guessWolves.game;
 import com.idearfly.timeline.websocket.BaseGameCenter;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -30,6 +29,8 @@ public class GameCenter extends BaseGameCenter<Game> {
 
         camp.put("狼人", "狼人");
         camp.put("化身狼人", "狼人");
+        camp.put("狼先知", "狼人");
+        camp.put("化身狼先知", "狼人");
         camp.put("爪牙", "狼人");
         camp.put("化身爪牙", "狼人");
         camp.put("化身幽灵", "城镇");
@@ -37,8 +38,12 @@ public class GameCenter extends BaseGameCenter<Game> {
         camp.put("化身守夜人", "城镇");
         camp.put("预言家", "城镇");
         camp.put("化身预言家", "城镇");
+        camp.put("见习预言家", "城镇");
+        camp.put("化身见习预言家", "城镇");
         camp.put("强盗", "城镇");
         camp.put("化身强盗", "城镇");
+        camp.put("女巫", "城镇");
+        camp.put("化身女巫", "城镇");
         camp.put("捣蛋鬼", "城镇");
         camp.put("化身捣蛋鬼", "城镇");
         camp.put("酒鬼", "城镇");

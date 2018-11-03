@@ -19,7 +19,7 @@ body{
 page {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     flex-direction: column;
     overflow: hidden;
 }
@@ -27,7 +27,7 @@ game {
     flex:1 0 0;
     max-width :100%;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     flex-direction: column;
     overflow-y: auto;
@@ -50,9 +50,9 @@ discard>column {
 }
 poker {
     background: url('img/default.png') no-repeat;
-    background-size: contain;
+    background-size: cover;
     background-position: center;
-    width: 45px;
+    width: 48px;
     height: 67px;
     border: 1px #ccc solid;
     margin: 3px;
@@ -63,10 +63,11 @@ poker {
 }
 seat {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    justify-content: space-between;
+    align-items: stretch;
     flex-direction: row;
     flex-wrap: wrap;
+    width: 100%;
 }
 player {
     display: flex;
@@ -79,10 +80,10 @@ player {
     font-weight: bold;
 
 }
-seat>player {
-    flex: 0 0 50%;
+seat>.left>player {
+    flex-direction: row;
 }
-seat player:nth-child(even) {
+seat>.right>player {
     flex-direction: row-reverse;
 }
 portrait {
@@ -239,25 +240,30 @@ name {
     text-align: center;
 }
 clue {
-    min-width: 50px;
-    max-width: 100px;
-    height: 69px;
     overflow-y: auto;
-    margin: 3px 0;
+    margin: 0 3px;
+    flex: 1 1 0;
+    border: 1px blueviolet dashed;
+    border-radius: 8px;
+    background-color: aliceblue;
+    padding: 4px 10px;
+    max-height: 410px;
 }
 clue::-webkit-scrollbar {
     width:0;
     height:0;
 }
 tag {
-    /*margin: 0 2px;*/
     display: block;
     color: blueviolet;
     font-size: 14px;
     font-weight: bold;
+    position: relative;
 }
 tag:before {
     content: "-";
+    position: absolute;
+    left: -5px;
 }
 tag:after {
     content: ";";
@@ -607,7 +613,7 @@ pop {
     align-items: center;
     opacity: 0.9;
     z-index: 200;
-    width: 0;
+    width: 100%;
     height: 0;
 }
 tips {
@@ -690,7 +696,7 @@ svg[name=tips] {
     margin-top: 1px;
     margin-left: 1px;
     z-index: -2;
-    width: 51px;
+    width: 54px;
     height: 73px;
 }
 mic {
@@ -760,6 +766,16 @@ poker[value=皮匠], poker[value=化身皮匠] {
 poker[value=村民], poker[value=化身村民] {
     background-image: url('img/村民.png');
 }
+/*破晓扩展*/
+poker[value=狼先知], poker[value=化身狼先知] {
+    background-image: url('img/狼先知.png');
+}
+poker[value=见习预言家], poker[value=化身见习预言家] {
+    background-image: url('img/见习预言家.png');
+}
+poker[value=女巫], poker[value=化身女巫]  {
+    background-image: url('img/女巫.png');
+}
 player poker[value^=化身]:before {
     font-size: 14px;
     color: white;
@@ -772,7 +788,7 @@ animate {
 }
 .poker-parent {
     position: relative;
-    width: 53px;
+    width: 56px;
     height: 75px;
 }
 /**/
@@ -786,7 +802,7 @@ end {
 <body>
 <page>
     <game>
-        <row-center style="margin: 0px 5px;">
+        <row-center style="margin: 30px 5px 0px 5px;">
             <discard>
                 <column class="poker-parent">
                     <poker class="no"></poker>
@@ -801,8 +817,9 @@ end {
 
         </row-center>
         <seat>
-            <column></column>
-            <column></column>
+            <column class="left"></column>
+            <clue class="middle"></clue>
+            <column class="right"></column>
         </seat>
 
     </game>
@@ -951,10 +968,6 @@ end {
         <column class="poker-parent">
             <poker></poker>
         </column>
-        <clue>
-
-        </clue>
-
     </player>
 </template>
 <script src="js/jquery-1.12.1-ui.min.js"></script>
@@ -1054,19 +1067,21 @@ end {
             seatCount = 12;
         }
         var jq_seat = $('seat');
-        var i = 1;
-        var maxRow = Math.ceil(seatCount/2);
-        var ret = seatCount - maxRow;
-        for (i=1; i<=maxRow; i++) {
+        var i;
+        var leftCount = Math.ceil(seatCount/2);
+        var rightCount = seatCount - leftCount;
+
+        var leftColumn = jq_seat.find('.left');
+        var rightColumn = jq_seat.find('.right');
+        for (i=1; i<=leftCount; i++) {
             var newNode = document.importNode(node, true);
             $(newNode).attr('seat', i);
-            jq_seat.append(newNode);
+            leftColumn.append(newNode);
 
-            if (ret>=1) {
+            if (i<=rightCount) {
                 var newNode = document.importNode(node, true);
-                $(newNode).attr('seat', ret+maxRow);
-                jq_seat.append(newNode);
-                ret--;
+                $(newNode).attr('seat', leftCount+i);
+                rightColumn.append(newNode);
             }
         }
         //
@@ -1154,11 +1169,9 @@ end {
                         var jq = $('[seat='+seat+'] poker');
                         var caller_jq = $('player[value='+user+'] poker');
                         timeline
-                            .then((function (jq, caller_jq) {
-                                return function() {
-                                    WolvesAnimation.move(jq, caller_jq, this.timepoint());
-                                };
-                            })(jq, caller_jq))
+                            .then(function() {
+                                WolvesAnimation.move(jq, caller_jq, this.timepoint());
+                            })
                             .then(function () {
                                 loadMovement(data, false);
                             })
@@ -1171,34 +1184,76 @@ end {
 
         },
 
-        Wolves : function (data) {
+        Wolf : function (data) {
             tips('孤狼:点击你要查看的公共牌!');
             var stage = arguments.callee.name;
+
+            var info, targets;
+            var desktop = data.desktop;
+            for (var seat in desktop) {
+                info = desktop[seat];
+                if (info.user == user) {
+                    targets = info.targets;
+                    break;
+                }
+            }
+
             var publicPokers = $('discard poker');
-            var targets = [];
+
             timeline.then(function () {
-                publicPokers.tipsPoker('#202828').click(function () {
+                publicPokers.each(function () {
                     var self = $(this);
                     var seat = self.parents('[seat]').attr('seat');
                     seat = parseInt(seat);
-                    var poker = data.deck[seat];
-                    targets.push(seat);
 
-                    self.cancelTips();
-                    self.unbind();
-                    if (poker == '狼人' || poker == '化身狼人') {
-                        self.attr('value', poker);
-                        return;
+                    if (targets.indexOf(seat) < 0) {
+                        self.tipsPoker('#202828').click(function () {
+                            var self = $(this);
+                            var seat = self.parents('[seat]').attr('seat');
+                            seat = parseInt(seat);
+
+                            self.cancelTips();
+                            self.unbind();
+
+                            publicPokers.cancelTips();
+                            publicPokers.unbind();
+                            client.http(stage, seat, function (data) {
+                                loadMovement(data);
+                                tips('等待他人行动...');
+                            });
+                        });
                     }
-                    publicPokers.cancelTips();
-                    publicPokers.unbind();
-                    client.http(stage, targets, function (data) {
-                        loadPoker(data);
+
+                })
+            });
+
+        },
+
+        MysticWolf : function() {
+            tips('狼先知:点击你要查看的身份牌!');
+            var stage = arguments.callee.name;
+            var playerPokers = $('player:not([value="' + user + '"]) poker');
+            timeline.then(function () {
+                playerPokers.tipsPoker('blue').click(function () {
+                    var jq = $(this);
+                    var seat = jq.parents('[seat]').attr('seat');
+                    seat = parseInt(seat);
+
+                    playerPokers.cancelTips();
+                    playerPokers.unbind();
+                    client.http(stage, [seat], function (data) {
+                        timeline
+                            .then(function () {
+                                loadMovement(data);
+                            })
+                        ;
                         tips('等待他人行动...');
                     });
                 });
             });
-
+        },
+        AsMysticWolf : function() {
+            this.MysticWolf();
         },
 
         Seer : function () {
@@ -1231,7 +1286,7 @@ end {
                         playerPokers.unbind();
 
                         client.http(stage, targets, function (data) {
-                            loadPoker(data);
+                            loadMovement(data);
                             tips('等待他人行动...');
                         });
                     }
@@ -1245,7 +1300,7 @@ end {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
                     client.http(stage, [seat], function (data) {
-                        loadPoker(data);
+                        loadMovement(data);
                         tips('等待他人行动...');
                     });
                 });
@@ -1253,6 +1308,31 @@ end {
         },
         AsSeer : function () {
             this.Seer();
+        },
+
+        ApprenticeSeer : function(data) {
+            tips('见习预言家:点击你要查看的公共牌!');
+            var stage = arguments.callee.name;
+            var publicPokers = $('discard poker');
+            var targets = [];
+            timeline.then(function () {
+                publicPokers.tipsPoker('#202828').click(function () {
+                    var self = $(this);
+                    var seat = self.parents('[seat]').attr('seat');
+                    seat = parseInt(seat);
+                    targets.push(seat);
+
+                    publicPokers.cancelTips();
+                    publicPokers.unbind();
+                    client.http(stage, targets, function (data) {
+                        loadMovement(data);
+                        tips('等待他人行动...');
+                    });
+                });
+            });
+        },
+        AsApprenticeSeer : function(data) {
+            this.ApprenticeSeer(data);
         },
 
         Robber : function () {
@@ -1285,6 +1365,75 @@ end {
         },
         AsRobber : function() {
             this.Robber();
+        },
+
+        Witch : function(data) {
+            tips('女巫:点击查看的一张公共牌,然后与场上的身份牌交换,也可以换给自己!');
+            var stage = arguments.callee.name;
+
+            var info, targets;
+            var desktop = data.desktop;
+            for (var seat in desktop) {
+                info = desktop[seat];
+                if (info.user == user) {
+                    targets = info.targets;
+                    break;
+                }
+            }
+
+            var playerPokers = $('player[seat] poker');
+            var publicPokers = $('discard poker');
+            timeline
+                .then(function () {
+                    if (targets.length == 0) {
+                        //看公共牌一张
+                        publicPokers.tipsPoker('#202828').click(function () {
+                            var jq = $(this);
+                            var seat = jq.parents('[seat]').attr('seat');
+                            seat = parseInt(seat);
+
+                            publicPokers.cancelTips();
+                            publicPokers.unbind();
+
+                            tips('女巫:点击查看的一张公共牌,用于交换!');
+
+                            client.http(stage, seat, function (data) {
+                                timeline
+                                    .then(function () {
+                                        loadMovement(data);
+                                    })
+                                ;
+                                tips('等待他人行动...');
+                            });
+                        });
+                    } else if (targets.length == 1) {
+                        tips('女巫:然后与场上的身份牌交换,也可以换给自己!');
+                        playerPokers.tipsPoker('blue').click(function () {
+                            var tjq = $(this);
+                            var jq = $('[seat='+targets[0]+'] poker');
+                            var seat = tjq.parents('[seat]').attr('seat');
+                            seat = parseInt(seat);
+
+                            playerPokers.cancelTips();
+                            playerPokers.unbind();
+                            client.http(stage, seat, function (data) {
+                                timeline
+                                    .then(function () {
+                                        WolvesAnimation.swap(jq, tjq, this.timepoint());
+                                    })
+                                    .then(function () {
+                                        loadMovement(data, false);
+                                    })
+                                ;
+                                tips('等待他人行动...');
+                            });
+                        });
+                    }
+                })
+            ;
+        },
+        AsWitch : function(data) {
+            this.Witch(data);
         },
 
         TroubleMarker : function () {
@@ -1473,6 +1622,7 @@ end {
             var desktop = data.desktop;
             var myseat;
             var mywin = false;
+            var clue = $('clue').empty();
             for (var seat in deck) {
                 var poker = deck[seat];
 
@@ -1487,11 +1637,12 @@ end {
                     }
                     var movements = info['movements'];
                     var movement = null;
-                    var clue = $('player[seat="'+info.seat+'"] clue').empty();
                     for (var i=0;i<movements.length;i++) {
                         movement = movements[i];
                         var summary = movement.summary;
-                        clue.append('<tag>'+summary+'</tag>');
+                        if (summary) {
+                            clue.append('<tag>'+seat + "号玩家" + summary + '</tag>');
+                        }
                     }
                 }
             }
@@ -1591,11 +1742,17 @@ end {
     client.admit("God", Guide.God);
     client.admit("GameStart", Guide.GameStart);
     client.admit("Doppel", Story.Doppel);
-    client.admit("Wolves", Story.Wolves);
+    client.admit("Wolf", Story.Wolf);
+    client.admit("MysticWolf", Story.MysticWolf);
+    client.admit("AsMysticWolf", Story.AsMysticWolf);
+    client.admit("ApprenticeSeer", Story.ApprenticeSeer);
+    client.admit("AsApprenticeSeer", Story.AsApprenticeSeer);
     client.admit("Seer", Story.Seer);
     client.admit("AsSeer", Story.AsSeer);
     client.admit("Robber", Story.Robber);
     client.admit("AsRobber", Story.AsRobber);
+    client.admit("Witch", Story.Witch);
+    client.admit("AsWitch", Story.AsWitch);
     client.admit("TroubleMarker", Story.TroubleMarker);
     client.admit("AsTroubleMarker", Story.AsTroubleMarker);
     client.admit("Drunk", Story.Drunk);
@@ -1735,12 +1892,14 @@ end {
 
         var movements = info['movements'];
         var movement = null;
-        var clue = $('player[seat="'+seat+'"] clue').empty();
+        var clue = $('clue').empty();
         //$('#stage').empty();
         for (var i=0;i<movements.length;i++) {
             movement = movements[i];
             var summary = movement.summary;
-            clue.append('<tag>'+summary+'</tag>');
+            if (summary) {
+                clue.append('<tag>' + summary + '</tag>');
+            }
             //$('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
         }
 
@@ -1764,7 +1923,9 @@ end {
                     var beforepoker = '化身幽灵';// 化身之前
                     if (info.poker.indexOf('化身') == 0) {
                         poker = viewport[seat];
-                    } else if (info.poker == '狼人' ||
+                    } else if (
+                        info.poker == '狼先知' ||
+                        info.poker == '狼人' ||
                         info.poker == '守夜人' ||
                         info.poker == '爪牙'
                     ) {// 查看同伴,看到化身之后
@@ -1819,6 +1980,9 @@ end {
     function infoPoker(info) {
         var seat = info.seat;
         var game = this;
+
+        infoMovement(info);
+
         // 个人任务
         var mission = info['mission'];
         if (mission) {
@@ -1826,9 +1990,6 @@ end {
                 Story[mission](game);
             }
         }
-
-        infoMovement(info);
-
     }
 
     function loadPoker(game) {

@@ -11,7 +11,7 @@ $.fn.tipsPoker = function (color) {
         svg.appendChild(path);
         self.before(svg);
 
-        var width = 53-2;
+        var width = 56-2;
         var height = 75-2;
         jq_svg = $(svg);
         jq_svg.attr('name', 'tips');
@@ -197,7 +197,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             'width': '100%',
             'height': '100%',
             'background-repeat': 'no-repeat',
-            'background-size': 'contain',
+            'background-size': 'cover',
             'background-position': 'center',
             'background-image': a.css('background-image'),
         });
@@ -226,7 +226,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             'width': '100%',
             'height': '100%',
             'background-repeat': 'no-repeat',
-            'background-size': 'contain',
+            'background-size': 'cover',
             'background-position': 'center',
             'background-image': a.css('background-image'),
         });
@@ -240,7 +240,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             'width': '100%',
             'height': '100%',
             'background-repeat': 'no-repeat',
-            'background-size': 'contain',
+            'background-size': 'cover',
             'background-position': 'center',
             'background-image': b.css('background-image'),
         });

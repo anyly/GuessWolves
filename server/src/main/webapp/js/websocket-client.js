@@ -25,7 +25,7 @@
         var websocket = null;
         var httplistener = {};
         var messagelistener = {};
-        this.readyState = 0;
+        self.readyState = 0;
 
         if (original) {
             websocket = new original(url);
@@ -143,8 +143,12 @@
             if (!isSupport()) {
                 return this;
             }
-            this.readyState = 1;
-            websocket.onopen = callback;
+            websocket.onopen = function () {
+                self.readyState = 1;
+                if (callback) {
+                    callback.apply(this, arguments);
+                }
+            };
             return this;
         };
 
@@ -157,7 +161,7 @@
             if (!isSupport()) {
                 return this;
             }
-            this.readyState = 2;
+            self.readyState = 2;
             websocket.close.apply(websocket, arguments);
             return this;
         };
@@ -170,12 +174,12 @@
             if (!isSupport()) {
                 return this;
             }
-            this.readyState = 3;
+
             websocket.onclose = function (code, reason , wasClean) {
-                if (!code) {
-                    return;
+                self.readyState = 3;
+                if (callback) {
+                    callback.apply(self, arguments);
                 }
-                callback.apply(self, arguments);
                 httplistener = {};
                 messagelistener = {};
             };
@@ -206,7 +210,7 @@
             if (!isSupport()) {
                 return this;
             }
-            if (this.readyState >= 3) {
+            if (self.readyState >= 3) {
                 if (original) {
                     websocket = new original(url);
                 } else {

@@ -18,20 +18,27 @@ public class Game extends AbstractGame {
                 .then("Shuffle")
                 //化身行动
                 .then("Doppel")
+                //化身立刻使用技能
+                .then("AsSeer")
+                .then("AsApprenticeSeer")
+                .then("AsRobber")
+                .then("AsWitch")
+                .then("AsTroubleMarker")
+                .then("AsDrunk")
                 //刚入夜, 并行：狼人、爪牙、守夜人、预言家
                 .meanwhile(new Dispatcher("EarlyNight")
+                        .line("Wolf")
                         .line("Wolves")
+                        .line("MysticWolf")
                         .line("Minion")
                         .line("Mason")
                         .line("Seer")
+                        .line("ApprenticeSeer")
                 )
-                //深夜，顺序执行：强盗、捣蛋鬼、酒鬼、失眠者
+                //深夜，顺序执行：强盗、女巫、捣蛋鬼、酒鬼、失眠者
                 //"MidNight"
-                .then("AsRobber")
-                .then("AsTroubleMarker")
-                .then("AsDrunk")
-
                 .then("Robber")
+                .then("Witch")
                 .then("TroubleMarker")
                 .then("Drunk")
 

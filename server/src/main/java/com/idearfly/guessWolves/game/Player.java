@@ -16,7 +16,7 @@ public class Player extends BasePlayer {
     private String poker;// 身份牌
     private boolean ready;// 是否就绪, 就绪好了就开始游戏
 
-    private Integer[] targets;// 行动时选择技能目标
+    private List<Integer> targets = new LinkedList<>();// 行动时选择技能目标
 
     private List<String> speaks = new LinkedList<>();//发言阶段
 
@@ -57,11 +57,11 @@ public class Player extends BasePlayer {
         return endpoint() == null;
     }
 
-    public Integer[] getTargets() {
+    public List<Integer> getTargets() {
         return targets;
     }
 
-    public void setTargets(Integer[] targets) {
+    public void setTargets(List<Integer> targets) {
         this.targets = targets;
     }
 

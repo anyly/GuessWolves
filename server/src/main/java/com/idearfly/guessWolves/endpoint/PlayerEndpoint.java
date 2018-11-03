@@ -1,7 +1,5 @@
 package com.idearfly.guessWolves.endpoint;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.TypeReference;
 import com.idearfly.guessWolves.game.Game;
 import com.idearfly.guessWolves.game.GameCenter;
 import com.idearfly.guessWolves.game.Player;
@@ -10,6 +8,7 @@ import com.idearfly.timeline.websocket.GameEndpoint;
 import javax.websocket.CloseReason;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import java.util.List;
 
 /**
  * Created by idear on 2018/9/21.
@@ -62,15 +61,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
     //////////////////////
     /**
      * 化身幽灵行动
-     * @param jsonArray
+     * @param list
      * @return
      */
-    public Game onDoppel(JSONArray jsonArray) {
-        Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
+    public Game onDoppel(List list) {
+        List<Integer> targets = (List<Integer>)list;
         this.player.setTargets(targets);
-        if (targets.length > 0) {
+        if (targets.size() > 0) {
             // 通知游戏继续
-            game.doppel(player, targets[0]);
+            game.doppel(player, targets.get(0));
             return game;
         }
         return null;
@@ -78,31 +77,65 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 狼人行动
-     * @param jsonArray
+     * @param target
      * @return
      */
-    public Game onWolves(JSONArray jsonArray) {
-        Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
-        this.player.setTargets(targets);
-        if (targets.length > 0) {
+    public Game onWolf(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
+        if (targets.size() > 0) {
             // 通知游戏继续
-            game.wolves(player, targets);
+            game.wolf(player, target);
             return game;
         }
         return null;
     }
 
     /**
-     * 预言家行动
-     * @param jsonArray
+     * 狼先知
+     * @param list
      * @return
      */
-    public Game onSeer(JSONArray jsonArray) {
-        Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
+    public Game onMysticWolf(List list) {
+        List<Integer> targets = (List<Integer>)list;
         this.player.setTargets(targets);
-        if (targets.length > 0) {
+        if (targets.size() > 0) {
             // 通知游戏继续
-            game.seer(player, targets);
+            game.mysticWolf(player);
+            return game;
+        }
+        return null;
+    }
+    /**
+     * 预言家行动
+     * @param list
+     * @return
+     */
+    public Game onSeer(List list) {
+        List<Integer> targets = (List<Integer>) list;
+        this.player.setTargets(targets);
+        if (targets.size() > 0) {
+            // 通知游戏继续
+            game.seer(player);
+            return game;
+        }
+        return null;
+    }
+
+    /**
+     * 见习预言家
+     * @param list
+     * @return
+     */
+    public Game onApprenticeSeer(List list) {
+        List<Integer> targets = (List<Integer>) list;
+        this.player.setTargets(targets);
+        if (targets.size() > 0) {
+            // 通知游戏继续
+            game.apprenticeSeer(player);
             return game;
         }
         return null;
@@ -110,15 +143,34 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 强盗行动
-     * @param jsonArray
+     * @param list
      * @return
      */
-    public Game onRobber(JSONArray jsonArray) {
-        Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
+    public Game onRobber(List list) {
+        List<Integer> targets = (List<Integer>) list;
         this.player.setTargets(targets);
-        if (targets.length > 0) {
+        if (targets.size() > 0) {
             // 通知游戏继续
-            game.robber(player, targets[0]);
+            game.robber(player);
+            return game;
+        }
+        return null;
+    }
+
+    /**
+     * 女巫
+     * @param target
+     * @return
+     */
+    public Game onWitch(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
+        if (targets.size() > 0) {
+            // 通知游戏继续
+            game.witch(player);
             return game;
         }
         return null;
@@ -126,15 +178,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 捣蛋鬼行动
-     * @param jsonArray
+     * @param list
      * @return
      */
-    public Game onTroubleMarker(JSONArray jsonArray) {
-        Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
+    public Game onTroubleMarker(List list) {
+        List<Integer> targets = (List<Integer>) list;
         this.player.setTargets(targets);
-        if (targets.length > 0) {
+        if (targets.size() > 0) {
             // 通知游戏继续
-            game.troubleMarker(player, targets);
+            game.troubleMarker(player);
             return game;
         }
         return null;
@@ -142,15 +194,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 酒鬼行动
-     * @param jsonArray
+     * @param list
      * @return
      */
-    public Game onDrunk(JSONArray jsonArray) {
-        Integer[] targets = jsonArray.toJavaObject(new TypeReference<Integer[]>(){});
+    public Game onDrunk(List list) {
+        List<Integer> targets = (List<Integer>) list;
         this.player.setTargets(targets);
-        if (targets.length > 0) {
+        if (targets.size() > 0) {
             // 通知游戏继续
-            game.drunk(player, targets[0]);
+            game.drunk(player);
             return game;
         }
         return null;
