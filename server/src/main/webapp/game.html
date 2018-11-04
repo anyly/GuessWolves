@@ -2191,12 +2191,12 @@ end {
     $('myseat').click(function () {
         $('page player[value='+user+'] portrait').each(function () {
             var self = $(this);
-            setTimeout(function () {
+            //setTimeout(function () {
                 var portrait = self.toggleClass('shake', true);
-                setTimeout(function () {
-                    portrait.toggleClass('shake', false);
-                }, 1000);
-            }, 200);
+                //setTimeout(function () {
+                    //portrait.toggleClass('shake', false);
+            //     }, 1000);
+            // }, 200);
         });
         closeMenu();
     });
