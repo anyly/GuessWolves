@@ -50,7 +50,7 @@ discard>column {
 }
 poker {
     background: url('img/default.png') no-repeat;
-    background-size: cover;
+    background-size: 100%;
     background-position: center;
     width: 48px;
     height: 67px;
@@ -82,6 +82,10 @@ player {
 }
 seat>.left>player {
     flex-direction: row;
+}
+seat>.middle {
+    flex: 1 1 0;
+    align-items: stretch;
 }
 seat>.right>player {
     flex-direction: row-reverse;
@@ -239,7 +243,7 @@ name {
     -webkit-line-clamp:2;
     text-align: center;
 }
-clue {
+message {
     overflow-y: auto;
     margin: 0 3px;
     flex: 1 1 0;
@@ -249,7 +253,7 @@ clue {
     padding: 4px 10px;
     max-height: 410px;
 }
-clue::-webkit-scrollbar {
+message::-webkit-scrollbar {
     width:0;
     height:0;
 }
@@ -585,9 +589,6 @@ sideslip.show + levitate .light .flare {
 }
 
 config {
-    position: absolute;
-    left: 0;
-    top: 38px;
     display: block;
     color: darkorange;
     font-size: 16px;
@@ -782,6 +783,43 @@ player poker[value^=化身]:before {
     content: '化身';
 }
 
+toolbar {
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+toolbar>* {
+    height: 30px;
+    width: 30px;
+    display: block;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+hidden {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 30px;
+    width: 30px;
+    display: block;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url("img/show.svg");
+}
+hidden.hide {
+    background-image: url("img/hide.svg");
+}
+toolbar>setting {
+    background-image: url("img/setting.svg");
+}
+toolbar>info {
+    background-image: url("img/info.svg");
+}
+
 animate {
     position: absolute;
     z-index: 1;
@@ -802,6 +840,7 @@ end {
 <body>
 <page>
     <game>
+        <hidden></hidden>
         <row-center style="margin: 30px 5px 0px 5px;">
             <discard>
                 <column class="poker-parent">
@@ -818,7 +857,19 @@ end {
         </row-center>
         <seat>
             <column class="left"></column>
-            <clue class="middle"></clue>
+            <column class="middle">
+                <toolbar style="display: none;">
+                    <info></info>
+                    <setting></setting>
+                </toolbar>
+                <message>
+                    <clue></clue>
+                    <config style="display: none;">
+
+                    </config>
+                </message>
+
+            </column>
             <column class="right"></column>
         </seat>
 
@@ -850,9 +901,6 @@ end {
     </bar>
 
 </logger>
-<config>
-
-</config>
 <sideslip>
     <mine>
         <myaction style="display: none;">
@@ -1115,7 +1163,7 @@ end {
     function tips(text) {
         $('tips>content').html(text);
     }
-    $('tips>min').on('mousedown tounchstart', function () {
+    $('tips>min').on('click', function () {
         var jq = $('tips>content');
         if (jq.hasClass('text-ellipsis')) {
             jq.removeClass('text-ellipsis');
@@ -1403,7 +1451,7 @@ end {
                                         loadMovement(data);
                                     })
                                 ;
-                                tips('等待他人行动...');
+                                tips('女巫:然后与场上的身份牌交换,也可以换给自己!');
                             });
                         });
                     } else if (targets.length == 1) {
@@ -2093,9 +2141,47 @@ end {
             $('#stage').trigger('change');
         }
     });
-    $('config').draggable({
-        containment: "page",
-        scroll:false
+
+    $('seat>.middle').click(function () {
+        $('seat toolbar').toggle(400);
+    });
+    function info() {
+        $('message>*').each(function () {
+            if (this.tagName.toLowerCase() == 'clue') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+    $('toolbar>info').click(info);
+    function setting() {
+        $('message>*').each(function () {
+            if (this.tagName.toLowerCase() == 'config') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+    $('toolbar>setting').click(setting);
+    $('hidden').click(function () {
+        var self = $(this);
+        if (self.hasClass('hide')) {
+            self.removeClass('hide');
+            // 隐藏
+            info();
+            $('poker').css({
+                'background-image':''
+            });
+        } else {
+            self.addClass('hide');
+            // 显示
+            setting();
+            $('poker').css({
+                'background-image':'url("img/hide-poker.png")'
+            });
+        }
     });
     $('mine').click(function () {
         $('myaction').fadeToggle();
