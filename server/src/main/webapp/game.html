@@ -1565,9 +1565,12 @@ end {
             var string = '<h3>猎杀时刻!</h3>';
             /// 死亡情况
             var deadth = data.deadth;
+            deadth = Object.keys(deadth);
             string += '<h4>死亡:</h4>';
             if (deadth.length == 0) {
                 string += '无人死亡';
+            } else if (deadth.length == data.playerCount) {
+                string += '平票，无人死亡';
             } else {
                 for(var i=0;i<deadth.length;i++){
                     var d = deadth[i];
@@ -1661,18 +1664,28 @@ end {
         Vote : function () {
             tips('等待投票结果...');
         },
-        Hunter : function () {
+        Hunter : function (data) {
             tips('等待猎人发起技能...');
+            var deadth = data.deadth;
+            deadth = Object.keys(deadth);
+            if (deadth.length == 0) {
+            } else if (deadth.length == data.playerCount) {
+            } else {
+                for(var i=0;i<deadth.length;i++){
+                    var d = deadth[i];
+                    $('player[seat='+d+']').addClass('dead');
+                }
+            }
         },
         Result : function (data) {
             ////加载日志
-            loadLog(data);
+            $('clue').empty();
+            loadLog(data, true);
             /// 翻开所有牌
             var deck = data.deck;
             var desktop = data.desktop;
             var myseat;
             var mywin = false;
-            var clue = $('clue').empty();
             for (var seat in deck) {
                 var poker = deck[seat];
 
@@ -1685,20 +1698,17 @@ end {
                         myseat = seat;
                         mywin = info.win;
                     }
-                    var movements = info['movements'];
-                    var movement = null;
-                    for (var i=0;i<movements.length;i++) {
-                        movement = movements[i];
-                        var summary = movement.summary;
-                        if (summary) {
-                            clue.append('<tag>'+seat + "号玩家" + summary + '</tag>');
-                        }
-                    }
                 }
             }
             ///
             var report = data.report;
-            var string = '<h3><span style="color: red;">'+(mywin?'赢了!~':'输了!~')+'</span>'+report.description+'！</h3>';
+            var win = '';
+            if (mywin == true) {
+                win = '赢了!~';
+            } else if (mywin == false) {
+                win = '输了!~';
+            }
+            var string = '<h3><span style="color: red;">'+win+'</span>'+report.description+'！</h3>';
             var all = report.all;
             var town = report.town;
             var wolves = report.wolves;
@@ -1710,9 +1720,12 @@ end {
             string += '<p>'+camp(cobbler)+'</p>';
             /// 死亡情况
             var deadth = data.deadth;
+            deadth = Object.keys(deadth);
             string += '<h4>死亡:</h4>';
             if (deadth.length == 0) {
                 string += '无人死亡';
+            } else if (deadth.length == data.playerCount) {
+                string += '平票，无人死亡';
             } else {
                 for(var i=0;i<deadth.length;i++){
                     var d = deadth[i];
@@ -1869,16 +1882,22 @@ end {
         $('config').html(text);
     }
 
-    function loadLog(data) {
+    function loadLog(data, needClue) {
         if (data['cache']) {
             return;
         }
         $('logger').fadeIn();
         var logs = data.logs;
         $('#stage').prop('data', data).empty();
+        var clue = $('clue');
         for (var i=0; i<logs.length; i++) {
             var movement = logs[i];
             $('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
+            if (needClue) {
+                if (movement.description) {
+                    clue.append('<tag>'+movement.description+'</tag>');
+                }
+            }
         }
         $('#stage option:last-child').prop('selected', true);
     }

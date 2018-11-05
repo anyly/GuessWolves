@@ -135,7 +135,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
     /**
      * 投票死亡
      */
-    private Set<Integer> deadth;
+    private Map<Integer, Integer> deadth;
 
     /**
      * 结果报告
@@ -149,6 +149,26 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
     //[常量区]
     private Integer[] integers = new Integer[]{};
+
+    String[] orderPokers = new String[] {
+            "系统发牌",
+            "化身幽灵行动",
+            // 化身立刻行动
+            "化身预言家行动", "化身强盗行动", "化身女巫","化身捣蛋鬼行动", "化身酒鬼行动",
+            // 并行看牌
+            "狼人行动", "狼先知行动", "爪牙行动", "守夜人行动", "预言家行动",
+            // 串行换牌
+            "强盗行动",
+            "捣蛋鬼行动",
+            "酒鬼行动",
+            "失眠者行动",
+            "化身失眠者行动",
+            "开始发言",
+            "化身猎人行动",
+            "投票结果",
+            "猎人行动",
+            "游戏结果"
+    };
 
     //[Getter && Setter]
     public CoherentMap<Integer, Player> getDesktop() {
@@ -207,11 +227,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
         this.hunterKill = hunterKill;
     }
 
-    public Set<Integer> getDeadth() {
+    public Map<Integer, Integer> getDeadth() {
         return deadth;
     }
 
-    public void setDeadth(Set<Integer> deadth) {
+    public void setDeadth(Map<Integer, Integer> deadth) {
         this.deadth = deadth;
     }
 
@@ -293,7 +313,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             int index = GameCenter.randomInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-//                            if (seat==1)poker = "化身幽灵";
+//                            if (seat==1)poker = "猎人";
 //                            if (seat==2)poker = "见习预言家";
 //                            if (seat==3)poker = "狼先知";
 //                            if (seat==4)poker = "女巫";
@@ -632,7 +652,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     @Override
                     public void doing() {
                         Integer max = -1;
-                        List<Integer> scope = new LinkedList<>();
+                        Map<Integer, Integer> scope = new LinkedHashMap<>();
                         Map<Integer, Integer> map = new LinkedHashMap();
                         for (Map.Entry<Integer, Integer> entry: votes.entrySet()) {
                             Integer vote = entry.getValue();// 投给谁
@@ -652,14 +672,63 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             if (count>max) {
                                 max = count;
                                 scope.clear();
-                                scope.add(vote);
+                                scope.put(vote, count);
                             } else if (count == max){
-                                scope.add(vote);
+                                scope.put(vote,count);
                             } else {
 
                             }
                         }
-                        deadth.addAll(scope);
+
+                        String spell = "投票结果";
+                        StringBuilder summary = new StringBuilder();
+                        StringBuilder description = new StringBuilder();
+                        for (Map.Entry<Integer, Integer> entry: scope.entrySet()) {
+                            Integer vote = entry.getKey();
+                            Integer count = entry.getValue();
+                            deadth.put(vote, count);
+
+                            // 添加记录
+                            Player player = desktop.get(vote);
+                            if (summary.length()>0) {
+                                summary.append(",");
+                                description.append(",");
+                            }
+                            summary.append(vote.toString());
+                            description.append(vote.toString() + "号玩家" + player.getUser());
+                        }
+                        String summaryString = null;
+                        String descriptionString = null;
+                        boolean needSync = false;
+                        if (scope.size()==0) {
+                            summaryString = "所有人都投了弃权票";
+                            descriptionString = "所有人都投了弃权票";
+                        } else if (scope.size() == getPlayerCount()) {
+                            summaryString = "平票,每个人票数相等";
+                            descriptionString = "平票,每个人票数相等";
+                            needSync = true;
+                        } else {
+                            summaryString = summary.toString() + "号玩家被投死了，共" + max + "票";
+                            descriptionString = description.toString() + "，被投死了，共" + max + "票";
+                            needSync = true;
+                        }
+
+                        // 系统记录
+                        Movement movement = new Movement(null);
+                        for (Player player : desktop.values()) {
+                            List<Movement> movements = player.getMovements();
+                            Movement last = movements.get(movements.size()-1);
+                            movement = new Movement(last);
+                            movement.setSpell(spell);
+                            movement.setSummary(summaryString);
+                            movement.setDescription(descriptionString);
+                            movements.add(movement);
+                            if (needSync) {
+                                player.emit("syncGame", AbstractGame.this);
+                            }
+                        }
+                        movement = movement.clone();
+                        addLog(movement);
                     }
                 })
 
@@ -673,13 +742,18 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             player.setMission(stage);
                             player.emit(stage, AbstractGame.this);
                         }
+                        //发送给非猎人玩家告知
                         syncExclude("syncHunter", hunters);
                     }
 
                     @Override
                     public boolean when() {
+                        // 排除掉平票
+                        if (deadth.size() == getPlayerCount()) {
+                            return false;
+                        }
                         /// 猎人得票
-                        for (Integer seat: deadth) {
+                        for (Integer seat: deadth.keySet()) {
                             String poker = deck.get(seat);
                             if (poker.equals("猎人") || poker.equals("化身猎人")) {
                                 Player player = desktop.get(seat);
@@ -697,6 +771,25 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                 return false;
                             }
                         }
+                        // 系统日志
+                        StringBuilder summary = new StringBuilder();
+                        StringBuilder description = new StringBuilder();
+                        for (Map.Entry<Integer, Integer> entry: hunterKill.entrySet()) {
+                            Integer hunter = entry.getKey();
+                            Integer kill = entry.getValue();
+                            if (summary.length()>0) {
+                                summary.append(",");
+                                description.append(",");
+                            }
+                            summary.append(kill.toString());
+                            description.append(hunter.toString() + "号猎人杀死了" + kill.toString() + "号玩家");
+                        }
+
+                        Movement movement = new Movement(null);
+                        movement.setSpell("猎人行动");
+                        movement.setSummary("猎人杀死了" + summary.toString());
+                        movement.setDescription(description.toString());
+                        addLog(movement);
                         return true;
                     }
 
@@ -733,7 +826,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
 
                         //皮匠如果死亡, 皮匠一定赢
-                        for (Integer seat: deadth) {
+                        for (Integer seat: deadth.keySet()) {
                             String poker = deck.get(seat);
                             if (poker.equals("皮匠") || poker.equals("化身皮匠")) {
                                 cobberDeadth = true;
@@ -803,7 +896,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                     if (deadth.size() == 0) {
                                         report.setDescription("无狼局弃权票");
                                         allWin = true;
-                                    } else if (deadth.size() == getPlayerCount()) {
+                                    } else if (deadth.size() == getPlayerCount() && hunterKill.size() == 0) {
                                         report.setDescription("无狼局平票");
                                         allWin = true;
                                     } else {
@@ -893,29 +986,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         ///logs
                         Movement movement = new Movement(null);
                         movement.setSpell("游戏结果");
-                        movement.setSummary(null);
-                        movement.setDescription(null);
+                        movement.setSummary(report.getDescription());
+                        movement.setDescription(report.getDescription());
                         movement.setTargets(null);
                         addLog(movement);
                         ///日志排序
-                        String[] orderPokers = new String[] {
-                                "系统发牌",
-                                "化身幽灵行动",
-                                // 化身立刻行动
-                                "化身预言家行动", "化身强盗行动", "化身女巫","化身捣蛋鬼行动", "化身酒鬼行动",
-                                // 并行看牌
-                                "狼人行动", "狼先知行动", "爪牙行动", "守夜人行动", "预言家行动",
-                                // 串行换牌
-                                "强盗行动",
-                                "捣蛋鬼行动",
-                                "酒鬼行动",
-                                "失眠者行动",
-                                "化身失眠者行动",
-                                "开始发言",
-                                "化身猎人行动",
-                                "猎人行动",
-                                "游戏结果"
-                        };
                         Movement[] orderMovements = new Movement[orderPokers.length];
                         LinkedList<Movement> newLogs = new LinkedList<>();
                         for (Movement m: logs) {
@@ -1052,7 +1127,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         votes = new LinkedHashMap<>();
         hunters = new LinkedList<>();
         hunterKill = new LinkedHashMap<>();
-        deadth = new LinkedHashSet<>();
+        deadth = new LinkedHashMap<>();
         report = new Report();
         logs = new LinkedList<>();
         super.reload();
@@ -1288,7 +1363,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         partMovement.setSummary(summary);
         Player targetPlayer = desktop.get(target);
         String description = String.format(
-                "%d号玩家%s化身为%d号玩家的%s",
+                "%d号玩家%s，化身为%d号玩家的%s",
                 player.getSeat(),
                 player.getUser(),
                 targetPlayer.getSeat(),
@@ -1335,7 +1410,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String summary = "孤狼底牌" + stringBuilder.toString()+"号";
         partMovement.setSummary(summary);
         String description = String.format(
-                "%d号玩家%s翻看%d号底牌%s",
+                "%d号玩家%s，翻看%d号底牌%s",
                 player.getSeat(),
                 player.getUser(),
                 targets[0],
@@ -1377,7 +1452,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String summary = "翻看牌号" + stringBuilder.toString();
         partMovement.setSummary(summary);
         String description = String.format(
-                "%d号玩家%s翻看%d号身份牌%s",
+                "%d号玩家%s，翻看%d号身份牌%s",
                 player.getSeat(),
                 player.getUser(),
                 targets[0],
@@ -1416,7 +1491,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String description = null;
         if (targets.length == 2) {
             description = String.format(
-                    "%d号玩家%s翻看%d号底牌%s和%d底牌%s",
+                    "%d号玩家%s，翻看%d号底牌%s和%d底牌%s",
                     player.getSeat(),
                     player.getUser(),
                     targets[0],
@@ -1425,7 +1500,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     deck.get(targets[1]));
         } else {
             description = String.format(
-                    "%d号玩家%s翻看%d号玩家%s",
+                    "%d号玩家%s，翻看%d号玩家%s",
                     player.getSeat(),
                     player.getUser(),
                     targets[0],
@@ -1465,7 +1540,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String description = null;
 
         description = String.format(
-                "%d号玩家%s翻看%d号玩家%s",
+                "%d号玩家%s，翻看%d号玩家%s",
                 player.getSeat(),
                 player.getUser(),
                 target,
@@ -1501,7 +1576,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String summary = "抢走"+target+ "号牌";
         partMovement.setSummary(summary);
         String description = String.format(
-                "%d号玩家%s抢走%d号玩家%s",
+                "%d号玩家%s，抢走%d号玩家%s",
                 player.getSeat(),
                 player.getUser(),
                 target,
@@ -1552,7 +1627,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String summary = "底牌"+targets[0]+"号换给了"+targets[1]+"号";
         partMovement.setSummary(summary);
         String description = String.format(
-                "%d号玩家%s查看%d号底牌%s，然后交换给%d号玩家%s",
+                "%d号玩家%s，查看%d号底牌%s，然后交换给%d号玩家%s",
                 player.getSeat(),
                 player.getUser(),
                 targets[0],
@@ -1591,7 +1666,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String summary = "捣牌"+targets[0]+","+targets[1];
         partMovement.setSummary(summary);
         String description = String.format(
-                "%d号玩家%s交换%d号玩家%s和%d号玩家%s",
+                "%d号玩家%s，交换%d号玩家%s和%d号玩家%s",
                 player.getSeat(),
                 player.getUser(),
                 targets[0],
@@ -1628,7 +1703,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String summary = "换"+target+"号底牌";
         partMovement.setSummary(summary);
         String description = String.format(
-                "%d号玩家%s换走%d号底牌%s",
+                "%d号玩家%s，换走%d号底牌%s",
                 player.getSeat(),
                 player.getUser(),
                 target,
@@ -1650,25 +1725,6 @@ public abstract class AbstractGame extends BaseGame<Player> {
         if (speekCurrentIndex != player.getSeat()) {
             return;
         }
-//        gameCenter.add(()->{
-//            List<String> speaks = player.getSpeaks();
-//            speaks.add(string);
-//            speekCurrentIndex++;
-//            if (speekCurrentIndex > desktop.size()) {
-//                speekCurrentIndex = 1;
-//                speekRound++;
-//            }
-//
-//            if (speekRound > 3) {
-//                speekRound = 3;
-//                // 结束
-//                story.focus("Speek");
-//            } else {
-//                // 下一个发言
-//                speek();
-//            }
-//
-//        });
     }
 
     /////////////////////////////////////////////
@@ -1714,10 +1770,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * @param kill
      */
     public void hunter(Player player, Integer kill) {
-        hunters.remove(player.getSeat());
+        hunters.remove(player);
         hunterKill.put(player.getSeat(), kill);
         player.setMission(null);
-        deadth.add(kill);
+        deadth.put(kill, 1);
 
     }
 
