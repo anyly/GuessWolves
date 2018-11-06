@@ -25,9 +25,9 @@ public class Game extends AbstractGame {
                 .then("AsWitch")
                 .then("AsTroubleMarker")
                 .then("AsDrunk")
+                .then("Wolf")
                 //刚入夜, 并行：狼人、爪牙、守夜人、预言家
                 .meanwhile(new Dispatcher("EarlyNight")
-                        .line("Wolf")
                         .line("Wolves")
                         .line("MysticWolf")
                         .line("Minion")

@@ -778,7 +778,7 @@ poker[value=见习预言家], poker[value=化身见习预言家] {
 poker[value=女巫], poker[value=化身女巫]  {
     background-image: url('img/女巫.png');
 }
-player poker[value^=化身]:before {
+player poker[value^=化身]:not([value=化身幽灵]):before {
     font-size: 14px;
     color: white;
     content: '化身';
@@ -1957,7 +1957,6 @@ end {
     function infoMovement(info, needBoomAnimation) {
         var game = this;
         var stage = game.stage;
-        var seat = info.seat;
 
         var movements = info['movements'];
         var movement = null;
@@ -1985,24 +1984,6 @@ end {
             var meanwhiles = [];
             for (var seat in viewport) {
                 var poker = viewport[seat];
-                if (poker == '化身幽灵') {
-
-                } else if (poker.indexOf('化身') == 0) {
-                    var afterpoker = poker.substr('化身'.length);// 化身以后
-                    var beforepoker = '化身幽灵';// 化身之前
-                    if (info.poker.indexOf('化身') == 0) {
-                        poker = viewport[seat];
-                    } else if (
-                        info.poker == '狼先知' ||
-                        info.poker == '狼人' ||
-                        info.poker == '守夜人' ||
-                        info.poker == '爪牙'
-                    ) {// 查看同伴,看到化身之后
-                        poker = afterpoker;
-                    } else {
-                        poker = beforepoker;
-                    }
-                }
                 if (needBoomAnimation == false) {
                     $('[seat='+seat+'] poker').each(function () {
                         var jq = $(this);
@@ -2017,7 +1998,8 @@ end {
                             jq.prop('value', poker);
                             meanwhiles.push((function (jq, poker) {
                                 return function () {
-                                    if (poker != jq.attr('value')) {
+                                    var jq_value = jq.attr('value');
+                                    if (poker != jq_value) {
                                         WolvesAnimation.boom(jq, this.timepoint(function () {
                                             jq.attr('value', poker);
                                         }));

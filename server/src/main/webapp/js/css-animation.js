@@ -246,7 +246,7 @@
             }
         );
     };
-    CSSAnimation.move = function (a, b, callback) {
+    CSSAnimation.move = function (a, b, callback, playStyle) {
         if (typeof(a) == 'string') {
             a = document.querySelector(a);
         }
@@ -261,14 +261,63 @@
         var x2 = rect2.left;
         var y2 = rect2.top;
 
+        if (!playStyle) {
+            playStyle = '2.5s ease-in-out';
+        }
+
         createAnimation(
             a,
             '0% {box-shadow: 0px 0px 0px #000;}'+
             '15%, 30% {transform: translate(10px, 0px); box-shadow: -10px 10px 5px #888888;}'+
             '75%, 90% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); }'+
             '100% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); box-shadow: 0px 0px 0px #000;}',
-            '2.5s ease-in-out',
+            playStyle,
             callback
+        );
+    };
+    CSSAnimation.rob = function (a, b, callback, playStyle) {
+        if (typeof(a) == 'string') {
+            a = document.querySelector(a);
+        }
+        if (typeof(b) == 'string') {
+            b = document.querySelector(b);
+        }
+        //////
+        var rect1 = a.getBoundingClientRect();
+        var x1 = rect1.left;
+        var y1 = rect1.top;
+        var rect2 = b.getBoundingClientRect();
+        var x2 = rect2.left;
+        var y2 = rect2.top;
+
+        if (!playStyle) {
+            playStyle = '2.5s ease-in-out forwards';
+        }
+
+
+        createAnimation(
+            a,
+            '0% {box-shadow: 0px 0px 0px #000;}'+
+            '15%, 30% {transform: translate(10px, 0px); box-shadow: -10px 10px 5px #888888;}'+
+            '75%, 90% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); }'+
+            '100% { transform: translate('+(x2-x1)+'px,'+(y2-y1)+'px); box-shadow: 0px 0px 0px #000;}',
+            playStyle,
+            function () {
+                var thisA = this;
+                createAnimation(
+                    b,
+                    '0% {transform: translate(10px, 0px);}'+
+                    '100% { transform: translate('+(x1-x2)+'px,'+(y1-y2)+'px);}',
+                    '0.3s ease-out forwards',
+                    function () {
+                        thisA.clear();
+                        this.clear();
+                        if (callback) {
+                            callback.apply(this, arguments);
+                        }
+                    }
+                );
+            }
         );
     };
 })();

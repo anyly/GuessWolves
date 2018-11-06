@@ -7,10 +7,7 @@ import com.idearfly.collection.CoherentMap;
 import com.idearfly.guessWolves.game.entity.Camp;
 import com.idearfly.guessWolves.game.entity.Movement;
 import com.idearfly.guessWolves.game.entity.Report;
-import com.idearfly.guessWolves.game.entity.spell.Replicate;
-import com.idearfly.guessWolves.game.entity.spell.Rob;
-import com.idearfly.guessWolves.game.entity.spell.Show;
-import com.idearfly.guessWolves.game.entity.spell.Switch;
+import com.idearfly.guessWolves.game.entity.spell.*;
 import com.idearfly.guessWolves.util.StringUtil;
 import com.idearfly.timeline.Event;
 import com.idearfly.timeline.Plot;
@@ -313,8 +310,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             int index = GameCenter.randomInt(pool.size());
                             String poker = pool.remove(index);
                             // 测试
-//                            if (seat==1)poker = "猎人";
-//                            if (seat==2)poker = "见习预言家";
+//                            if (seat==1)poker = "化身幽灵";
+//                            if (seat==2)poker = "爪牙";
 //                            if (seat==3)poker = "狼先知";
 //                            if (seat==4)poker = "女巫";
 
@@ -326,8 +323,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             if (player != null) {
                                 player.setPoker(poker);
                                 // 查看自己的牌
-                                Show show = new Show(seat, seat);
-                                Movement movement = show.cast(deck, player);
+                                Reveal reveal = new Reveal(seat, seat);
+                                Movement movement = reveal.cast(deck, player);
                                 player.getMovements().add(movement);
                                 ///log
                                 String summary = "初始为"+ StringUtil.simplePokerName(poker);
@@ -392,9 +389,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public boolean when() {
-                        List<Integer> mysticWolf = findInitialSeatsByPokers("狼先知", "化身狼先知");
-                        List<Integer> indexs = findInitialSeatsByPokers("狼人", "化身狼人");
-                        if (indexs.size() == 1 && mysticWolf.size() == 0) {
+                        List<Integer> indexs = findInitialSeatsByPokers("狼人", "化身狼人", "狼先知", "化身狼先知");
+                        if (indexs.size() == 1) {
                             player = findBySeat(indexs.get(0));
                             return true;
                         }
@@ -473,8 +469,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         while (listIterator.hasNext()) {
                             player = listIterator.next();
                             // 爪牙看到狼
-                            Show show = new Show(player.getSeat(), indexArray);
-                            Movement partMovement = show.cast(deck, player);
+                            Reveal reveal = new Reveal(player.getSeat(), indexArray);
+                            Movement partMovement = reveal.cast(deck, player);
                             partMovement.setSummary(summary);
                             String string = player.getSeat() + "号玩家" + player.getUser() + "发现" + description;
                             partMovement.setDescription(string);
@@ -1081,8 +1077,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
                 continue;
             }
             players.add(team);
-            Show show = new Show(index, indexArray);
-            Movement partMovement = show.cast(deck, team);
+            Reveal reveal = new Reveal(index, indexArray);
+            Movement partMovement = reveal.cast(deck, team);
             partMovement.setSpell(poker+"行动");
             partMovement.setSummary(summary);
             String string = index+"号玩家"+team.getUser()+description;
@@ -1619,8 +1615,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
         String targetPoker1 = deck.get(targets[0]);
         String targetPoker2 = deck.get(targets[1]);
 
-        Switch aSwitch = new Switch(caller, targets);
-        partMovement = aSwitch.cast(deck, player);
+        Swap swap = new Swap(caller, targets);
+        partMovement = swap.cast(deck, player);
 
         movements.add(partMovement);
 
@@ -1655,12 +1651,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Integer caller = player.getSeat();
         List<Movement> movements = player.getMovements();
         //交换后不查看
-        Switch aSwitch = new Switch(caller, targets);
+        Swap swap = new Swap(caller, targets);
 
         String targetPoker1 = deck.get(targets[0]);
         String targetPoker2 = deck.get(targets[1]);
 
-        Movement partMovement = aSwitch.cast(deck, player);
+        Movement partMovement = swap.cast(deck, player);
         movements.add(partMovement);
         /// log
         String summary = "捣牌"+targets[0]+","+targets[1];
@@ -1695,9 +1691,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
         Integer caller = player.getSeat();
         List<Movement> movements = player.getMovements();
         //交换但不能查看
-        Switch aSwitch = new Switch(caller, caller, target);
+        Swap swap = new Swap(caller, caller, target);
         String targetPoker = deck.get(target);
-        Movement partMovement = aSwitch.cast(deck, player);
+        Movement partMovement = swap.cast(deck, player);
         movements.add(partMovement);
         ///log
         String summary = "换"+target+"号底牌";

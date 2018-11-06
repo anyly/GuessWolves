@@ -1,7 +1,8 @@
 package com.idearfly.guessWolves.game.entity.spell;
 
 
-import com.idearfly.guessWolves.game.entity.movement.Copy;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by idear on 2018/9/27.
@@ -13,8 +14,13 @@ public class Replicate extends Spell {
     }
 
     @Override
-    public void motions() {
-        this.motions.add(new Copy(caster, targets));
-    }
+    public void doing(LinkedHashMap<Integer, String> deck, Map<Integer, String> viewport) {
+        Integer target = targets[0];
+        String copySource = deck.get(target);
+        String newPersona = "化身" + copySource;
+        deck.put(this.caster, newPersona);
 
+        viewport.put(target, copySource);
+        viewport.put(this.caster, newPersona);
+    }
 }

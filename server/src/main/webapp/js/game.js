@@ -183,7 +183,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
         }
         CSSAnimation.bump(ele.get(0), callback);
     };
-    WolvesAnimation.move = function (a, b, callback) {
+    WolvesAnimation.move = function (a, b, callback, playStyle) {
         if (!(a instanceof jQuery)) {
             a = $(a);
         }
@@ -206,13 +206,97 @@ var castSpell = function (callback, callerfilter, targetfilter) {
 
         CSSAnimation.move(animateA.get(0), b.get(0), function () {
             animateA.remove();
-            a.css('opacity', '');
             if (callback) {
                 callback();
             }
-        });
+            createAnimation(
+                a.get(0),
+                '0% {\n' +
+                '    opacity: 0;\n' +
+                '}\n' +
+                '100% {\n' +
+                '    opacity: 1;\n' +
+                '}\n'
+                ,
+                '0.3s ease-in',
+                function () {
+                    a.css('opacity', 1);
+                }
+            );
+        }, playStyle);
     };
-    WolvesAnimation.swap = function (a, b, callback) {
+    WolvesAnimation.rob = function (a, b, callback, playStyle) {
+        if (!(a instanceof jQuery)) {
+            a = $(a);
+        }
+        if (!(b instanceof jQuery)) {
+            b = $(b);
+        }
+        var animateA = $('<animate></animate>');
+        animateA.css({
+            'z-index': '10',
+            'display': 'block',
+            'width': '100%',
+            'height': '100%',
+            'background-repeat': 'no-repeat',
+            'background-size': '100%',
+            'background-position': 'center',
+            'background-image': a.css('background-image'),
+        });
+        a.before(animateA);
+        a.css('opacity', 0);
+
+        var animateB = $('<animate></animate>');
+        animateB.css({
+            'z-index': '10',
+            'display': 'block',
+            'width': '100%',
+            'height': '100%',
+            'background-repeat': 'no-repeat',
+            'background-size': '100%',
+            'background-position': 'center',
+            'background-image': b.css('background-image'),
+        });
+        b.before(animateB);
+        b.css('opacity', 0);
+
+        CSSAnimation.rob(animateA.get(0), animateB.get(0), function () {
+            animateA.remove();
+            animateB.remove();
+            if (callback) {
+                callback();
+            }
+            createAnimation(
+                a.get(0),
+                '0% {\n' +
+                '    opacity: 0;\n' +
+                '}\n' +
+                '100% {\n' +
+                '    opacity: 1;\n' +
+                '}\n'
+                ,
+                '0.3s ease-in',
+                function () {
+                    a.css('opacity', 1);
+                }
+            );
+            createAnimation(
+                b.get(0),
+                '0% {\n' +
+                '    opacity: 0;\n' +
+                '}\n' +
+                '100% {\n' +
+                '    opacity: 1;\n' +
+                '}\n'
+                ,
+                '0.3s ease-in',
+                function () {
+                    b.css('opacity', 1);
+                }
+            );
+        }, playStyle);
+    };
+    WolvesAnimation.swap = function (a, b, callback, playStyle) {
         if (!(a instanceof jQuery)) {
             a = $(a);
         }
@@ -255,6 +339,28 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             if (callback) {
                 callback();
             }
-        });
+        }, playStyle);
+    };
+    WolvesAnimation.flop = function (a, poker, callback) {
+        if (!(a instanceof jQuery)) {
+            a = $(a);
+        }
+        createAnimation(
+            a.get(0),
+            '0% {\n' +
+            '    transform: rotateY(0deg);\n' +
+            '}\n' +
+            '50% {\n' +
+            '    transform: rotateY(90deg);\n' +
+            '    background-image: url(../img/'+poker+'.png);\n' +
+            '}\n' +
+            '100% {\n' +
+            '    transform: rotateY(180deg);\n' +
+            '    background-image: url(../img/'+poker+'.png);\n' +
+            '}\n'
+            ,
+            '10s linear',
+            callback
+        )
     };
 })();

@@ -1,20 +1,19 @@
-package com.idearfly.guessWolves.game.entity.movement;
+package com.idearfly.guessWolves.game.entity.spell;
+
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Created by idear on 2018/9/26.
- * 交换牌面
+ * Created by idear on 2018/9/27.
  */
-public class Swap extends Motion {
-
-    public Swap(Integer own, Integer... targets) {
-        super("交换", own, targets);
+public class Swap extends Spell {
+    public Swap(Integer caster, Integer... targets) {
+        super("交换", caster, targets);
     }
 
     @Override
-    public void doing(LinkedHashMap<Integer, String> deck, Map<Integer, String> viewport) {
+    protected void doing(LinkedHashMap<Integer, String> deck, Map<Integer, String> viewport) {
         Integer one = targets[0];
         Integer two = targets[1];
         String poker1 = deck.get(one);
