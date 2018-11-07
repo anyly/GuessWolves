@@ -106,7 +106,7 @@
 
         ele.style.animation = id + ' ' + playStyle;
 
-        var call = {
+        var controll = {
             id : id,
             clear: function () {
                 ele.style.animation = '';
@@ -117,11 +117,11 @@
         var handler = handlers[id] = function () {
             //console.debug(id+'animationend');
             ele.removeEventListener("animationend",handler, false);
-            if (playStyle.indexOf('forwards')<0) {
-                call.clear();
+            if (playStyle.indexOf('forwards')<0 && playStyle.indexOf('infinite')<0) {
+                controll.clear();
             }
             if (callback) {
-                callback.apply(call, arguments);
+                callback.apply(controll, arguments);
             }
         };
 
@@ -137,7 +137,7 @@
             //console.debug(id + 'animationstart');
         };
         ele.addEventListener('animationstart', f2, false);
-        return id;
+        return controll;
     };
     window.CSSAnimation = {};
     CSSAnimation.float = function (a, callback, playStyle) {
@@ -306,9 +306,10 @@
                 var thisA = this;
                 createAnimation(
                     b,
-                    '0% {transform: translate(10px, 0px);}'+
-                    '100% { transform: translate('+(x1-x2)+'px,'+(y1-y2)+'px);}',
-                    '0.3s ease-out forwards',
+                    '0% {transform: translate(10px, 0px) rotate(0deg);}'+
+                    '50% {transform: translate('+((x1-x2)/2)+'px,'+((y1-y2)/2)+'px) rotate(180deg);}'+
+                    '100% { transform: translate('+(x1-x2)+'px,'+(y1-y2)+'px) rotate(360deg);}',
+                    '0.4s ease-out forwards',
                     function () {
                         thisA.clear();
                         this.clear();

@@ -311,7 +311,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             String poker = pool.remove(index);
                             // 测试
 //                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "爪牙";
+//                            if (seat==2)poker = "强盗";
 //                            if (seat==3)poker = "狼先知";
 //                            if (seat==4)poker = "女巫";
 

@@ -171,11 +171,11 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             }
         )
     };
-    WolvesAnimation.gleam = function (ele, callback) {
+    WolvesAnimation.gleam = function (ele, callback, playStyle) {
         if (!(ele instanceof jQuery)) {
             ele = $(ele);
         }
-        CSSAnimation.gleam(ele.get(0), callback);
+        return CSSAnimation.gleam(ele.get(0), callback, playStyle);
     };
     WolvesAnimation.bump = function (ele, callback) {
         if (!(ele instanceof jQuery)) {
