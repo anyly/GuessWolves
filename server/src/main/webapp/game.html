@@ -60,7 +60,7 @@ poker {
 
     color: white;
     line-height: 23px;
-    text-indent: 10px;
+    text-align: center;
 }
 seat {
     display: flex;
@@ -1130,7 +1130,7 @@ end {
 
             if (i<=rightCount) {
                 var newNode = document.importNode(node, true);
-                $(newNode).attr('seat', leftCount+i);
+                $(newNode).attr('seat', seatCount-i+1);
                 rightColumn.append(newNode);
             }
         }
