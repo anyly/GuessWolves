@@ -332,7 +332,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                 movement.setDescription(seat+"号发牌后得到"+poker);
                                 movement.setSpell("系统发牌");
                                 // 确定执行顺序
-                                if (poker.equals("狼人")) {
+                                if (poker.equals("狼人")
+                                        || poker.equals("狼先知")
+                                        || poker.equals("始祖狼")) {
                                     wolves.add(player);
                                 } else if (poker.equals("皮匠")) {
                                     cobber = player;
