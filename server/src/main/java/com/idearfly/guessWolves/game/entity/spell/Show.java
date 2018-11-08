@@ -16,9 +16,15 @@ public class Show extends Spell {
     protected void doing(LinkedHashMap<Integer, String> deck, Map<Integer, String> viewport) {
         for (Integer target: targets) {
             String poker = deck.get(target);
-            if (poker.startsWith("化身") && !poker.equals("化身幽灵")) {
-                // 只能看到化身之前的身份
-                poker = "化身幽灵";
+            if (poker.startsWith("化身")) {
+                if (poker.equals("化身幽灵")) {
+                    // 化身幽灵本身已经是化身之前
+                } else if (initPoker.startsWith("化身")) {
+                    // 初始为化身幽灵，结合自己的操作，相当于看到化身真是身份
+                } else {
+                    // 只能看到化身之前的身份
+                    poker = "化身幽灵";
+                }
             }
             viewport.put(target, poker);
         }

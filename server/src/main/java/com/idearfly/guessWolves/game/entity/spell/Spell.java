@@ -16,6 +16,7 @@ public abstract class Spell {
     protected Integer caster;
     protected Integer[] targets;
     protected String name;
+    protected String initPoker;
 
     public Spell(String name, Integer caster, Integer...targets) {
         this.name = name;
@@ -24,6 +25,7 @@ public abstract class Spell {
     }
 
     public Movement cast(LinkedHashMap<Integer, String> deck, Player player) {
+        initPoker = player.getPoker();
         List<Movement> movements = player.getMovements();
         Movement movement = null;
         if (movements.size()>0) {

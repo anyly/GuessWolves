@@ -778,10 +778,13 @@ poker[value=见习预言家], poker[value=化身见习预言家] {
 poker[value=女巫], poker[value=化身女巫]  {
     background-image: url('img/女巫.png');
 }
-player poker[value^=化身]:not([value=化身幽灵]):before {
+poker[value^=化身]:not([value=化身幽灵]):after {
     font-size: 14px;
+    line-height: 14px;
     color: white;
     content: '化身';
+    display: block;
+    font-weight: bold;
 }
 
 toolbar {
@@ -1223,6 +1226,19 @@ end {
                         var jq = $('[seat='+seat+'] poker');
                         var caller_jq = $('player[value='+user+'] poker');
                         timeline
+                            .then(function () {
+                                var myseat = portrait.parents('[seat]').attr('seat');
+                                var movements = data.desktop[myseat]['movements'];
+                                var lastMovement = movements[movements.length-1];
+                                var poker = lastMovement['viewport'][myseat];
+                                var shortPoker = poker;
+                                if (poker.indexOf('化身')>=0 && poker != '化身幽灵') {
+                                    shortPoker = poker.substr('化身'.length);
+                                }
+                                WolvesAnimation.flop(jq, shortPoker, this.timepoint(function () {
+                                    jq.attr('value', poker);
+                                }));
+                            })
                             .then(function() {
                                 WolvesAnimation.move(jq, caller_jq, this.timepoint());
                             })
@@ -1424,6 +1440,19 @@ end {
                     controll.clear();
                     client.http(stage, [seat], function (data) {
                         timeline
+                            .then(function () {
+                                var myseat = portrait.parents('[seat]').attr('seat');
+                                var movements = data.desktop[myseat]['movements'];
+                                var lastMovement = movements[movements.length-1];
+                                var poker = lastMovement['viewport'][myseat];
+                                var shortPoker = poker;
+                                if (poker.indexOf('化身')>=0 && poker != '化身幽灵') {
+                                    shortPoker = poker.substr('化身'.length);
+                                }
+                                WolvesAnimation.flop(jq, shortPoker, this.timepoint(function () {
+                                    jq.attr('value', poker);
+                                }));
+                            })
                             .then(function() {
                                 WolvesAnimation.rob(jq, caller, this.timepoint());
                             })
@@ -2038,9 +2067,19 @@ end {
                                 return function () {
                                     var jq_value = jq.attr('value');
                                     if (poker != jq_value) {
-                                        WolvesAnimation.boom(jq, this.timepoint(function () {
-                                            jq.attr('value', poker);
-                                        }));
+                                        if (jq_value) {
+                                            WolvesAnimation.boom(jq, this.timepoint(function () {
+                                                jq.attr('value', poker);
+                                            }));
+                                        } else {
+                                            var shortPoker = poker;
+                                            if (poker.indexOf('化身')>=0 && poker != '化身幽灵') {
+                                                shortPoker = poker.substr('化身'.length);
+                                            }
+                                            WolvesAnimation.flop(jq, shortPoker, this.timepoint(function () {
+                                                jq.attr('value', poker);
+                                            }));
+                                        }
                                     }
                                 };
                             })(jq, poker));

@@ -263,37 +263,11 @@ var castSpell = function (callback, callerfilter, targetfilter) {
         CSSAnimation.rob(animateA.get(0), animateB.get(0), function () {
             animateA.remove();
             animateB.remove();
+            a.css('opacity', 1);
+            b.css('opacity', 1);
             if (callback) {
                 callback();
             }
-            createAnimation(
-                a.get(0),
-                '0% {\n' +
-                '    opacity: 0;\n' +
-                '}\n' +
-                '100% {\n' +
-                '    opacity: 1;\n' +
-                '}\n'
-                ,
-                '0.3s ease-in',
-                function () {
-                    a.css('opacity', 1);
-                }
-            );
-            createAnimation(
-                b.get(0),
-                '0% {\n' +
-                '    opacity: 0;\n' +
-                '}\n' +
-                '100% {\n' +
-                '    opacity: 1;\n' +
-                '}\n'
-                ,
-                '0.3s ease-in',
-                function () {
-                    b.css('opacity', 1);
-                }
-            );
         }, playStyle);
     };
     WolvesAnimation.swap = function (a, b, callback, playStyle) {
@@ -345,22 +319,42 @@ var castSpell = function (callback, callerfilter, targetfilter) {
         if (!(a instanceof jQuery)) {
             a = $(a);
         }
-        createAnimation(
+        var part1 = createAnimation(
             a.get(0),
             '0% {\n' +
             '    transform: rotateY(0deg);\n' +
             '}\n' +
-            '50% {\n' +
-            '    transform: rotateY(90deg);\n' +
-            '    background-image: url(../img/'+poker+'.png);\n' +
-            '}\n' +
             '100% {\n' +
-            '    transform: rotateY(180deg);\n' +
-            '    background-image: url(../img/'+poker+'.png);\n' +
+            '    transform: rotateY(90deg);\n' +
             '}\n'
             ,
-            '10s linear',
-            callback
+            '0.4s ease',
+            function () {
+                a.css({
+                    'background-image': 'url(../img/'+poker+'.png)',
+                    'transform': 'rotateY(270deg)'
+                });
+                createAnimation(
+                    a.get(0),
+                    '0% {\n' +
+                    '    transform: rotateY(270deg);\n' +
+                    '}\n' +
+                    '100% {\n' +
+                    '    transform: rotateY(360deg);\n' +
+                    '}\n'
+                    ,
+                    '0.4s ease',
+                    function () {
+                        a.css({
+                            'background-image': '',
+                            'transform': ''
+                        });
+                        if (callback) {
+                            callback();
+                        }
+                    }
+                );
+            }
         )
     };
 })();
