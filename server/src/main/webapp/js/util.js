@@ -198,6 +198,23 @@ $(function() {
         }
         return '';
     };
+    window.urlparams = function () {
+        var object = {};
+        var search = window.location.href.substr(window.location.href.indexOf('?'));
+        var last = search.lastIndexOf('#');
+        if (last<0) {
+            last = search.length;
+        }
+        search = search.substring(0, last);
+        var group = search.split(/[?&]/);
+        for (var i=0; i<group.length;i++) {
+            var kv = group[i].split('=');
+            if (kv.length >= 2) {
+                object[kv[0]] = kv[1];
+            }
+        }
+        return object;
+    };
 })();
 /**
  * 动画

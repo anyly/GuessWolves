@@ -393,6 +393,15 @@
         },
         login: function () {
             var param = formData('loginForm');
+            if (param.user == '') {
+                $('#user_error').html('请输入用户名');
+                $('#user').focus();
+                return;
+            } else if (param.img == '') {
+                $('#user_error').html('请选择头像');
+                $('#img').focus();
+                return;
+            }
             $('#user_error').html('');
             client.http("login", param, function(data) {
                 if (data && data.error){
@@ -570,6 +579,14 @@
     loadStory();
 </script>
 <script>
+    (function () {
+        var data = urlparams();
+        var user = data.user;
+        if (user) {
+            localStorage.setItem('user', user);
+            localStorage.setItem('img', data.img);
+        }
+    })();
     var user = localStorage.getItem('user');
     var img = localStorage.getItem('img');
     if (user) {
