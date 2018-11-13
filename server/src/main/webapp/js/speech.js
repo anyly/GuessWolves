@@ -7,7 +7,7 @@
     var Speech = function (stream, config) {
         config = config || {};
         config.sampleBits = config.sampleBits || 16;      //采样数位 8, 16
-        config.sampleRate = config.sampleRate || (16000);   //采样率(1/6 44100) 可选8000 / 16000
+        config.sampleRate = config.sampleRate || (14700);   //采样率(1/6 44100) 可选8000 / 16000
 
 
         var context = new AudioContext();
