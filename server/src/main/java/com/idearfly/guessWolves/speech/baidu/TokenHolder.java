@@ -1,10 +1,11 @@
-package com.idearfly.guessWolves.speech;
+package com.idearfly.guessWolves.speech.baidu;
 
 
 import com.alibaba.fastjson.JSONObject;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -86,41 +87,44 @@ public class TokenHolder {
      *
      * @return
      * @throws IOException   http请求错误
-     * @throws DemoException http接口返回不是 200, access_token未获取
+     * http接口返回不是 200, access_token未获取
      */
-    public void resfresh() throws IOException, DemoException {
-        String getTokenURL = url + "?grant_type=client_credentials"
-                + "&client_id=" + ConnUtil.urlEncode(apiKey) + "&client_secret=" + ConnUtil.urlEncode(secretKey);
+    public void resfresh() {
+        try {
+            String getTokenURL = url + "?grant_type=client_credentials"
+                    + "&client_id=" + ConnUtil.urlEncode(apiKey) + "&client_secret=" + ConnUtil.urlEncode(secretKey);
 
-        // 打印的url出来放到浏览器内可以复现
-        System.out.println("token url:" + getTokenURL);
+            // 打印的url出来放到浏览器内可以复现
+            System.out.println("token url:" + getTokenURL);
 
-        URL url = new URL(getTokenURL);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setConnectTimeout(5000);
-        String result = ConnUtil.getResponseString(conn);
-        System.out.println("Token result json:" + result);
-        parseJson(result);
+            URL url = new URL(getTokenURL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(5000);
+            String result = ConnUtil.getResponseString(conn);
+            System.out.println("Token result json:" + result);
+            parseJson(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * @param result token接口获得的result
-     * @throws DemoException
      */
-    private void parseJson(String result) throws DemoException {
+    private void parseJson(String result) {
         JSONObject json = JSONObject.parseObject(result);
         String access_token = json.getString("access_token");
         if (access_token == null) {
             // 返回没有access_token字段
-            throw new DemoException("access_token not obtained, " + result);
+            throw new RuntimeException("access_token not obtained, " + result);
         }
         String scope = json.getString("scope");
         if (scope == null) {
             // 返回没有scope字段
-            throw new DemoException("scopenot obtained, " + result);
+            throw new RuntimeException("scopenot obtained, " + result);
         }
         if (!json.getString("scope").contains(scope)) {
-            throw new DemoException("scope not exist, " + scope + "," + result);
+            throw new RuntimeException("scope not exist, " + scope + "," + result);
         }
         token = access_token;
         expiresAt = System.currentTimeMillis() + json.getLong("expires_in") * 1000;

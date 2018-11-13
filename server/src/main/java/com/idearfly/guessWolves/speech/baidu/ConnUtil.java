@@ -1,4 +1,4 @@
-package com.idearfly.guessWolves.speech;
+package com.idearfly.guessWolves.speech.baidu;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,11 +33,9 @@ public class ConnUtil {
      *
      * @param conn
      * @return
-     * @throws IOException
-     * @throws DemoException
      */
-    public static String getResponseString(HttpURLConnection conn) throws IOException, DemoException {
-        return new String(getResponseBytes(conn));
+    public static String getResponseString(HttpURLConnection conn) throws UnsupportedEncodingException {
+        return new String(getResponseBytes(conn), "UTF-8");
     }
 
     /**
@@ -46,22 +44,27 @@ public class ConnUtil {
      *
      * @param conn
      * @return
-     * @throws IOException   http请求错误
-     * @throws DemoException http 的状态码不是 200
+     * http请求错误
+     * http 的状态码不是 200
      */
-    public static byte[] getResponseBytes(HttpURLConnection conn) throws IOException, DemoException {
-        int responseCode = conn.getResponseCode();
-        if (responseCode != 200) {
-            System.err.println("http 请求返回的状态码错误，期望200， 当前是 " + responseCode);
-            if (responseCode == 401) {
-                System.err.println("可能是appkey appSecret 填错");
+    public static byte[] getResponseBytes(HttpURLConnection conn) {
+        try {
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                System.err.println("http 请求返回的状态码错误，期望200， 当前是 " + responseCode);
+                if (responseCode == 401) {
+                    System.err.println("可能是appkey appSecret 填错");
+                }
+                throw new RuntimeException("http response code is" + responseCode);
             }
-            throw new DemoException("http response code is" + responseCode);
-        }
 
-        InputStream inputStream = conn.getInputStream();
-        byte[] result = getInputStreamContent(inputStream);
-        return result;
+            InputStream inputStream = conn.getInputStream();
+            byte[] result = getInputStreamContent(inputStream);
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     /**
