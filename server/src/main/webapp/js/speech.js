@@ -34,7 +34,7 @@
                     data.set(this.buffer[i], offset);
                     offset += this.buffer[i].length;
                 }
-                //压缩
+                //压缩，间隔取帧，一定失真
                 var compression = parseInt(this.inputSampleRate / this.outputSampleRate);
                 var length = data.length / compression;
                 var result = new Float32Array(length);

@@ -105,6 +105,7 @@ public class RecognitionServlet extends HttpServlet {
                     // 识别
                     if (path != null) {
                         String result = speech.recognition(path);
+//                        String result = speech.recognition(savePath + File.separator + "upload-2.wav");
                         response.setContentType("text/html;charset = utf-8");
                         response.getWriter().print(result);
                     }
