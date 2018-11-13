@@ -5,23 +5,26 @@
 
 
     var Speech = function (stream, config) {
-        config = config || {};
-        config.sampleBits = config.sampleBits || 16;      //采样数位 8, 16
-        config.sampleRate = config.sampleRate || (14700);   //采样率(1/6 44100) 可选8000 / 16000
-
-
         var context = new AudioContext();
         var audioInput = context.createMediaStreamSource(stream);
         var recorder = context.createScriptProcessor(4096, 1, 1);
 
+        var inputSampleRate = context.sampleRate;
+
+        config = config || {};
+        var sampleBits = 16;      //采样数位 8, 16
+        //音频质量,识别率有要求 sampleQuality = sampleBits x sampleRate / 1000
+        config.sampleQuality = config.sampleQuality || 256;// 识别要求在256kbps左右
+        var divisor = Math.round(inputSampleRate/1000*sampleBits/config.sampleQuality);
+        var sampleRate = inputSampleRate/divisor;// 输出采样率,必须是输入采样率的整除数
 
         var audioData = {
             size: 0          //录音文件长度
             , buffer: []     //录音缓存
-            , inputSampleRate: context.sampleRate    //输入采样率
+            , inputSampleRate: inputSampleRate    //输入采样率
             , inputSampleBits: 16       //输入采样数位 8, 16
-            , outputSampleRate: config.sampleRate    //输出采样率
-            , oututSampleBits: config.sampleBits       //输出采样数位 8, 16
+            , outputSampleRate: sampleRate    //输出采样率
+            , oututSampleBits: sampleBits       //输出采样数位 8, 16
             , input: function (data) {
                 this.buffer.push(new Float32Array(data));
                 this.size += data.length;
@@ -34,7 +37,7 @@
                     data.set(this.buffer[i], offset);
                     offset += this.buffer[i].length;
                 }
-                //压缩，间隔取帧，一定失真
+                //压缩，间隔取帧，整除倍数才不会失真
                 var compression = parseInt(this.inputSampleRate / this.outputSampleRate);
                 var length = data.length / compression;
                 var result = new Float32Array(length);
