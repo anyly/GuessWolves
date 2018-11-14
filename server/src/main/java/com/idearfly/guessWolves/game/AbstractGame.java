@@ -445,14 +445,16 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             return;
                         }
 
-                        List<Integer> indexs = findSeatsByPokers("狼人", "化身狼人", "狼先知", "化身狼先知");
-                        Integer[] indexArray = indexs.toArray(integers);
+                        List<Player> wolvesPlayers = findInitialByPokers("狼人", "化身狼人", "狼先知", "化身狼先知");
+                        List<Integer> indexs = new ArrayList<>();
                         String summary = null;
                         String description = null;
-                        if (indexs.size() > 0) {
+                        if (wolvesPlayers.size() > 0) {
                             StringBuilder stringBuilder = new StringBuilder();
                             StringBuilder stringBuilder1 = new StringBuilder();
-                            for (Integer i : indexs) {
+                            for (Player wolvesPlayer : wolvesPlayers) {
+                                int i = wolvesPlayer.getSeat();
+                                indexs.add(i);
                                 if (stringBuilder.length() > 0) {
                                     stringBuilder.append(",");
                                     stringBuilder1.append(",");
@@ -466,6 +468,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             summary = "没有狼人";
                             description = "没有狼人";
                         }
+                        Integer[] indexArray = indexs.toArray(integers);
                         ListIterator<Player> listIterator =  pls.listIterator();
                         Player player = null;
                         while (listIterator.hasNext()) {
