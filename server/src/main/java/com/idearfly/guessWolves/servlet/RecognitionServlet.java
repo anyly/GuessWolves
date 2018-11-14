@@ -77,9 +77,13 @@ public class RecognitionServlet extends HttpServlet {
                             filename += ".wav";
                         }
                         path = savePath + File.separator + filename;
+                        File uploadFile = new File(path);
+                        if (uploadFile.exists()) {
+                            uploadFile.delete();
+                        }
                         // 获取item中的上传文件的输入流
                         in = item.getInputStream();
-                        out = new FileOutputStream(path);
+                        out = new FileOutputStream(uploadFile);
                         // 创建一个缓冲区
                         byte buffer[] = new byte[1024];
                         // 判断输入流中的数据是否已经读完的标识
