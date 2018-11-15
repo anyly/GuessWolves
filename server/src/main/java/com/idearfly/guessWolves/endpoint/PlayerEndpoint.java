@@ -212,8 +212,8 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * 轮流发言
      * @param speek
      */
-    public void onSpeek(String speek) {
-        game.speek(player, speek);
+    public void onSpeak(String speek) {
+        game.speak(player, speek);
     }
 
     public void onVote(Integer vote){

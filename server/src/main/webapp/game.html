@@ -12,6 +12,7 @@
     <script src="js/timeline.js"></script>
     <script src="js/css-animation.js"></script>
     <script src="js/util.js"></script>
+    <script type="text/javascript" src="js/speech.js"></script>
     <link rel="stylesheet" href="css/base.css" type="text/css"/>
 <style>
 body{
@@ -84,12 +85,24 @@ player {
 seat>.left>player {
     flex-direction: row;
 }
+seat>.left>player no {
+    left: 0;
+}
+seat>.left>player buf {
+    right: -10px;
+}
 seat>.middle {
     flex: 1 1 0;
     align-items: stretch;
 }
 seat>.right>player {
     flex-direction: row-reverse;
+}
+seat>.right>player no {
+    right: 0;
+}
+seat>.right>player buf {
+    left: -10px;
 }
 portrait {
     display: block;
@@ -110,9 +123,22 @@ portrait.myseat {
 no {
     z-index: 200;
     position: absolute;
-    left: 2px;
     top:0;
-    color: darkblue;
+    color: darkorange;
+}
+buf {
+    z-index: 200;
+    position: absolute;
+    top: -8px;
+    display: block;
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+buf.first {
+    background-image: url("img/first.svg");
 }
 [seat='1'] .no:before {
     content: '1';
@@ -197,19 +223,19 @@ cover {
 }
 player.disconnect portrait ready,
 player.ready portrait ready,
-player.speek portrait ready,
+player.speak portrait ready,
 player.dead portrait ready,
 player.restart portrait ready,
 player.hunt portrait ready
 {
     display: flex;
 }
-/* restart > hunt > dead > speek > ready */
+/* restart > hunt > dead > speak > ready */
 player.ready portrait ready span:before {
     content: '就绪';
     color: white;
 }
-player.speek portrait ready span:before
+player.speak portrait ready span:before
 {
     content: '发言中';
     color: white;
@@ -818,6 +844,9 @@ hidden {
 hidden.hide {
     background-image: url("img/hide.svg");
 }
+toolbar>speak {
+    background-image: url("img/speak.svg");
+}
 toolbar>setting {
     background-image: url("img/setting.svg");
 }
@@ -866,12 +895,14 @@ end {
                 <toolbar style="display: none;">
                     <info></info>
                     <setting></setting>
+                    <speak></speak>
                 </toolbar>
                 <message>
                     <clue></clue>
                     <config style="display: none;">
 
                     </config>
+                    <speech style="display: none;"></speech>
                 </message>
 
             </column>
@@ -909,8 +940,8 @@ end {
 <sideslip>
     <mine>
         <myaction style="display: none;">
-            <myseat></myseat>
-            <settings></settings>
+            <!--<myseat></myseat>-->
+            <!--<settings></settings>-->
         </myaction>
         <myimg></myimg>
         <mynuser></mynuser>
@@ -1010,6 +1041,7 @@ end {
         <column-center>
             <portrait>
                 <no class="no"></no>
+                <buf></buf>
                 <ready>
                     <cover></cover>
                     <span class="state"></span>
@@ -1023,6 +1055,7 @@ end {
         </column>
     </player>
 </template>
+<audio id="audio" style="display: none;" controls autoplay></audio>
 <script src="js/jquery-1.12.1-ui.min.js"></script>
 <script src="js/jquery.ui.touch-punch.min.js"></script>
 <script src="js/game.js"></script>
@@ -1673,29 +1706,22 @@ end {
         },
 
         Vote: function (data) {
-            $('player.speek').removeClass('speek');
-            if (data.speek) {
+            loadSpeak(data);
+            $('buf.first').removeClass('first');
+            $('player.speak').removeClass('speak');
+            if (data.speak) {
                 tips('发言结束，请投票!');
             } else {
-                tips('随机选出' + data.speekStartIndex + '号第一个发言</br>三轮后点击按钮开始投票!');
+                tips('随机选出' + data.speakStartIndex + '号第一个发言</br>三轮后点击按钮开始投票!');
+                $('player[seat='+data.speakStartIndex+'] buf').addClass('first');
             }
             $('vote').fadeIn();
         },
 
-        Speek: function (data) {
-            var ticketend;//归票位,第一个发言人的前一位
-            ticketend = data.speekStartIndex - 1;
-            if (ticketend < 1) {
-                ticketend = data.playerCount;
-            }
-
-            tips('随机选出'+data.speekStartIndex+'号第一位发言人，这是是第'+data.speekRound+'轮，本轮还有'+1+'位发言人，祝你好运!');
-            $('player.speek').removeClass('speek');
-            //data.speekCurrentIndex;
-            var jq = $('player[seat='+data.speekCurrentIndex+']');
-            jq.addClass('speek');//小喇叭图标
-            if (jq.attr('value')==user) {
-                // 当前发言是我
+        Speak: function (data) {
+            Guide.Speak(data);
+            var jq = $('player[value='+user+'][seat='+data.speakCurrentIndex+']')
+            if (jq.length > 0) {
                 $('mic').fadeIn();
             }
 
@@ -1740,7 +1766,30 @@ end {
                 loadGame(data);
             }
         },
+        Speak : function(data) {
+            loadSpeak(data);
+
+            var ticketend;//归票位,第一个发言人的前一位
+            ticketend = data.speakStartIndex - 1;
+            if (ticketend < 1) {
+                ticketend = data.playerCount;
+            }
+
+            var all = data.playerCount * 3;
+            var rest = data.speakStartIndex - data.speakCurrentIndex;
+            if (rest < 1) {
+                rest += data.playerCount;
+            }
+            rest += data.playerCount * (3 - data.speakRound);
+            var nost = all - rest;
+
+            tips('这是第'+data.speakRound+'轮，'+nost+'/'+all+'，剩余'+rest+'次发言，祝你好运!');
+            $('player[seat='+data.speakStartIndex+'] buf').addClass('first');
+            $('player.speak').removeClass('speak');
+            $('player[seat='+data.speakCurrentIndex+']').addClass('speak');//小喇叭图标
+        },
         Vote : function () {
+            $('buf.first').removeClass('first');
             tips('等待投票结果...');
         },
         Hunter : function (data) {
@@ -1899,7 +1948,7 @@ end {
     client.admit("AsTroubleMarker", Story.AsTroubleMarker);
     client.admit("Drunk", Story.Drunk);
     client.admit("AsDrunk", Story.AsDrunk);
-    client.admit("Speek", Story.Speek);
+    client.admit("Speak", Story.Speak);
     client.admit("Vote", Story.Vote);
     client.admit("Hunter", Story.Hunter);
     client.admit("Result", Guide.Result);
@@ -1959,6 +2008,40 @@ end {
             //text += '<p><img src="img/'+poker+'-标志.png"/>'/*+'x'+object[poker]*/+'</p>';
         }
         $('config').html(text);
+    }
+
+    function loadSpeak(game) {
+        var desktop = game.desktop;
+        var startIndex  = game.speakStartIndex;
+        var playerCount = game.playerCount;
+        var speech = $('speech').empty();
+
+        for (var i=0;i<3;i++) {
+            for (var j=0;j<playerCount;j++) {
+                var seat = j + startIndex;
+                if (seat > playerCount) {
+                    seat -= playerCount;
+                }
+                var info = desktop[seat];
+                if (!info) {
+                    return;
+                }
+                var speaks = info.speaks;
+                if (i>speaks.length) {
+                    continue;
+                }
+                var speak = speaks[i];
+                if (speak) {
+                    speech.append('<p>'+info.user+'：'+speak+'</p>');
+                }
+            }
+        }
+
+
+        for (var seat in desktop) {
+            var info = desktop[seat];
+            infoSeat(info);
+        }
     }
 
     function loadLog(data, needClue) {
@@ -2156,7 +2239,7 @@ end {
             tips('等待他人行动...');
         }
 
-
+        loadSpeak(game);
         loadConfig(game);
         var desktop = game.desktop;
         for (var seat in desktop) {
@@ -2210,7 +2293,7 @@ end {
                 } else if (movement.spell == '失眠者行动') {
                     window.Animate.Insomniac(seat, poker, caller, targets);
                 } else if (movement.spell == '开始发言') {
-                    window.Animate.Speek(seat, poker, caller);
+                    window.Animate.Speak(seat, poker, caller);
                 } else {
                     $('[seat='+seat+'] poker').attr('value', poker);// 清空牌面, 新写视角
                 }
@@ -2274,6 +2357,15 @@ end {
                 'background-image':'url("img/hide-poker.png")'
             });
         }
+    });
+    $('speak').click(function () {
+        $('message>*').each(function () {
+            if (this.tagName.toLowerCase() == 'speech') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
     });
     $('mine').click(function () {
         $('myaction').fadeToggle();
@@ -2348,20 +2440,54 @@ end {
         }
         return false;
     });
+    var recorder;
+    var audio = document.querySelector('#audio');
     $('mic').click(function () {
         var self = $(this);
         if (self.hasClass('quiet') || self.hasClass('noisy')) {
             self.removeClass('quiet noisy');
             // 结束发言
-            client.http('speek', {
-                speek: '按不动'
-            }, function () {
-                //tips('等待其他玩家发言...');
-                self.fadeOut();
+            self.fadeOut();// 避免重复录音
+            recorder.recognition('upload', "/recognition", function (state, e) {
+                switch (state) {
+                    case 'uploading':
+                        //var percentComplete = Math.round(e.loaded * 100 / e.total) + '%';
+                        break;
+                    case 'ok':
+                        var text = '';
+                        var data = JSON.parse(e.target.responseText);
+                        if (data.err_msg == 0 ) {
+                            if (confirm('语音识别发生错误，选择"是"重新发言？选择"否"取消发言')) {
+                                window.location.reload(true);
+                                return;
+                            } else {
+                                text = '我没有什么想说的，再观察一轮';
+                            }
+                        } else {
+                            text = data.result[0];
+                        }
+
+                        client.http('speak', text, function () {
+                            //tips('等待其他玩家发言...');
+                        });
+                        //alert("上传成功");
+                        //window.location.href="VideoSearchServlet.do";
+                        break;
+                    case 'error':
+                        //alert("上传失败");
+                        break;
+                    case 'cancel':
+                        //alert("上传被取消");
+                        break;
+                }
             });
         } else {
             self.addClass('quiet');
-            // 开始发言
+            // 开始语音识别
+            Speech.get(function (rec) {
+                recorder = rec;
+                recorder.start();
+            });
         }
 
     });

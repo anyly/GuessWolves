@@ -84,7 +84,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * 选牌
      */
     private List<String> setting;
-    private boolean speek = false;
+    private boolean speak = false;
     /**
      * 就坐情况，用于游戏就绪
      * seat = Player
@@ -111,10 +111,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * 发言
      * seat = [String]
      */
-    private LinkedHashMap<Integer, List<String>> speekMap;
-    private int speekStartIndex;// 第一个发言人
-    private int speekCurrentIndex;// 当前发言人
-    private int speekRound = 1;// 第几轮发言
+    private LinkedHashMap<Integer, List<String>> speakMap;
+    private int speakStartIndex;// 第一个发言人
+    private int speakCurrentIndex;// 当前发言人
+    private int speakRound = 1;// 第几轮发言
 
 
     /**
@@ -189,28 +189,28 @@ public abstract class AbstractGame extends BaseGame<Player> {
         this.deck = deck;
     }
 
-    public int getSpeekStartIndex() {
-        return speekStartIndex;
+    public int getSpeakStartIndex() {
+        return speakStartIndex;
     }
 
-    public void setSpeekStartIndex(int speekStartIndex) {
-        this.speekStartIndex = speekStartIndex;
+    public void setSpeakStartIndex(int speakStartIndex) {
+        this.speakStartIndex = speakStartIndex;
     }
 
-    public int getSpeekCurrentIndex() {
-        return speekCurrentIndex;
+    public int getSpeakCurrentIndex() {
+        return speakCurrentIndex;
     }
 
-    public void setSpeekCurrentIndex(int speekCurrentIndex) {
-        this.speekCurrentIndex = speekCurrentIndex;
+    public void setSpeakCurrentIndex(int speakCurrentIndex) {
+        this.speakCurrentIndex = speakCurrentIndex;
     }
 
-    public int getSpeekRound() {
-        return speekRound;
+    public int getSpeakRound() {
+        return speakRound;
     }
 
-    public void setSpeekRound(int speekRound) {
-        this.speekRound = speekRound;
+    public void setSpeakRound(int speakRound) {
+        this.speakRound = speakRound;
     }
 
     public Map<Integer, Integer> getVotes() {
@@ -257,7 +257,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
     public void config(JSONObject config) {
         super.config(config);
         setting = config.getObject("poker", new TypeReference<List<String>>(){});
-        speek = config.get("speek") != null;
+        speak = config.get("speak") != null;
     }
 
     public List<String> getSetting() {
@@ -268,12 +268,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
         this.setting = setting;
     }
 
-    public boolean isSpeek() {
-        return speek;
+    public boolean isSpeak() {
+        return speak;
     }
 
-    public void setSpeek(boolean speek) {
-        this.speek = speek;
+    public void setSpeak(boolean speak) {
+        this.speak = speak;
     }
 
     /**
@@ -635,13 +635,13 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     @Override
                     public void doing() {
                         Random random = new Random(System.currentTimeMillis());
-                        speekCurrentIndex = random.nextInt(desktop.size()) + 1;
-                        speekStartIndex = speekCurrentIndex;
+                        speakCurrentIndex = random.nextInt(desktop.size()) + 1;
+                        speakStartIndex = speakCurrentIndex;
 
                         Movement movement = new Movement(null);
                         movement.setSpell("开始发言");
-                        String summary = "随机选出" + speekStartIndex + "号第一个发言";
-                        movement.setCaller(speekStartIndex);
+                        String summary = "随机选出" + speakStartIndex + "号第一个发言";
+                        movement.setCaller(speakStartIndex);
                         movement.setSummary(summary);
                         movement.setDescription(summary);
                         movement.setTargets(null);
@@ -649,12 +649,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     }
                 })
 
-                .plot(new Event("Speek") {
+                .plot(new Event("Speak") {
                     Player player;
 
                     @Override
                     public boolean when() {
-                        return speek;
+                        return speak;
                     }
 
                     @Override
@@ -664,13 +664,13 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         }
                         if (player.getMission() == null) {
                             // 下一个发言
-                            Integer next = nextSpeek();
+                            Integer next = nextSpeak();
                             if (next == null) {
                                 return true;
                             } else {
                                 player = desktop.get(next);
-                                player.setMission("Speek");
-                                speek();
+                                player.setMission("Speak");
+                                speak();
                                 return false;
                             }
                         }
@@ -679,9 +679,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
                     @Override
                     public void doing() {
-                        player = desktop.get(speekCurrentIndex);
-                        player.setMission("Speek");
-                        speek();
+                        player = desktop.get(speakCurrentIndex);
+                        player.setMission("Speak");
+                        speak();
                     }
                 })
 
@@ -1196,33 +1196,33 @@ public abstract class AbstractGame extends BaseGame<Player> {
     public void reload() {
         initial = new LinkedHashMap<>();
         deck = new LinkedHashMap<>();
-        speekMap = new LinkedHashMap<>();
+        speakMap = new LinkedHashMap<>();
         votes = new LinkedHashMap<>();
         hunters = new LinkedList<>();
         hunterKill = new LinkedHashMap<>();
         deadth = new LinkedHashMap<>();
         report = new Report();
         logs = new LinkedList<>();
-        speekRound = 1;
+        speakRound = 1;
         super.reload();
     }
 
     //////////////////////////////////////////////
-    private Integer nextSpeek() {
-        int next = speekCurrentIndex + 1;
+    private Integer nextSpeak() {
+        int next = speakCurrentIndex + 1;
         if (next > desktop.size()) {
             next = 1;
         }
-        int round = speekRound;
-        if (next == speekStartIndex) {
-            round = speekRound + 1;
+        int round = speakRound;
+        if (next == speakStartIndex) {
+            round = speakRound + 1;
         }
         if (round > 3) {
             return null;
         }
-        speekRound = round;
-        speekCurrentIndex = next;
-        return speekCurrentIndex;
+        speakRound = round;
+        speakCurrentIndex = next;
+        return speakCurrentIndex;
     }
     /***
      * 通过初始身份牌找玩家
@@ -1363,11 +1363,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
     /**
      * 轮流发言
      */
-    public synchronized void speek() {
-        speek(null);
+    public synchronized void speak() {
+        speak(null);
     }
-    public synchronized void speek(Player caller) {
-        syncOthers("Speek", caller);
+    public synchronized void speak(Player caller) {
+        syncOthers("Speak", caller);
     }
 
     /**
@@ -1814,7 +1814,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
     }
 
     ///////////////////////////////////////////////
-    public void speek(final Player player, final String string) {
+    public void speak(final Player player, final String string) {
         player.getSpeaks().add(string);
         player.setMission(null);
         player.getTargets().clear();
