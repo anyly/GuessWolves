@@ -208,7 +208,10 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
         return null;
     }
 
-    /////////////////////////
+    /**
+     * 轮流发言
+     * @param speek
+     */
     public void onSpeek(String speek) {
         game.speek(player, speek);
     }

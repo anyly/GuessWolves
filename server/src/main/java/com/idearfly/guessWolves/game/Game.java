@@ -43,6 +43,8 @@ public class Game extends AbstractGame {
                 .then("Drunk")
 
                 .then("Insomniac")
+                //破晓，随机选出发言者
+                .then("Daybreak")
                 //白天，顺序发言，持续3轮
                 .then("Speek")
                 //开启投票

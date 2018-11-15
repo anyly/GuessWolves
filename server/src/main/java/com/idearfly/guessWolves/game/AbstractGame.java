@@ -77,9 +77,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
     }
     //[属性]
     /**
+     * 防倒霉
+     */
+    private Map<Integer, String> unlucky;
+    /**
      * 选牌
      */
     private List<String> setting;
+    private boolean speek = false;
     /**
      * 就坐情况，用于游戏就绪
      * seat = Player
@@ -252,6 +257,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
     public void config(JSONObject config) {
         super.config(config);
         setting = config.getObject("poker", new TypeReference<List<String>>(){});
+        speek = config.get("speek") != null;
     }
 
     public List<String> getSetting() {
@@ -260,6 +266,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
     public void setSetting(List<String> setting) {
         this.setting = setting;
+    }
+
+    public boolean isSpeek() {
+        return speek;
+    }
+
+    public void setSpeek(boolean speek) {
+        this.speek = speek;
     }
 
     /**
@@ -302,13 +316,30 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     @Override
                     public void doing() {
                         List<String> pool = new LinkedList(setting);
+                        Map<Integer, String> newLucky = new LinkedHashMap<>();
 
                         List<Player> wolves = findByPokers();
                         Player cobber = null;
                         Player doppel = null;
                         for (int seat=1; pool.size()>0; seat++) {
                             int index = GameCenter.randomInt(pool.size());
-                            String poker = pool.remove(index);
+                            String poker = pool.get(index);
+
+                            if (config.get("unlucky") != null) {
+                                //防倒霉
+                                if (unlucky == null) {
+                                    unlucky = new LinkedHashMap<>();
+                                } else {
+                                    // 比较上一局,若还是同种坏人
+                                    if (poker.equals(unlucky.get(index))) {
+                                        // 再来一次
+                                        index = GameCenter.randomInt(pool.size());
+                                        poker = pool.get(index);
+                                    }
+                                }
+                            }
+                            pool.remove(index);
+
                             // 测试
 //                            if (seat==1)poker = "化身幽灵";
 //                            if (seat==2)poker = "强盗";
@@ -335,13 +366,18 @@ public abstract class AbstractGame extends BaseGame<Player> {
                                 if (poker.equals("狼人")
                                         || poker.equals("狼先知")
                                         || poker.equals("始祖狼")) {
+                                    newLucky.put(index, poker);
                                     wolves.add(player);
                                 } else if (poker.equals("皮匠")) {
+                                    newLucky.put(index, poker);
                                     cobber = player;
                                 } else if (poker.equals("化身幽灵")) {
                                     doppel = player;
                                 }
                             }
+                        }
+                        if (config.get("unlucky") != null) {
+                            unlucky = newLucky;
                         }
                         ///log
                         Movement movement = new Movement(null);
@@ -594,14 +630,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     }
                 })
 
-                // 发言
-                .plot(new Plot("Speek") {
+                // 破晓，天亮之前
+                .plot(new Plot("Daybreak") {
                     @Override
                     public void doing() {
                         Random random = new Random(System.currentTimeMillis());
                         speekCurrentIndex = random.nextInt(desktop.size()) + 1;
                         speekStartIndex = speekCurrentIndex;
-                        //speek();
+
                         Movement movement = new Movement(null);
                         movement.setSpell("开始发言");
                         String summary = "随机选出" + speekStartIndex + "号第一个发言";
@@ -610,6 +646,42 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         movement.setDescription(summary);
                         movement.setTargets(null);
                         addLog(movement);
+                    }
+                })
+
+                .plot(new Event("Speek") {
+                    Player player;
+
+                    @Override
+                    public boolean when() {
+                        return speek;
+                    }
+
+                    @Override
+                    public boolean ending() {
+                        if (player == null) {
+                            return true;
+                        }
+                        if (player.getMission() == null) {
+                            // 下一个发言
+                            Integer next = nextSpeek();
+                            if (next == null) {
+                                return true;
+                            } else {
+                                player = desktop.get(next);
+                                player.setMission("Speek");
+                                speek();
+                                return false;
+                            }
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public void doing() {
+                        player = desktop.get(speekCurrentIndex);
+                        player.setMission("Speek");
+                        speek();
                     }
                 })
 
@@ -1131,10 +1203,27 @@ public abstract class AbstractGame extends BaseGame<Player> {
         deadth = new LinkedHashMap<>();
         report = new Report();
         logs = new LinkedList<>();
+        speekRound = 1;
         super.reload();
     }
 
     //////////////////////////////////////////////
+    private Integer nextSpeek() {
+        int next = speekCurrentIndex + 1;
+        if (next > desktop.size()) {
+            next = 1;
+        }
+        int round = speekRound;
+        if (next == speekStartIndex) {
+            round = speekRound + 1;
+        }
+        if (round > 3) {
+            return null;
+        }
+        speekRound = round;
+        speekCurrentIndex = next;
+        return speekCurrentIndex;
+    }
     /***
      * 通过初始身份牌找玩家
      * @param poker
@@ -1274,6 +1363,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
     /**
      * 轮流发言
      */
+    public synchronized void speek() {
+        speek(null);
+    }
     public synchronized void speek(Player caller) {
         syncOthers("Speek", caller);
     }
@@ -1723,9 +1815,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
     ///////////////////////////////////////////////
     public void speek(final Player player, final String string) {
-        if (speekCurrentIndex != player.getSeat()) {
-            return;
-        }
+        player.getSpeaks().add(string);
+        player.setMission(null);
+        player.getTargets().clear();
+
     }
 
     /////////////////////////////////////////////

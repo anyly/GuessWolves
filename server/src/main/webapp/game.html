@@ -702,7 +702,7 @@ svg[name=tips] {
     height: 73px;
 }
 mic {
-    display: block;
+    display: table;
     background: url("img/mic.png") no-repeat;
     background-position: center;
     background-size: contain;
@@ -1674,19 +1674,31 @@ end {
 
         Vote: function (data) {
             $('player.speek').removeClass('speek');
-            tips('随机选出'+data.speekStartIndex+'号第一个发言</br>三轮后点击按钮开始投票!');
+            if (data.speek) {
+                tips('发言结束，请投票!');
+            } else {
+                tips('随机选出' + data.speekStartIndex + '号第一个发言</br>三轮后点击按钮开始投票!');
+            }
             $('vote').fadeIn();
         },
 
         Speek: function (data) {
-            tips('当前'+data.speekCurrentIndex+'号发言，第'+data.speekRound+'轮，每轮从'+data.speekStartIndex+'号开始!');
+            var ticketend;//归票位,第一个发言人的前一位
+            ticketend = data.speekStartIndex - 1;
+            if (ticketend < 1) {
+                ticketend = data.playerCount;
+            }
+
+            tips('随机选出'+data.speekStartIndex+'号第一位发言人，这是是第'+data.speekRound+'轮，本轮还有'+1+'位发言人，祝你好运!');
             $('player.speek').removeClass('speek');
             //data.speekCurrentIndex;
             var jq = $('player[seat='+data.speekCurrentIndex+']');
-            jq.addClass('speek');
+            jq.addClass('speek');//小喇叭图标
             if (jq.attr('value')==user) {
+                // 当前发言是我
                 $('mic').fadeIn();
             }
+
         }
     };
 
