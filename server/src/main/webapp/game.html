@@ -2448,6 +2448,15 @@ end {
             self.removeClass('quiet noisy');
             // 结束发言
             self.fadeOut();// 避免重复录音
+
+            var recognitionError = function () {
+                if (confirm('语音识别发生错误，选择"是"重新发言？选择"否"取消发言')) {
+                    window.location.reload(true);
+                    return;
+                } else {
+                    return '我没有什么想说的，再观察一轮';
+                }
+            };
             recorder.recognition('upload', "/recognition", function (state, e) {
                 switch (state) {
                     case 'uploading':
@@ -2457,14 +2466,14 @@ end {
                         var text = '';
                         var data = JSON.parse(e.target.responseText);
                         if (data.err_msg == 0 ) {
-                            if (confirm('语音识别发生错误，选择"是"重新发言？选择"否"取消发言')) {
-                                window.location.reload(true);
-                                return;
-                            } else {
-                                text = '我没有什么想说的，再观察一轮';
-                            }
+                            text = recognitionError();
                         } else {
-                            text = data.result[0];
+                            try {
+                                text = data.result[0];
+                            } catch (e) {
+                                text = recognitionError();
+                                console.log(e);
+                            }
                         }
 
                         client.http('speak', text, function () {
@@ -2475,9 +2484,11 @@ end {
                         break;
                     case 'error':
                         //alert("上传失败");
+                        recognitionError();
                         break;
                     case 'cancel':
                         //alert("上传被取消");
+                        recognitionError();
                         break;
                 }
             });

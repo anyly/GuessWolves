@@ -25,7 +25,7 @@ function isWeiXin(){
 /**
  * 增加来源验证
  */
-if (window.location.host === 'localhost' || window.location.host === '127.0.0.1') {
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
 
 } else
 if (!isWeiXin()) {
