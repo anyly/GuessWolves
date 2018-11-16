@@ -1,4 +1,8 @@
 /**
+ * Created by idear on 2018/9/22.
+ */
+
+/**
  * ios10+禁止ios放大
  */
 $(function() {
@@ -8,9 +12,31 @@ $(function() {
     });
 });
 
+function isWeiXin(){
+    var ua = window.navigator.userAgent.toLowerCase();
+    //通过正则表达式匹配ua中是否含有MicroMessenger字符串
+    if(ua.match(/MicroMessenger/i) === 'micromessenger'){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 /**
- * Created by idear on 2018/9/22.
+ * 增加来源验证
  */
+if (window.location.host === 'localhost' || window.location.host === '127.0.0.1') {
+
+} else
+if (!isWeiXin()) {
+    for (;;) {
+        var code = window.prompt('一个不可信的访问源，请输入授权码。');
+        if (code == 'idearfly.com') {
+            break;
+        }
+    }
+}
+
 /**
  * 获得表单的数据
  */

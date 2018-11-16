@@ -1892,7 +1892,7 @@ end {
             tips(string);
             //// 可重新开始
             setTimeout(function () {
-                var self = $('player[value='+user+']');
+                var self = $('player[value="'+user+'"]');
                 self.find('portrait').click(function () {
                     var ready = !self.hasClass('restart');
                     client.http('restart', ready, function (data) {
@@ -1980,7 +1980,7 @@ end {
     });
 
     function leaveGame(user) {
-        $('player[value='+user+']').removeAttr('class').each(function () {
+        $('player[value="'+user+'"]').removeAttr('class').each(function () {
             var pl = $(this);
             pl.find('portrait').removeAttr('style');
             pl.find('name').html('');
@@ -2413,7 +2413,7 @@ end {
         if ($(this).css('opacity') != 1) {
             return;
         }
-        var self = $('player[value='+user+']');
+        var self = $('player[value="'+user+'"]');
         var ready = !self.hasClass('restart');
         client.http('restart', ready, function (data) {
             self.toggleClass('dead', false);
