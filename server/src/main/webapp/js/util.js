@@ -32,6 +32,7 @@ if (!isWeiXin()) {
     for (;;) {
         var code = window.prompt('一个不可信的访问源，请输入授权码。');
         if (code == 'idearfly.com') {
+            $.getScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js',function(){});
             break;
         }
     }
