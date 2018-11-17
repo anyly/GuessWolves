@@ -143,6 +143,7 @@
 
         //上传
         this.recognition = function (id, url, callback) {
+            this.stop();
             if (!id) {
                 throw new Error('recognition() id is null');
             }

@@ -853,6 +853,25 @@ toolbar>setting {
 toolbar>info {
     background-image: url("img/info.svg");
 }
+speech {
+    font-size: 14px;
+    color: #282828;
+}
+speech>p {
+    /*display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;*/
+}
+speech>p>i {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-image: url("img/speak.svg");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 
 animate {
     position: absolute;
@@ -2026,6 +2045,7 @@ end {
         var playerCount = game.playerCount;
         var speech = $('speech').empty();
 
+        var index=1;
         for (var i=0;i<3;i++) {
             for (var j=0;j<playerCount;j++) {
                 var seat = j + startIndex;
@@ -2042,8 +2062,9 @@ end {
                 }
                 var speak = speaks[i];
                 if (speak) {
-                    speech.append('<p>'+info.user+'：'+speak+'</p>');
+                    speech.append('<p><i onclick="playAudio('+index+')"></i>'+info.user+'：'+speak+'</p>');
                 }
+                index++;
             }
         }
 
@@ -2450,8 +2471,12 @@ end {
         }
         return false;
     });
-    var recorder;
     var audio = document.querySelector('#audio');
+    function playAudio(index) {
+        audio.src = 'http://'+window.location.basepath+'/pcm/'+no+'/'+index+'.wav';
+    }
+    var recorder;
+
     var recognitionError = function () {
         if (confirm('发言过程中发生错误，\n选择"是"重新发言；\n选择"否"取消发言')) {
             window.location.reload(true);
@@ -2459,6 +2484,7 @@ end {
         } else {
             return '我没有什么想说的，再观察一轮';
         }
+        self.fadeOut();// 避免重复录音
     };
     Speech.throwError = recognitionError;
     $('mic').click(function () {
