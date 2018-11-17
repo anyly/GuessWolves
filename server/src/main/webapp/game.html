@@ -1780,13 +1780,23 @@ end {
             if (rest < 1) {
                 rest += data.playerCount;
             }
-            rest += data.playerCount * (3 - data.speakRound);
+            rest += data.playerCount * (3 - data.speakRound) - 1;
             var nost = all - rest;
 
-            tips('这是第'+data.speakRound+'轮，'+nost+'/'+all+'，剩余'+rest+'次发言，祝你好运!');
+            if (rest == 0) {
+                tips('这是第'+data.speakRound+'轮，'+nost+'/'+all+'，最后'+(rest+1)+'次发言了，祝你好运!');
+            } else {
+                tips('这是第'+data.speakRound+'轮，'+nost+'/'+all+'，剩余'+(rest+1)+'次发言，祝你好运!');
+            }
+
             $('player[seat='+data.speakStartIndex+'] buf').addClass('first');
             $('player.speak').removeClass('speak');
             $('player[seat='+data.speakCurrentIndex+']').addClass('speak');//小喇叭图标
+
+            $('mic').attr({
+                nost : nost,
+                all : all
+            });
         },
         Vote : function () {
             $('buf.first').removeClass('first');
@@ -2442,22 +2452,26 @@ end {
     });
     var recorder;
     var audio = document.querySelector('#audio');
+    var recognitionError = function () {
+        if (confirm('发言过程中发生错误，\n选择"是"重新发言；\n选择"否"取消发言')) {
+            window.location.reload(true);
+            return;
+        } else {
+            return '我没有什么想说的，再观察一轮';
+        }
+    };
+    Speech.throwError = recognitionError;
     $('mic').click(function () {
         var self = $(this);
         if (self.hasClass('quiet') || self.hasClass('noisy')) {
-            self.removeClass('quiet noisy');
+            setTimeout(function () {
+                self.removeClass('quiet noisy');
+            });
             // 结束发言
             self.fadeOut();// 避免重复录音
 
-            var recognitionError = function () {
-                if (confirm('语音识别发生错误，选择"是"重新发言？选择"否"取消发言')) {
-                    window.location.reload(true);
-                    return;
-                } else {
-                    return '我没有什么想说的，再观察一轮';
-                }
-            };
-            recorder.recognition('upload', "/recognition", function (state, e) {
+            var name = no+'/'+self.attr('nost')+'.wav';
+            recorder.recognition(name, "/recognition", function (state, e) {
                 switch (state) {
                     case 'uploading':
                         //var percentComplete = Math.round(e.loaded * 100 / e.total) + '%';

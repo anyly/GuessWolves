@@ -6,21 +6,18 @@ import com.idearfly.guessWolves.speech.Speech;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Base64;
 
 public class AsrService implements Speech {
 
     //  填写网页上申请的appkey 如 $apiKey="g8eBUMSokVB1BHGmgxxxxxx"
-    private final String appKey = "4E1BG9lTnlSeIf1NQFlrSq6h";
+    private final String appKey = "5HzjwfM57evIEBiixMx49Zq3";
 
     // 填写网页上申请的APP SECRET 如 $secretKey="94dc99566550d87f8fa8ece112xxxxx"
-    private final String secretKey = "544ca4657ba8002e3dea3ac2f5fdd241";
+    private final String secretKey = "8GngDOugp6wY8BxEtcpl4mxyYDVL9N01";
 
     // 文件格式
     private final String format = "wav";

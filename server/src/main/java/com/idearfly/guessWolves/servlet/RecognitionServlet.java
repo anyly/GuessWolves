@@ -70,7 +70,7 @@ public class RecognitionServlet extends HttpServlet {
                         // 注意：不同的浏览器提交的文件名是不一样的，有些浏览器提交上来的文件名是带有路径的，如：
                         // c:\a\b\1.txt，而有些只是单纯的文件名，如：1.txt
                         // 处理获取到的上传文件的文件名的路径部分，只保留文件名部分
-                        filename = filename.substring(filename.lastIndexOf(File.separator) + 1);
+                        //filename = filename.substring(filename.lastIndexOf(File.separator) + 1);
 
                         // 创建一个文件输出流
                         if (filename.lastIndexOf('.') == -1) {
@@ -78,6 +78,10 @@ public class RecognitionServlet extends HttpServlet {
                         }
                         path = savePath + File.separator + filename;
                         File uploadFile = new File(path);
+                        File dir = uploadFile.getParentFile();
+                        if (!dir.exists()) {
+                            dir.mkdirs();
+                        }
                         if (uploadFile.exists()) {
                             uploadFile.delete();
                         }

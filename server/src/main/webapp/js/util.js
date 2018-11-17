@@ -15,7 +15,7 @@ $(function() {
 function isWeiXin(){
     var ua = window.navigator.userAgent.toLowerCase();
     //通过正则表达式匹配ua中是否含有MicroMessenger字符串
-    if(ua.match(/MicroMessenger/i) === 'micromessenger'){
+    if(ua.match(/MicroMessenger/i) == 'micromessenger'){
         return true;
     }else{
         return false;
@@ -30,7 +30,7 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 } else
 if (!isWeiXin()) {
     for (;;) {
-        var code = window.prompt('一个不可信的访问源，请输入授权码。');
+        var code// = window.prompt('一个不可信的访问源，请输入授权码。');
         if (code == 'idearfly.com') {
             break;
         }
@@ -287,7 +287,7 @@ if (!isWeiXin()) {
         jq.attr('value', poker);
         seat = parseInt(seat);
         if (targets.indexOf(seat)>-1) {
-            gleam(jq, null);
+            WolvesAnimation.gleam(jq, null);
         }
     };
     Animate.Seer = function (seat, poker, caller, targets) {
@@ -298,7 +298,7 @@ if (!isWeiXin()) {
             WolvesAnimation.bump(jq);
         }
         if (targets.indexOf(seat)>-1) {
-            gleam(jq, null);
+            WolvesAnimation.gleam(jq, null);
         }
     };
     Animate.Doppel = function(seat, poker, caller, target) {
@@ -420,7 +420,7 @@ if (!isWeiXin()) {
         seat = parseInt(seat);
         if (targets.indexOf(seat)>-1) {
             if (poker == '失眠者' || poker == '化身失眠者') {
-                gleam(jq);
+                WolvesAnimation.gleam(jq);
             }  else {
                 jq.attr('value', '失眠者');
                 WolvesAnimation.boom(jq, function () {
@@ -431,7 +431,7 @@ if (!isWeiXin()) {
         }
         jq.attr('value', poker);
     };
-    Animate.Speek = function(seat, poker, caller, target) {
+    Animate.Speak = function(seat, poker, caller, target) {
         var jq = $('page [seat='+seat+'] poker');
         jq.attr('value', poker);
         if (seat == caller) {
