@@ -1,0 +1,12 @@
+{
+  "pages":[
+    "index/index",
+    "webview/index"
+  ],
+  "window":{
+    "backgroundTextStyle":"light",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "navigationBarTitleText": "狼人杀终极夜",
+    "navigationBarTextStyle":"black"
+  }
+}
