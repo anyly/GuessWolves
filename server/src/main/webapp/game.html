@@ -2483,12 +2483,19 @@ end {
     }
     var recorder;
 
-    var recognitionError = function () {
-        if (confirm('发言过程中发生错误，\n选择"是"重新发言；\n选择"否"取消发言')) {
+    var recognitionError = function (e) {
+        var title = '发言过程中发生错误';
+        if (e) {
+            title = e;
+        }
+        if (confirm(title + '\n选择"是"重新发言；\n选择"否"取消发言')) {
             window.location.reload(true);
             return;
         } else {
-            return '我没有什么想说的，再观察一轮';
+            var text =  '我没有什么想说的，再观察一轮';
+            client.http('speak', text, function () {
+                //tips('等待其他玩家发言...');
+            });
         }
         self.fadeOut();// 避免重复录音
     };
@@ -2512,19 +2519,18 @@ end {
                         var text = '';
                         var data = JSON.parse(e.target.responseText);
                         if (data.err_msg == 0 ) {
-                            text = recognitionError();
+                            recognitionError();
                         } else {
                             try {
                                 text = data.result[0];
+                                client.http('speak', text, function () {
+                                    //tips('等待其他玩家发言...');
+                                });
                             } catch (e) {
-                                text = recognitionError();
-                                console.log(e);
+                                recognitionError();
+                                console.error(e);
                             }
                         }
-
-                        client.http('speak', text, function () {
-                            //tips('等待其他玩家发言...');
-                        });
                         //alert("上传成功");
                         //window.location.href="VideoSearchServlet.do";
                         break;
@@ -2539,12 +2545,18 @@ end {
                 }
             });
         } else {
-            self.addClass('quiet');
             // 开始语音识别
-            Speech.get(function (rec) {
-                recorder = rec;
-                recorder.start();
-            });
+            try {
+                Speech.get(function (rec) {
+                    recorder = rec;
+                    recorder.start();
+                });
+                self.addClass('quiet');
+            } catch (e) {
+                console.error(e);
+                self.fadeOut();// 避免重复录音
+                recognitionError(e);
+            }
         }
 
     });

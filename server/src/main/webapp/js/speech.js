@@ -233,7 +233,7 @@
                             }
                         });
                 } else {
-                    Speech.throwErr('当前浏览器不支持录音功能。');
+                    Speech.throwError('当前浏览器不支持录音功能。');
                     return;
                 }
             }
