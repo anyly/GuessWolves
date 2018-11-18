@@ -331,7 +331,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             '0.4s ease',
             function () {
                 a.css({
-                    'background-image': 'url(../img/'+poker+'.png)',
+                    'background-image': 'url(img/'+poker+'.png)',
                     'transform': 'rotateY(270deg)'
                 });
                 createAnimation(

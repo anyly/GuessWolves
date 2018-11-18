@@ -497,7 +497,7 @@
     if (window.location.protocol.indexOf('https')==0) {
         wsprotocol = 'wss'
     }
-    var client = new WebSocketClient(wsprotocol+'://'+window.location.basepath+'/hall');
+    var client = new WebSocketClient(wsprotocol+':'+window.location.basepath+'/hall');
 
     client.onError(function (e) {
         //alert('1-'+JSON.stringify(e));

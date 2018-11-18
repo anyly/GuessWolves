@@ -1951,7 +1951,7 @@ end {
     if (window.location.protocol.indexOf('https')==0) {
         wsprotocol = 'wss'
     }
-    var client = new WebSocketClient(wsprotocol+'://'+window.location.basepath+'/game/'+no);
+    var client = new WebSocketClient(wsprotocol+':'+window.location.basepath+'/game/'+no);
 
     client.admit("syncLeave", leaveGame);
     client.admit("syncGame", loadGame);
@@ -2473,7 +2473,7 @@ end {
     });
     var audio = document.querySelector('#audio');
     function playAudio(index) {
-        audio.src = 'http://'+window.location.basepath+'/pcm/'+no+'/'+index+'.wav';
+        audio.src = window.location.basepath+'/pcm/'+no+'/'+index+'.wav';
     }
     var recorder;
 
@@ -2497,7 +2497,7 @@ end {
             self.fadeOut();// 避免重复录音
 
             var name = no+'/'+self.attr('nost')+'.wav';
-            recorder.recognition(name, "/recognition", function (state, e) {
+            recorder.recognition(name, window.location.basepath+"/recognition", function (state, e) {
                 switch (state) {
                     case 'uploading':
                         //var percentComplete = Math.round(e.loaded * 100 / e.total) + '%';

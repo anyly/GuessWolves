@@ -1,54 +1,4 @@
 (function (window) {
-    if (isWeiXin()) {// 微信版
-        var tempFilePath;
-        Speech.get = function (callback, config) {
-            var id, url, recognition;
-            callback({
-                start : function () {
-                    wx.startRecord({
-                        success (res) {
-                            tempFilePath = res.tempFilePath;
-                            wx.onVoiceRecordEnd(function () {
-                                var fd = new FormData();
-                                fd.append(id, tempFilePath);
-                                var xhr = new XMLHttpRequest();
-                                if (callback) {
-                                    xhr.upload.addEventListener("progress", function (e) {
-                                        callback('uploading', e);
-                                    }, false);
-                                    xhr.addEventListener("load", function (e) {
-                                        callback('ok', e);
-                                    }, false);
-                                    xhr.addEventListener("error", function (e) {
-                                        callback('error', e);
-                                    }, false);
-                                    xhr.addEventListener("abort", function (e) {
-                                        callback('cancel', e);
-                                    }, false);
-                                }
-                                xhr.open("POST", url);
-                                xhr.send(fd);
-                            });
-                        }
-                    });
-                },
-                stop : function () {
-                    wx.stopRecord() // 结束录音
-                },
-                recognition : function (pid, purl, callback) {
-                    this.stop();
-                    if (!id) {
-                        throw new Error('recognition() id is null');
-                    }
-                    id = pid;
-                    url = purl;
-                    recognition = callback;
-                }
-            });
-        };
-
-        window.Speech = Speech;
-    } else {// 浏览器版
         //兼容
         window.URL = window.URL || window.webkitURL;
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
@@ -240,6 +190,8 @@
 
 
         };
+        var  Speech = {};
+
         //抛出异常
         Speech.throwError = function (message) {
             alert(message);
@@ -289,6 +241,4 @@
 
 
         window.Speech = Speech;
-
-    }
 })(window);
