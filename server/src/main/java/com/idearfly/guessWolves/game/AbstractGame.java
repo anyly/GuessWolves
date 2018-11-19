@@ -1154,8 +1154,17 @@ public abstract class AbstractGame extends BaseGame<Player> {
                 continue;
             }
             players.add(team);
-            Reveal reveal = new Reveal(index, indexArray);
-            Movement partMovement = reveal.cast(deck, team);
+
+            Movement prevMovement = team.getMovements().get(team.getMovements().size()-1);
+            Movement partMovement = new Movement(prevMovement);
+            for (int i : indexs) {
+                String p = poker;
+                if (i == index && team.getPoker().startsWith("化身")) {
+                    p = "化身" + poker;
+                }
+                partMovement.getViewport().put(i, p);
+            }
+
             partMovement.setSpell(poker+"行动");
             partMovement.setSummary(summary);
             String string = index+"号玩家"+team.getUser()+description;

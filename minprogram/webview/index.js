@@ -44,5 +44,14 @@ Page({
       }
     });
     
+  },
+  webMessage : function (e) {
+    console.log(e.detail);
+  },
+  webLoad : function (e) {
+    console.log(e.detail);
+  },
+  webError: function (e) {
+    console.log(e.detail);
   }
 })

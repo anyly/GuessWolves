@@ -1,5 +1,5 @@
 <view class="page-body">
   <view class="page-section page-section-gap">
-    <web-view src="https://www.idearfly.com/GuessWolves{{urlparams}}"></web-view>
+    <web-view bindload="webLoad" binderror="webError" bindmessage="webMessage" src="https://www.idearfly.com/GuessWolves{{urlparams}}"></web-view>
   </view>
 </view>

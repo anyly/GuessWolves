@@ -1,7 +1,7 @@
 (function (window) {
     var Speech = {};
     if (isWeiXin()) {//微信版本
-        $.getScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js', function () {
+        loadScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js', function () {
             var tempFilePath;
             Speech.get = function (callback, config) {
                 callback({
