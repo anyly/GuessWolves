@@ -2510,14 +2510,13 @@ end {
             self.fadeOut();// 避免重复录音
 
             var name = no+'/'+self.attr('nost')+'.wav';
-            recorder.recognition(name, window.location.basepath+"/recognition", function (state, e) {
+            recorder.recognition(name, window.location.basepath+"/recognition", function (state, data) {
                 switch (state) {
                     case 'uploading':
                         //var percentComplete = Math.round(e.loaded * 100 / e.total) + '%';
                         break;
                     case 'ok':
                         var text = '';
-                        var data = JSON.parse(e.target.responseText);
                         if (data.err_msg == 0 ) {
                             recognitionError();
                         } else {

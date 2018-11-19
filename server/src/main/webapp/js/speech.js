@@ -1,4 +1,54 @@
 (function (window) {
+    var Speech = {};
+    if (isWeiXin()) {//微信版本
+        $.getScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js', function () {
+            var tempFilePath;
+            Speech.get = function (callback, config) {
+                callback({
+                    start : function () {
+                        wx.startRecord({
+                            success (res) {
+                                tempFilePath = res.tempFilePath;
+                                this.play();
+                            },
+                            fail : Speech.throwError
+                        });
+                    },
+                    stop : function () {
+                        wx.stopRecord();
+                    },
+                    play : function (audio) {
+                        wx.playVoice({
+                            filePath: tempFilePath,
+                            complete () { }
+                        })
+                    },
+                    recognition : function (id, url, callback) {
+                        this.stop();
+                        if (!id) {
+                            throw new Error('recognition() id is null');
+                        }
+                        wx.uploadVoice({
+                            url: url,
+                            filePath: tempFilePath,
+                            name: 'file',
+                            formData: {
+                                'user': 'test'
+                            },
+                            success (res){
+                                var data = res.data
+                                callback(data);
+                            },
+                            fail : Speech.throwError
+                        })
+                    }
+                });
+            };
+            Speech.throwError = function (e) {
+                
+            };
+        });
+    } else {//浏览器版本
         //兼容
         window.URL = window.URL || window.webkitURL;
         navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
@@ -168,7 +218,8 @@
                         callback('uploading', e);
                     }, false);
                     xhr.addEventListener("load", function (e) {
-                        callback('ok', e);
+                        var data = JSON.parse(e.target.responseText);
+                        callback('ok', data);
                     }, false);
                     xhr.addEventListener("error", function (e) {
                         callback('error', e);
@@ -190,7 +241,6 @@
 
 
         };
-        var  Speech = {};
 
         //抛出异常
         Speech.throwError = function (message) {
@@ -238,7 +288,6 @@
                 }
             }
         }
-
-
-        window.Speech = Speech;
+    }
+    window.Speech = Speech;
 })(window);
