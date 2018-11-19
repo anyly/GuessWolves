@@ -11,10 +11,19 @@
     <input onclick="stopRecording()" type="button" value="停止" />
     <input onclick="playRecording()" type="button" value="播放" />
     <input onclick="uploadAudio()" type="button" value="提交" />
+    <p>navigator.getUserMedia：<span id="navigatorGetUserMedia">不支持</span></p>
+    <p>mediaDevices.getUserMedia：<span id="mediaDevicesGetUserMedia">不支持</span></p>
     <p>识别结果：<span id="result">--</span></p>
 </div>
 
 <script>
+    alert(navigator.mediaDevices);
+    if (navigator.getUserMedia) {
+        document.querySelector('#navigatorGetUserMedia').innerHTML = '支持';
+    }
+    if (navigator.mediaDevices.getUserMedia) {
+        document.querySelector('#mediaDevicesGetUserMedia').innerHTML = '支持';
+    }
     var recorder;
     var audio = document.querySelector('audio');
     function startRecording() {
