@@ -1,14 +1,6 @@
 Page({
   onLoad: function (option) {
     var that = this;
-    // recorderManager = wx.getRecorderManager();
-    // const options = {
-    //   duration: 6000,
-    //   sampleRate: 44100,
-    //   numberOfChannels: 1,
-    //   encodeBitRate: 22050,
-    //   format: 'wav',
-    // }
     
     wx.authorize({
       scope: 'scope.record',
@@ -27,7 +19,7 @@ Page({
         });
         // 用户已经同意小程序使用录音功能，后续调用 wx.startRecord 接口不会弹窗询问
         // wx.startRecord();
-        //recorderManager.start(options);//使用新版录音接口，可以获取录音文件
+        ////使用新版录音接口，可以获取录音文件
       },
       fail() {
         wx.showModal({
@@ -46,13 +38,56 @@ Page({
     });
     
   },
-  webMessage : function (e) {
+  startRecord() {
+    if (this.recordStatus != 'start') {
+      this.recorderManager = wx.getRecorderManager();
+      const options = {
+        duration: 6000,
+        sampleRate: 44100,
+        numberOfChannels: 1,
+        encodeBitRate: 220500,
+        format: 'wav',
+      }
+      this.recorderManager.start(options);
+      this.recordStatus = 'start';
+
+      this.recorderManager.onError(function(res) {
+        console.log('recorder error', res);
+      });
+      this.recorderManager.onStop(function(res) {
+        console.log('recorder stop', res)
+        this.tempFilePath = res.tempFilePath;
+      });
+    }
+  },
+  stopRecord() {
+    if (this.recorderManager && this.recordStatus != 'stop') {
+      this.recorderManager.stop();
+      this.recordStatus = 'stop';
+    }
+  },
+  playRecord() {
+
+  },
+  webMessage(e) {
     console.log(e.detail);
   },
-  webLoad : function (e) {
+  webLoad(e) {
+    var url = e.detail.src;
+    var sindex = url.indexOf('?nactive=');
+    if (sindex != -1) {
+      sindex += '?nactive='.length;
+      var eindex = url.indexOf('#', sindex);
+      var nactive = url.substring(sindex, eindex);
+      if (nactive) {
+        if (this[nactive]) {
+          this[nactive]();
+        }
+      }
+    }
     console.log(e.detail);
   },
-  webError: function (e) {
+  webError(e) {
     console.log(e.detail);
   }
 })

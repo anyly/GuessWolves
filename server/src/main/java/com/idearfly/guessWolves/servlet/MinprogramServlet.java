@@ -42,7 +42,7 @@ public class MinprogramServlet extends HttpServlet {
     }
     private JSONObject getSignature(String url, String jsapiTicket) {
         String noncestr =  getNonceStr();
-        String timestamp =  getTimeStamp();
+        long timestamp =  getTimeStamp();
         String sign = "jsapi_ticket=" + jsapi_ticket + "&noncestr=" + noncestr + "&timestamp=" + timestamp + "&url=" + url;
         sign = DigestUtils.shaHex(sign);
 
@@ -58,8 +58,8 @@ public class MinprogramServlet extends HttpServlet {
         return DigestUtils.md5Hex(String.valueOf(random.nextInt(10000)).getBytes());
     }
 
-    private String getTimeStamp() {
-        return String.valueOf(System.currentTimeMillis() / 1000);
+    private long getTimeStamp() {
+        return System.currentTimeMillis() / 1000;
 
     }
 

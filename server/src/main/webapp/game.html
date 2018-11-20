@@ -12,7 +12,6 @@
     <script src="js/timeline.js"></script>
     <script src="js/css-animation.js"></script>
     <script src="js/util.js"></script>
-    <script type="text/javascript" src="js/speech.js"></script>
     <link rel="stylesheet" href="css/base.css" type="text/css"/>
 <style>
 body{
@@ -1077,6 +1076,7 @@ end {
 <audio id="audio" style="display: none;" controls autoplay></audio>
 <script src="js/jquery-1.12.1-ui.min.js"></script>
 <script src="js/jquery.ui.touch-punch.min.js"></script>
+<script type="text/javascript" src="js/speech.js"></script>
 <script src="js/game.js"></script>
 <script>
     var no = getAnchor();
@@ -2484,7 +2484,6 @@ end {
     function playAudio(index) {
         audio.src = window.location.basepath+'/pcm/'+no+'/'+index+'.wav';
     }
-    var recorder;
 
     var recognitionError = function (e) {
         var title = '发言过程中发生错误';
@@ -2518,7 +2517,7 @@ end {
             self.fadeOut();// 避免重复录音
 
             var name = no+'/'+self.attr('nost')+'.wav';
-            recorder.recognition(name, window.location.basepath+"/recognition", function (state, data) {
+            Speech.recognition(name, window.location.basepath+"/recognition", function (state, data) {
                 switch (state) {
                     case 'uploading':
                         //var percentComplete = Math.round(e.loaded * 100 / e.total) + '%';
@@ -2554,10 +2553,7 @@ end {
         } else {
             // 开始语音识别
             try {
-                Speech.get(function (rec) {
-                    recorder = rec;
-                    recorder.start();
-                });
+                Speech.start();
                 self.addClass('quiet');
             } catch (e) {
                 console.error(e);

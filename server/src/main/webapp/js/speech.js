@@ -1,74 +1,103 @@
 (function (window) {
     var Speech = {};
     if (isWeiXin()) {//微信版本
-        loadScript('https://res.wx.qq.com/open/js/jweixin-1.4.0.js', function(){
-            $.get(window.location.basepath+'/minprogram/authorize?url='+window.location.href, function (data) {
-                data.debug = true;
-                data.jsApiList = [
-                    'startRecord', 'stopRecord', 'onVoiceRecordEnd', 'playVoice', 'uploadVoice', 'translateVoice'
-                ];
-                wx.config(data);
-                wx.ready(function () {
-                    var recoredLocalId;
-                    Speech.get = function (callback, config) {
-                        callback({
-                            start : function () {
-                                wx.startRecord({
-                                    success: function () {
-                                        alert('wx.startRecord success');
-                                    },
-                                    fail : function (e) {
-                                        alert('wx.startRecord fail'+JSON.stringify(e));
-                                    }
-                                });
-                                wx.onVoiceRecordEnd({// 录音时间超过一分钟没有停止的时候会执行 complete 回调
-                                    complete: function (res) {
-                                        alert(res.localId);
-                                        recoredLocalId = res.localId;
-                                    }
-                                });
-                            },
-                            stop : function () {
-                                wx.stopRecord({
-                                    success: function (res) {
-                                        alert(res.localId);
-                                        recoredLocalId = res.localId;
-                                    }
-                                });
-                            },
-                            play : function (audio) {
-                                wx.playVoice({
-                                    localId: recoredLocalId // 需要播放的音频的本地ID，由stopRecord接口获得
-                                });
-                            },
-                            recognition : function (id, url, callback) {
-                                this.stop();
-                                if (!id) {
-                                    throw new Error('recognition() id is null');
-                                }
-                                this.play();
-                                // wx.translateVoice({
-                                //     url: url,
-                                //     localId: recoredLocalId,
-                                //     success (res){
-                                //         // var serverId = res.serverId;
-                                //         // var data = res.data;
-                                //         callback(res.translateResult);
-                                //     },
-                                //     fail : Speech.throwError
-                                // })
-                            }
-                        });
-                    };
-                    Speech.throwError = function (e) {
+        var sindex = window.location.search.indexOf('?nactive=');
+        if (sindex != -1) {
+            sindex += '?nactive='.length;
+            var eindex = window.location.search.indexOf('&', sindex);
+            if (eindex == -1) {
+                eindex = window.location.search.length;
+            }
+            var nactive = window.location.search.substring(sindex, eindex);
+            if (nactive == 'startRecord') {
+                $('mic').addClass('quiet');
+            }
+        }
 
-                    };
-                });
-                wx.error(function () {
-                    alert('wx.error发生错误');
-                });
-            });
-
+        loadScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js', function(){
+            Speech.start = function (callback, config) {
+                window.location.search = '?nactive=startRecord';
+            };
+            Speech.stop = function() {
+                window.location.search = '?nactive=stopRecord';
+            };
+            Speech.play = function(audio) {
+                window.location.search = '?nactive=playRecord';
+            };
+            Speech.recognition = function (id, url, callback) {
+                this.stop();
+                //window.location.search = '?nactive=stopRecord';
+            };
+            // $.ajax({
+            //     url : window.location.basepath+'/minprogram/authorize?url='+window.location.href,
+            //     dataType : 'json',
+            //     success: function (data) {
+            //         data.debug = true;
+            //         data.jsApiList = [
+            //             'startRecord', 'stopRecord', 'onVoiceRecordEnd', 'playVoice', 'uploadVoice', 'translateVoice'
+            //         ];
+            //         wx.config(data);
+            //         wx.ready(function () {
+            //             var recoredLocalId;
+            //             Speech.get = function (callback, config) {
+            //                 callback({
+            //                     start: function () {
+            //                         wx.startRecord({
+            //                             success: function () {
+            //                                 alert('wx.startRecord success');
+            //                             },
+            //                             fail: function (e) {
+            //                                 alert('wx.startRecord fail' + JSON.stringify(e));
+            //                             }
+            //                         });
+            //                         wx.onVoiceRecordEnd({// 录音时间超过一分钟没有停止的时候会执行 complete 回调
+            //                             complete: function (res) {
+            //                                 alert(res.localId);
+            //                                 recoredLocalId = res.localId;
+            //                             }
+            //                         });
+            //                     },
+            //                     stop: function () {
+            //                         wx.stopRecord({
+            //                             success: function (res) {
+            //                                 alert(res.localId);
+            //                                 recoredLocalId = res.localId;
+            //                             }
+            //                         });
+            //                     },
+            //                     play: function (audio) {
+            //                         wx.playVoice({
+            //                             localId: recoredLocalId // 需要播放的音频的本地ID，由stopRecord接口获得
+            //                         });
+            //                     },
+            //                     recognition: function (id, url, callback) {
+            //                         this.stop();
+            //                         if (!id) {
+            //                             throw new Error('recognition() id is null');
+            //                         }
+            //                         this.play();
+            //                         // wx.translateVoice({
+            //                         //     url: url,
+            //                         //     localId: recoredLocalId,
+            //                         //     success (res){
+            //                         //         // var serverId = res.serverId;
+            //                         //         // var data = res.data;
+            //                         //         callback(res.translateResult);
+            //                         //     },
+            //                         //     fail : Speech.throwError
+            //                         // })
+            //                     }
+            //                 });
+            //             };
+            //             Speech.throwError = function (e) {
+            //
+            //             };
+            //         });
+            //         wx.error(function () {
+            //             alert('wx.error发生错误');
+            //         });
+            //     }
+            // });
         });
 
     } else {//浏览器版本
@@ -277,13 +306,14 @@
         //是否支持录音
         Speech.canRecording = (navigator.getUserMedia != null);
         //获取录音机
-        Speech.get = function (callback, config) {
+        Speech.start = function (callback, config) {
             if (callback) {
                 if (navigator.getUserMedia) {
                     navigator.getUserMedia(
                         {audio: true} //只启用音频
                         , function (stream) {
                             var rec = new Recorder(stream, config);
+                            Speech.recorder = rec;
                             callback(rec);
                         }
                         , function (error) {
@@ -311,6 +341,21 @@
                 }
             }
         }
+        Speech.stop = function() {
+            if (Speech.recorder) {
+                Speech.recorder.stop();
+            }
+        };
+        Speech.play = function(audio) {
+            if (Speech.recorder) {
+                Speech.recorder.play(audio);
+            }
+        };
+        Speech.recognition = function (id, url, callback) {
+            if (Speech.recorder) {
+                Speech.recorder.recognition(id, url, callback);
+            }
+        };
     }
     window.Speech = Speech;
 })(window);
