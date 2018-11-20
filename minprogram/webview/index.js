@@ -9,10 +9,11 @@ Page({
     //   encodeBitRate: 22050,
     //   format: 'wav',
     // }
-
+    
     wx.authorize({
       scope: 'scope.record',
       success() {
+        // 识别授权
         console.log("录音授权成功");
         //第一次成功授权后 状态切换为2
         var urlparams = '';

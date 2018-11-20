@@ -1,53 +1,76 @@
 (function (window) {
     var Speech = {};
     if (isWeiXin()) {//微信版本
-        loadScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js', function () {
-            var tempFilePath;
-            Speech.get = function (callback, config) {
-                callback({
-                    start : function () {
-                        wx.startRecord({
-                            success (res) {
-                                tempFilePath = res.tempFilePath;
+        loadScript('https://res.wx.qq.com/open/js/jweixin-1.4.0.js', function(){
+            $.get(window.location.basepath+'/minprogram/authorize?url='+window.location.href, function (data) {
+                data.debug = true;
+                data.jsApiList = [
+                    'startRecord', 'stopRecord', 'onVoiceRecordEnd', 'playVoice', 'uploadVoice', 'translateVoice'
+                ];
+                wx.config(data);
+                wx.ready(function () {
+                    var recoredLocalId;
+                    Speech.get = function (callback, config) {
+                        callback({
+                            start : function () {
+                                wx.startRecord({
+                                    success: function () {
+                                        alert('wx.startRecord success');
+                                    },
+                                    fail : function (e) {
+                                        alert('wx.startRecord fail'+JSON.stringify(e));
+                                    }
+                                });
+                                wx.onVoiceRecordEnd({// 录音时间超过一分钟没有停止的时候会执行 complete 回调
+                                    complete: function (res) {
+                                        alert(res.localId);
+                                        recoredLocalId = res.localId;
+                                    }
+                                });
+                            },
+                            stop : function () {
+                                wx.stopRecord({
+                                    success: function (res) {
+                                        alert(res.localId);
+                                        recoredLocalId = res.localId;
+                                    }
+                                });
+                            },
+                            play : function (audio) {
+                                wx.playVoice({
+                                    localId: recoredLocalId // 需要播放的音频的本地ID，由stopRecord接口获得
+                                });
+                            },
+                            recognition : function (id, url, callback) {
+                                this.stop();
+                                if (!id) {
+                                    throw new Error('recognition() id is null');
+                                }
                                 this.play();
-                            },
-                            fail : Speech.throwError
+                                // wx.translateVoice({
+                                //     url: url,
+                                //     localId: recoredLocalId,
+                                //     success (res){
+                                //         // var serverId = res.serverId;
+                                //         // var data = res.data;
+                                //         callback(res.translateResult);
+                                //     },
+                                //     fail : Speech.throwError
+                                // })
+                            }
                         });
-                    },
-                    stop : function () {
-                        wx.stopRecord();
-                    },
-                    play : function (audio) {
-                        wx.playVoice({
-                            filePath: tempFilePath,
-                            complete () { }
-                        })
-                    },
-                    recognition : function (id, url, callback) {
-                        this.stop();
-                        if (!id) {
-                            throw new Error('recognition() id is null');
-                        }
-                        wx.uploadVoice({
-                            url: url,
-                            filePath: tempFilePath,
-                            name: 'file',
-                            formData: {
-                                'user': 'test'
-                            },
-                            success (res){
-                                var data = res.data
-                                callback(data);
-                            },
-                            fail : Speech.throwError
-                        })
-                    }
-                });
-            };
-            Speech.throwError = function (e) {
+                    };
+                    Speech.throwError = function (e) {
 
-            };
+                    };
+                });
+                wx.error(function () {
+                    alert('wx.error发生错误');
+                });
+            });
+
         });
+
     } else {//浏览器版本
         //兼容
         window.URL = window.URL || window.webkitURL;

@@ -23,22 +23,6 @@ function isWeiXin(){
 }
 
 /**
- * 增加来源验证
- */
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-
-} else
-if (!isWeiXin()) {
-    for (;;) {
-        var code = window.prompt('一个不可信的访问源，请输入授权码。');
-        if (code == 'idearfly.com') {
-            //$.getScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js',function(){});
-            break;
-        }
-    }
-}
-
-/**
  * 获得表单的数据
  */
 
@@ -242,28 +226,24 @@ if (!isWeiXin()) {
         return object;
     };
     window.loadScript = function (url,callback){
-        if (!document.body) {
-            document.write('<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>');
-        } else {
-            var script=document.createElement('script');
-            script.type="text/javascript";
-            if(typeof(callback)!="undefined"){
-                if(script.readyState){
-                    script.onreadystatechange=function(){
-                        if(script.readyState == "loaded" || script.readyState == "complete"){
-                            script.onreadystatechange=null;
-                            callback();
-                        }
-                    }
-                }else{
-                    script.onload=function(){
+        var script=document.createElement('script');
+        script.type="text/javascript";
+        if(typeof(callback)!="undefined"){
+            if(script.readyState){
+                script.onreadystatechange=function(){
+                    if(script.readyState == "loaded" || script.readyState == "complete"){
+                        script.onreadystatechange=null;
                         callback();
                     }
                 }
+            }else{
+                script.onload=function(){
+                    callback();
+                }
             }
-            script.src=url;
-            document.getElementsByTagName('head')[0].appendChild(script);
         }
+        script.src=url;
+        document.getElementsByTagName('head')[0].appendChild(script);
 
     };
 })();
@@ -652,3 +632,21 @@ if (!isWeiXin()) {
         return new Chain();
     }
 })();
+
+
+/**
+ * 增加来源验证
+ */
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+
+} else
+if (isWeiXin()) {
+
+} else {
+    for (;;) {
+        var code = window.prompt('一个不可信的访问源，请输入授权码。');
+        if (code == 'idearfly.com') {
+            break;
+        }
+    }
+}

@@ -2291,7 +2291,7 @@ end {
                 infoPoker.call(game, info);
             }
         }
-        if (stage && $('.myseat').length == 0) {
+        if (stage && stage != 'Ready' && $('.myseat').length == 0) {
             Guide.God(game);
         }
     }
@@ -2489,7 +2489,12 @@ end {
     var recognitionError = function (e) {
         var title = '发言过程中发生错误';
         if (e) {
-            title = e;
+            if (typeof(e) == 'object') {
+                title = JSON.stringify(e);
+            } else {
+                title = e;
+            }
+
         }
         if (confirm(title + '\n选择"是"重新发言；\n选择"否"取消发言')) {
             window.location.reload(true);
