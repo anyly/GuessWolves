@@ -45,7 +45,7 @@
                 });
             };
             Speech.throwError = function (e) {
-                
+
             };
         });
     } else {//浏览器版本

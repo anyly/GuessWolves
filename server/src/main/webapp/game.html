@@ -2291,6 +2291,9 @@ end {
                 infoPoker.call(game, info);
             }
         }
+        if (stage && $('.myseat').length == 0) {
+            Guide.God(game);
+        }
     }
     ///上帝视角
     $('#stage').change(function () {

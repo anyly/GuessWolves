@@ -242,24 +242,29 @@ if (!isWeiXin()) {
         return object;
     };
     window.loadScript = function (url,callback){
-        var script=document.createElement('script');
-        script.type="text/javascript";
-        if(typeof(callback)!="undefined"){
-            if(script.readyState){
-                script.onreadystatechange=function(){
-                    if(script.readyState == "loaded" || script.readyState == "complete"){
-                        script.onreadystatechange=null;
+        if (!document.body) {
+            document.write('<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>');
+        } else {
+            var script=document.createElement('script');
+            script.type="text/javascript";
+            if(typeof(callback)!="undefined"){
+                if(script.readyState){
+                    script.onreadystatechange=function(){
+                        if(script.readyState == "loaded" || script.readyState == "complete"){
+                            script.onreadystatechange=null;
+                            callback();
+                        }
+                    }
+                }else{
+                    script.onload=function(){
                         callback();
                     }
                 }
-            }else{
-                script.onload=function(){
-                    callback();
-                }
             }
+            script.src=url;
+            document.getElementsByTagName('head')[0].appendChild(script);
         }
-        script.src=url;
-        document.body.appendChild(script);
+
     };
 })();
 /**
