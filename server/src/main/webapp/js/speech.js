@@ -25,8 +25,8 @@
                 window.location.search = '?nactive=playRecord';
             };
             Speech.recognition = function (id, url, callback) {
-                this.stop();
-                //window.location.search = '?nactive=stopRecord';
+                //this.stop();
+                window.location.search = '?nactive=recognition';
             };
             // $.ajax({
             //     url : window.location.basepath+'/minprogram/authorize?url='+window.location.href,

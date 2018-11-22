@@ -20,10 +20,10 @@ Page({
       this.recorderManager = wx.getRecorderManager();
       var options = {
         duration: 6000,
-        sampleRate: 44100,
+        sampleRate: 16000,
         numberOfChannels: 1,
-        encodeBitRate: 220500,
-        format: 'wav',
+        encodeBitRate: 256000,
+        format: 'mp3',
       }
       wx.authorize({
         scope: 'scope.record',
@@ -66,6 +66,27 @@ Page({
   },
   playRecord() {
 
+  },
+  recognition() {
+    var that = this;
+
+    that.recorderManager.stop();
+    
+    console.log("语音识别");
+    wx.uploadFile({
+      url: 'https://www.idearfly.com/server-1.0.war/mp3recognition',
+      filePath: that.tempFilePath,
+      name: 'file',
+      formData: {
+        'user': 'test'
+      },
+      success: function (res) {
+        console.log(res); console.log(res.data);
+      },
+      fail: function () {
+        console.log("语音识别失败");
+      }
+    })
   },
   webMessage(e) {
     console.log(e.detail);
