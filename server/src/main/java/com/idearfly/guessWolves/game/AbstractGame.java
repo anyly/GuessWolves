@@ -510,8 +510,17 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         while (listIterator.hasNext()) {
                             player = listIterator.next();
                             // 爪牙看到狼
-                            Reveal reveal = new Reveal(player.getSeat(), indexArray);
-                            Movement partMovement = reveal.cast(deck, player);
+                            Movement prevMovement = player.getMovements().get(player.getMovements().size()-1);
+                            Movement partMovement = new Movement(prevMovement);
+                            String poker = "狼人";
+                            for (int i : indexs) {
+                                String p = poker;
+                                if (i == player.getSeat()) {
+                                    p = player.getPoker();
+                                }
+                                partMovement.getViewport().put(i, p);
+                            }
+
                             partMovement.setSummary(summary);
                             String string = player.getSeat() + "号玩家" + player.getUser() + "发现" + description;
                             partMovement.setDescription(string);
@@ -1159,8 +1168,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
             Movement partMovement = new Movement(prevMovement);
             for (int i : indexs) {
                 String p = poker;
-                if (i == index && team.getPoker().startsWith("化身")) {
-                    p = "化身" + poker;
+                if (i == index) {
+                    p = team.getPoker();
                 }
                 partMovement.getViewport().put(i, p);
             }
