@@ -22,9 +22,9 @@ import java.util.List;
 
 @WebServlet(urlPatterns = "/mp3recognition")
 public class Mp3RecognitionServlet extends HttpServlet {
-    private  final String appId = "10197631";
-    private final String appKey = "SSN6jRpjEuRSWKbnC6VTKKgW";
-    private final String secretKey = "V9Dx8rfEtj6TWTQv0ZU0yqKd1tCDC20Z";
+    private  final String appId = "14913810";
+    private final String appKey = "jL3AGkxldu0MZSj5kDDdCOC8";
+    private final String secretKey = "RG5rBjuG1xzGHCKzdQkuCvP6w1oXjv2Y";
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
