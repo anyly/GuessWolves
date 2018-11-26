@@ -18,6 +18,7 @@ public class GameCenter extends BaseGameCenter<Game> {
     private static Random random = new Random(System.currentTimeMillis());
 
     public static int randomInt(int number) {
+        random.setSeed(System.currentTimeMillis()+1);
         return random.nextInt(number);
     }
 

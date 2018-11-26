@@ -514,11 +514,10 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             Movement partMovement = new Movement(prevMovement);
                             String poker = "狼人";
                             for (int i : indexs) {
-                                String p = poker;
-                                if (i == player.getSeat()) {
-                                    p = player.getPoker();
+                                String oldPoker = prevMovement.getViewport().get(i);
+                                if (oldPoker == null) {
+                                    partMovement.getViewport().put(i, poker);
                                 }
-                                partMovement.getViewport().put(i, p);
                             }
 
                             partMovement.setSummary(summary);
@@ -1167,11 +1166,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
             Movement prevMovement = team.getMovements().get(team.getMovements().size()-1);
             Movement partMovement = new Movement(prevMovement);
             for (int i : indexs) {
-                String p = poker;
-                if (i == index) {
-                    p = team.getPoker();
+                String oldPoker = prevMovement.getViewport().get(i);
+                if (oldPoker == null) {
+                    partMovement.getViewport().put(i, poker);
                 }
-                partMovement.getViewport().put(i, p);
+
             }
 
             partMovement.setSpell(poker+"行动");
