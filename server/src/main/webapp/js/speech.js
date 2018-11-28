@@ -26,7 +26,8 @@
             };
             Speech.recognition = function (id, url, callback) {
                 //this.stop();
-                window.location.search = '?nactive=recognition';
+                var filename = no+'/'+$('mic').attr('nost')+'.mp3';
+                window.location.search = '?nactive=recognition&filename='+filename;
             };
             // $.ajax({
             //     url : window.location.basepath+'/minprogram/authorize?url='+window.location.href,

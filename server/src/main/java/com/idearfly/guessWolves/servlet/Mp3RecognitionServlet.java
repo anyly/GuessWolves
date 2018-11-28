@@ -14,10 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 
 @WebServlet(urlPatterns = "/mp3recognition")
@@ -77,7 +74,7 @@ public class Mp3RecognitionServlet extends HttpServlet {
 
                         // 创建一个文件输出流
                         if (filename.lastIndexOf('.') == -1) {
-                            filename += ".wav";
+                            filename += ".mp3";
                         }
                         path = savePath + File.separator + filename;
                         File uploadFile = new File(path);
@@ -163,14 +160,16 @@ public class Mp3RecognitionServlet extends HttpServlet {
      * @date 2018年1月30日
      */
     public byte[] mp3Convertpcm(InputStream mp3Stream) throws Exception {
+        InputStream bufferedIn = new BufferedInputStream(mp3Stream);
         // 原MP3文件转AudioInputStream
-        AudioInputStream mp3audioStream = AudioSystem.getAudioInputStream(mp3Stream);
+        AudioInputStream mp3audioStream = AudioSystem.getAudioInputStream(bufferedIn);
         // 将AudioInputStream MP3文件 转换为PCM AudioInputStream
         AudioInputStream pcmaudioStream = AudioSystem.getAudioInputStream(AudioFormat.Encoding.PCM_SIGNED,
                 mp3audioStream);
         byte[] pcmBytes = IOUtils.toByteArray(pcmaudioStream);
         pcmaudioStream.close();
         mp3audioStream.close();
+        bufferedIn.close();
         return pcmBytes;
     }
 }

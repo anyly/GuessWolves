@@ -220,7 +220,7 @@ function isWeiXin(){
         for (var i=0; i<group.length;i++) {
             var kv = group[i].split('=');
             if (kv.length >= 2) {
-                object[kv[0]] = kv[1];
+                object[kv[0]] = decodeURI(kv[1]);
             }
         }
         return object;

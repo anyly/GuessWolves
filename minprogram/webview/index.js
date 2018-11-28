@@ -19,11 +19,12 @@ Page({
     if (this.recordStatus != 'start') {
       this.recorderManager = wx.getRecorderManager();
       var options = {
-        duration: 6000,
+        duration: 10000,
         sampleRate: 16000,
         numberOfChannels: 1,
-        encodeBitRate: 256000,
+        encodeBitRate: 64000,
         format: 'mp3',
+        frameSize: 50
       }
       wx.authorize({
         scope: 'scope.record',
@@ -39,6 +40,29 @@ Page({
           that.recorderManager.onStop(function (res) {
             console.log('recorder stop', res)
             that.tempFilePath = res.tempFilePath;
+            // 是否上传录音
+            if (!that.uploadRecordname) {
+              return;
+            }
+            console.log("语音识别");
+            wx.uploadFile({
+              url: 'https://www.idearfly.com/server-1.0.war/mp3recognition',
+              filePath: that.tempFilePath,
+              name: that.uploadRecordname,
+              formData: {
+                'user': 'test'
+              },
+              success(res) {
+                console.log(res); console.log(res.data);
+              },
+              fail() {
+                console.log("语音识别失败");
+              },
+              complete() {
+                that.uploadRecordname = null;
+                that.tempFilePath = null;
+              }
+            })
           });
         },
         fail() {
@@ -67,40 +91,49 @@ Page({
   playRecord() {
 
   },
-  recognition() {
+  recognition(parseParams) {
     var that = this;
 
-    that.recorderManager.stop();
-    
-    console.log("语音识别");
-    wx.uploadFile({
-      url: 'https://www.idearfly.com/server-1.0.war/mp3recognition',
-      filePath: that.tempFilePath,
-      name: 'file',
-      formData: {
-        'user': 'test'
-      },
-      success: function (res) {
-        console.log(res); console.log(res.data);
-      },
-      fail: function () {
-        console.log("语音识别失败");
+    that.uploadRecordname = parseParams.filename;
+    that.stopRecord();
+  },
+  parseParams(url) {
+    var sindex = url.indexOf('?');
+    if (sindex != -1) {
+      sindex += 1;
+      var eindex = url.indexOf('#', sindex);
+      if (eindex == -1) {
+        eindex = url.length;
       }
-    })
+      var urlsearch = url.substring(sindex, eindex);
+      var kvs = urlsearch.split('&');
+      var result = null;
+      for (var i=0; i<kvs.length; i++) {
+        var kv = kvs[i];
+        var ks = kv.split('=');
+        if (ks.length == 2) {
+          if (result == null) {
+            result = {};
+          }
+          result[ks[0]] = decodeURI(ks[1]);
+        }
+      }
+      return result;
+    }
   },
   webMessage(e) {
     console.log(e.detail);
   },
   webLoad(e) {
     var url = e.detail.src;
-    var sindex = url.indexOf('?nactive=');
-    if (sindex != -1) {
-      sindex += '?nactive='.length;
-      var eindex = url.indexOf('#', sindex);
-      var nactive = url.substring(sindex, eindex);
+    
+    var curParams = this.parseParams(url);
+
+    if (curParams) {
+      var nactive = curParams.nactive;
       if (nactive) {
         if (this[nactive]) {
-          this[nactive]();
+          this[nactive](curParams);
         }
       }
     }
