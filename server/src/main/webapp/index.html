@@ -638,7 +638,7 @@
     }
     client.onConnect(function () {
         var stage = getAnchor();
-        if (stage != '') {
+        if (stage && stage != '') {
             if (Guide[stage]) {
                 Guide[stage]();
             }

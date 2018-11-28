@@ -1,18 +1,18 @@
 Page({
   onLoad: function (option) {
     var that = this;
-    
-    var urlparams = '';
+
+    var url = 'https://www.idearfly.com/GuessWolves/index.html';
+    var url = 'https://www.idearfly.com/server-1.0.war/index.html';
     if (option) {
       if (option.user) {
-        urlparams += '#login?user=' + option.user + '&img=' + option.img;
+        url += '#login?user=' + option.user + '&img=' + option.img;
       }
     }
-    that.setData({
-      'urlparams': urlparams
-    });
-      
     
+    that.setData({
+      'url': url
+    });
   },
   startRecord() {
     var that = this;
@@ -34,6 +34,10 @@ Page({
           that.recorderManager.start(options);
           that.recordStatus = 'start';
 
+          wx.setKeepScreenOn({
+            keepScreenOn: true
+          });
+
           that.recorderManager.onError(function (res) {
             console.log('recorder error', res);
           });
@@ -45,15 +49,22 @@ Page({
               return;
             }
             console.log("语音识别");
+            var url = 'https://www.idearfly.com/GuessWolves/mp3recognition';
+            var url = 'https://www.idearfly.com/server-1.0.war/mp3recognition';
             wx.uploadFile({
-              url: 'https://www.idearfly.com/server-1.0.war/mp3recognition',
+              url: url,
               filePath: that.tempFilePath,
               name: that.uploadRecordname,
               formData: {
                 'user': 'test'
               },
               success(res) {
-                console.log(res); console.log(res.data);
+                console.log(res);
+                console.log(res.data);
+                var url = that.webpage + '?result=' + res.data + that.webhash;
+                that.setData({
+                  url: url
+                });
               },
               fail() {
                 console.log("语音识别失败");
@@ -86,6 +97,10 @@ Page({
     if (this.recorderManager && this.recordStatus != 'stop') {
       this.recorderManager.stop();
       this.recordStatus = 'stop';
+
+      wx.setKeepScreenOn({
+        keepScreenOn: false
+      });
     }
   },
   playRecord() {
@@ -100,12 +115,16 @@ Page({
   parseParams(url) {
     var sindex = url.indexOf('?');
     if (sindex != -1) {
+      this.webpage = url.substring(0, sindex);
       sindex += 1;
       var eindex = url.indexOf('#', sindex);
-      if (eindex == -1) {
+      if (eindex != -1) {
+        this.webhash = url.substring(eindex);
+      } else {
         eindex = url.length;
       }
       var urlsearch = url.substring(sindex, eindex);
+      this.websearch = urlsearch;
       var kvs = urlsearch.split('&');
       var result = null;
       for (var i=0; i<kvs.length; i++) {
@@ -125,6 +144,7 @@ Page({
     console.log(e.detail);
   },
   webLoad(e) {
+    console.log(this.data.url);
     var url = e.detail.src;
     
     var curParams = this.parseParams(url);

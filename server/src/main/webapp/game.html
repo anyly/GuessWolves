@@ -1741,7 +1741,15 @@ end {
             Guide.Speak(data);
             var jq = $('player[value='+user+'][seat='+data.speakCurrentIndex+']')
             if (jq.length > 0) {
-                $('mic').fadeIn();
+                var params = urlparams();
+                if (params.result) {
+                    client.http('speak', params.result, function () {
+                        //tips('等待其他玩家发言...');
+                        window.location.search = '';
+                    });
+                } else {
+                    $('mic').fadeIn();
+                }
             }
 
         }
