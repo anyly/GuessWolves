@@ -3,7 +3,7 @@ Page({
     var that = this;
 
     var url = 'https://www.idearfly.com/GuessWolves/index.html';
-    var url = 'https://www.idearfly.com/server-1.0.war/index.html';
+    //var url = 'https://www.idearfly.com/server-1.0.war/index.html';
     if (option) {
       if (option.user) {
         url += '?user=' + option.user + '&img=' + option.img +'#login';
@@ -78,7 +78,7 @@ Page({
             }
             console.log("语音识别");
             var url = 'https://www.idearfly.com/GuessWolves/mp3recognition';
-            var url = 'https://www.idearfly.com/server-1.0.war/mp3recognition';
+            //var url = 'https://www.idearfly.com/server-1.0.war/mp3recognition';
             wx.uploadFile({
               url: url,
               filePath: that.tempFilePath,
