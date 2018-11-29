@@ -1,15 +1,12 @@
 (function (window) {
     var Speech = {};
     if (isWeiXin()) {//微信版本
-        var sindex = window.location.search.indexOf('?nactive=');
-        if (sindex != -1) {
-            sindex += '?nactive='.length;
-            var eindex = window.location.search.indexOf('&', sindex);
-            if (eindex == -1) {
-                eindex = window.location.search.length;
-            }
-            var nactive = window.location.search.substring(sindex, eindex);
-            if (nactive == 'startRecord' || nactive == 'recognition') {
+        var data = urlparams();window.location.search.indexOf('?nactive=');
+        var nactive = data['nactive'];
+        if (nactive) {
+            if (nactive == 'recognition') {// 识别中，避免重复操作
+                $('mic').fadeOut();
+            } else if (nactive == 'startRecord') {
                 $('mic').addClass('quiet');
             }
         }

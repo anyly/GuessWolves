@@ -14,6 +14,19 @@ Page({
       'url': url
     });
   },
+  onShow() {
+    if (!this.webpage) {
+      return;
+    }
+    var url = this.webpage + this.webhash;
+    console.log(url);
+    this.setData({
+      url: url
+    });
+  },
+  onHide() {
+    this.stopRecord();
+  },
   startRecord() {
     var that = this;
     if (this.recordStatus != 'start') {
@@ -75,6 +88,9 @@ Page({
                 });
               },
               complete() {
+                wx.setKeepScreenOn({
+                  keepScreenOn: false
+                });
                 that.uploadRecordname = null;
                 that.tempFilePath = null;
               }
@@ -102,10 +118,6 @@ Page({
     if (this.recorderManager && this.recordStatus != 'stop') {
       this.recorderManager.stop();
       this.recordStatus = 'stop';
-
-      wx.setKeepScreenOn({
-        keepScreenOn: false
-      });
     }
   },
   playRecord() {
