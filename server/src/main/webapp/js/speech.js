@@ -9,7 +9,7 @@
                 eindex = window.location.search.length;
             }
             var nactive = window.location.search.substring(sindex, eindex);
-            if (nactive == 'startRecord') {
+            if (nactive == 'startRecord' || nactive == 'recognition') {
                 $('mic').addClass('quiet');
             }
         }

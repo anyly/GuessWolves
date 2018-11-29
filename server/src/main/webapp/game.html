@@ -1743,10 +1743,14 @@ end {
             if (jq.length > 0) {
                 var params = urlparams();
                 if (params.result) {
-                    client.http('speak', params.result, function () {
-                        //tips('等待其他玩家发言...');
-                        window.location.search = '';
-                    });
+                    if (params.result == '') {
+                        recognitionError();
+                    } else {
+                        client.http('speak', params.result, function () {
+                            //tips('等待其他玩家发言...');
+                            window.location.search = '';
+                        });
+                    }
                 } else {
                     $('mic').fadeIn();
                 }

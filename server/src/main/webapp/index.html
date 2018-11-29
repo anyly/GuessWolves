@@ -492,12 +492,35 @@
     }
 </script>
 <script>
+    (function () {
+        var data = urlparams();
+        var user = data.user;
+        if (user) {
+            localStorage.setItem('user', user);
+            localStorage.setItem('img', data.img);
+        }
+        window.user = localStorage.getItem('user');
+        window.img = localStorage.getItem('img');
+        if (window.user) {
+            $('#user').val(window.user);
+            setImg(window.img);
+        }
+    })();
+
     /*创建连接*/
     var wsprotocol = 'ws';
     if (window.location.protocol.indexOf('https')==0) {
         wsprotocol = 'wss'
     }
     var client = new WebSocketClient(wsprotocol+':'+window.location.basepath+'/hall');
+    client.onConnect(function () {
+        var stage = getAnchor();
+        if (stage && stage != '') {
+            if (Guide[stage]) {
+                Guide[stage]();
+            }
+        }
+    });
 
     client.onError(function (e) {
         //alert('1-'+JSON.stringify(e));
@@ -620,30 +643,6 @@
     });
 
     loadStory();
-</script>
-<script>
-    (function () {
-        var data = urlparams();
-        var user = data.user;
-        if (user) {
-            localStorage.setItem('user', user);
-            localStorage.setItem('img', data.img);
-        }
-    })();
-    var user = localStorage.getItem('user');
-    var img = localStorage.getItem('img');
-    if (user) {
-        $('#user').val(user);
-        setImg(img);
-    }
-    client.onConnect(function () {
-        var stage = getAnchor();
-        if (stage && stage != '') {
-            if (Guide[stage]) {
-                Guide[stage]();
-            }
-        }
-    });
 </script>
 </body>
 </html>

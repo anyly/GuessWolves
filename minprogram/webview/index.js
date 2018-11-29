@@ -6,7 +6,7 @@ Page({
     var url = 'https://www.idearfly.com/server-1.0.war/index.html';
     if (option) {
       if (option.user) {
-        url += '#login?user=' + option.user + '&img=' + option.img;
+        url += '?user=' + option.user + '&img=' + option.img +'#login';
       }
     }
     
@@ -19,7 +19,7 @@ Page({
     if (this.recordStatus != 'start') {
       this.recorderManager = wx.getRecorderManager();
       var options = {
-        duration: 10000,
+        duration: 60000,
         sampleRate: 16000,
         numberOfChannels: 1,
         encodeBitRate: 64000,
@@ -42,7 +42,8 @@ Page({
             console.log('recorder error', res);
           });
           that.recorderManager.onStop(function (res) {
-            console.log('recorder stop', res)
+            console.log('recorder stop', res);
+
             that.tempFilePath = res.tempFilePath;
             // 是否上传录音
             if (!that.uploadRecordname) {
@@ -68,6 +69,10 @@ Page({
               },
               fail() {
                 console.log("语音识别失败");
+                var url = that.webpage + '?result=' + that.webhash;
+                that.setData({
+                  url: url
+                });
               },
               complete() {
                 that.uploadRecordname = null;
