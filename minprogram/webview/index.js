@@ -13,6 +13,8 @@ Page({
     that.setData({
       'url': url
     });
+
+    this.recordStatus = 'ready';
   },
   onShow() {
     if (!this.webpage) {
@@ -26,10 +28,12 @@ Page({
   },
   onHide() {
     this.stopRecord();
+    this.uploadRecordname = null;
+    this.recordStatus = 'ready';
   },
   startRecord() {
     var that = this;
-    if (this.recordStatus != 'start') {
+    if (this.recordStatus == 'ready') {
       this.recorderManager = wx.getRecorderManager();
       var options = {
         duration: 60000,
@@ -51,8 +55,18 @@ Page({
             keepScreenOn: true
           });
 
+          that.recorderManager.onInterruptionBegin(function () {
+            // that.recorderManager.
+          });
+          that.recorderManager.onInterruptionEnd(function () {
+            // that.recorderManager.
+          });
           that.recorderManager.onError(function (res) {
             console.log('recorder error', res);
+            var url = that.webpage + '?result=' + that.webhash;
+            that.setData({
+              url: url
+            });
           });
           that.recorderManager.onStop(function (res) {
             console.log('recorder stop', res);
@@ -93,6 +107,7 @@ Page({
                 });
                 that.uploadRecordname = null;
                 that.tempFilePath = null;
+                this.recordStatus = 'ready';
               }
             })
           });
@@ -115,7 +130,7 @@ Page({
     }
   },
   stopRecord() {
-    if (this.recorderManager && this.recordStatus != 'stop') {
+    if (this.recorderManager && this.recordStatus == 'start') {
       this.recorderManager.stop();
       this.recordStatus = 'stop';
     }

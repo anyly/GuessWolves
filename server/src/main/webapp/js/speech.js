@@ -1,16 +1,6 @@
 (function (window) {
     var Speech = {};
     if (isWeiXin()) {//微信版本
-        var data = urlparams();window.location.search.indexOf('?nactive=');
-        var nactive = data['nactive'];
-        if (nactive) {
-            if (nactive == 'recognition') {// 识别中，避免重复操作
-                $('mic').fadeOut();
-            } else if (nactive == 'startRecord') {
-                $('mic').addClass('quiet');
-            }
-        }
-
         loadScript('https://res.wx.qq.com/open/js/jweixin-1.3.2.js', function(){
             Speech.start = function (callback, config) {
                 window.location.search = '?nactive=startRecord';

@@ -1742,13 +1742,21 @@ end {
             var jq = $('player[value='+user+'][seat='+data.speakCurrentIndex+']')
             if (jq.length > 0) {
                 var params = urlparams();
-                if (params.result) {
+                var nactive = params['nactive'];
+                if (nactive) {
+                    if (nactive == 'recognition') {// 识别中，避免重复操作
+                        $('mic').fadeOut();
+                    } else if (nactive == 'startRecord') {
+                        $('mic').addClass('quiet');
+                        $('mic').fadeIn();
+                    }
+                } else if (params.result) {
                     if (params.result == '') {
                         recognitionError();
                     } else {
                         client.http('speak', params.result, function () {
                             //tips('等待其他玩家发言...');
-                            window.location.search = '';
+                            //window.location.search = '';
                         });
                     }
                 } else {
@@ -2494,7 +2502,13 @@ end {
     });
     var audio = document.querySelector('#audio');
     function playAudio(index) {
-        audio.src = window.location.basepath+'/pcm/'+no+'/'+index+'.wav';
+        var src = window.location.basepath+'/pcm/'+no+'/'+index;
+        if (isWeiXin()) {
+            src += '.mp3';
+        } else {
+            src += '.wav';
+        }
+        audio.src = src;
     }
 
     var recognitionError = function (e) {
