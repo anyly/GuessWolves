@@ -2061,37 +2061,20 @@ end {
 
     function loadSpeak(game) {
         var desktop = game.desktop;
-        var startIndex  = game.speakStartIndex;
-        var playerCount = game.playerCount;
+        var speakList  = game.speakList;
+        var speakTotal = game.speakTotal;
         var speech = $('speech').empty();
 
-        var index=1;
-        for (var i=0;i<3;i++) {
-            for (var j=0;j<playerCount;j++) {
-                var seat = j + startIndex;
-                if (seat > playerCount) {
-                    seat -= playerCount;
-                }
-                var info = desktop[seat];
-                if (!info) {
-                    return;
-                }
-                var speaks = info.speaks;
-                if (i>speaks.length) {
-                    continue;
-                }
-                var speak = speaks[i];
-                if (speak) {
-                    var p = $('<p><i index="'+index+'"></i>'+info.user+'：'+speak+'</p>');
-                    p.find('i').click(function () {
-                        var index = this.getAttribute('index');
-                        playAudio(index);
-                        return false;
-                    });
-                    speech.append(p);
-                }
-                index++;
-            }
+        for (var i=0;i<speakTotal;i++) {
+            var speak = speakList[i];
+
+            var p = $('<p><i index="'+i+'"></i>'+speak.user+'：'+speak+'</p>');
+            p.find('i').click(function () {
+                var index = this.getAttribute('index');
+                playAudio(index);
+                return false;
+            });
+            speech.append(p);
         }
 
 

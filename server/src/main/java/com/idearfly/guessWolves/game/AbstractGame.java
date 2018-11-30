@@ -111,10 +111,49 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * 发言
      * seat = [String]
      */
-    private LinkedHashMap<Integer, List<String>> speakMap;
+    public class Speak {
+        private int seat;
+        private String user;
+        private String img;
+        private String speech;
+
+        public int getSeat() {
+            return seat;
+        }
+
+        public void setSeat(int seat) {
+            this.seat = seat;
+        }
+
+        public String getUser() {
+            return user;
+        }
+
+        public void setUser(String user) {
+            this.user = user;
+        }
+
+        public String getImg() {
+            return img;
+        }
+
+        public void setImg(String img) {
+            this.img = img;
+        }
+
+        public String getSpeech() {
+            return speech;
+        }
+
+        public void setSpeech(String speech) {
+            this.speech = speech;
+        }
+    }
+    private LinkedList<Speak> speakList;
     private int speakStartIndex;// 第一个发言人
     private int speakCurrentIndex;// 当前发言人
     private int speakRound = 1;// 第几轮发言
+    private int speakTotal = 0;// 总共发言
 
 
     /**
@@ -251,6 +290,22 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
     public void setLogs(List<Movement> logs) {
         this.logs = logs;
+    }
+
+    public LinkedList<Speak> getSpeakList() {
+        return speakList;
+    }
+
+    public void setSpeakList(LinkedList<Speak> speakList) {
+        this.speakList = speakList;
+    }
+
+    public int getSpeakTotal() {
+        return speakTotal;
+    }
+
+    public void setSpeakTotal(int speakTotal) {
+        this.speakTotal = speakTotal;
     }
 
     @Override
@@ -1213,7 +1268,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
     public void reload() {
         initial = new LinkedHashMap<>();
         deck = new LinkedHashMap<>();
-        speakMap = new LinkedHashMap<>();
+        speakList = new LinkedList<>();
+        speakTotal = 0;
         votes = new LinkedHashMap<>();
         hunters = new LinkedList<>();
         hunterKill = new LinkedHashMap<>();
@@ -1832,10 +1888,16 @@ public abstract class AbstractGame extends BaseGame<Player> {
 
     ///////////////////////////////////////////////
     public void speak(final Player player, final String string) {
+        speakTotal++;
+        Speak speak = new Speak();
+        speak.setSeat(player.getSeat());
+        speak.setImg(player.getImg());
+        speak.setSpeech(string);
+        speak.setUser(player.getUser());
+        speakList.add(speak);
         player.getSpeaks().add(string);
         player.setMission(null);
         player.getTargets().clear();
-
     }
 
     /////////////////////////////////////////////
