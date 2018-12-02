@@ -6,5 +6,41 @@ page {
 }
 
 .page-body {
-  padding: 20rpx 0;
+  padding: 0;
+}
+
+button {
+  padding: 0;
+}
+
+button.large {
+  width:85px;
+  box-shadow:0px 0px 2px #fff;
+  border-radius:8px;
+  background-color:brown;
+  color:yellow;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+.row-center {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+.column-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

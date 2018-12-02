@@ -1,5 +1,8 @@
 {
   "pages":[
+    "hall/auth",
+    "hall/index",
+    "game/index",
     "index/index",
     "webview/index"
   ],
