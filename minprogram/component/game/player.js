@@ -1,5 +1,13 @@
 // component/game/player.js
 Component({
+  attached() {
+    if (!this.data.img || this.data.img == '') {
+      this.setData({
+        img: 'https://www.idearfly.com/static/image/img0.jpg'
+      });
+    }
+    
+  },
   /**
    * 组件的属性列表
    */
@@ -9,8 +17,8 @@ Component({
     tag: String,
     poker: String,
     status: String,
-    vote: Number,
-    seat: Number,
+    vote: String,
+    seat: String,
     disconnect: {
       type: Boolean,
       value: false

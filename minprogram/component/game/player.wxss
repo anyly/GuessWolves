@@ -2,6 +2,7 @@
 .player {
   display: flex;
   flex-direction: column;
+  margin: 8px;
 }
 .body {
   display: flex;
@@ -18,4 +19,73 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
+}
+.user {
+  text-align: center;
+  font-size: 14px;
+  line-height: 14px;
+  font-weight: bold;
+  height: 14px;
+  margin: 4px 0;
+}
+.img {
+  width: 50px;
+  height: 50px;
+}
+.status {
+  position: absolute;
+  bottom: 2px;
+  font-size: 14px;
+  line-height: 14px;
+  font-weight: bold;
+  padding: 2px;
+  height: 14px;
+  color: tomato;
+  border: 1rpx tomato dashed;
+  border-radius: 2px;
+}
+.buffer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+}
+.vote {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.poker {
+  display: block;
+  width: 1em;
+  line-height: 1em;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 2px;
+  padding: 2px;
+  color: yellow;
+  border-radius: 4px;
+  background-color: dodgerblue;
+  text-overflow: clip;
+  overflow: hidden;
+}
+.seat {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  font-size: 12px;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  color: brown;
+  background-color:rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  text-align: center;
+}
+.tag {
+  color: blueviolet;
+  font-weight: bold;
 }

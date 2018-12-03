@@ -2,8 +2,25 @@
 <view class="page-body">
   <navigationBar back='https://www.idearfly.com/static/image/shutdown.svg' title='房间{{no}}'/>
   <view class='desktop'>
-    <view class='seat' wx:for='{{game.desktop}}' wx:key="seat">
-      <player user="{{item.user}}" img="{{item.img}}" tag="{{item.tag}}" poker="{{item.poker}}" status="{{item.status}}" vote="{{item.vote}}" seat="{{item.seat}}" disconnect="{{item.disconnect}}" />
+    <view class='seat'>
+    <player
+        user="tony" 
+        img="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eoTtHIemT3d7pcB1b0zKWEYr2Zl1OjkVp0hsEWCicKvaHcuiaq6dbnzKd2FSCibKWynYpnb7yBHs33hA/132" 
+        tag="女巫"
+        poker="见习预言家" 
+        status="死亡" 
+        vote="3" 
+        seat="12" 
+        disconnect="false" />
+      <player wx:for='{{game.playerCount}}' wx:key="seat"
+        user="{{game.desktop[index].user}}" 
+        img="{{game.desktop[index].img}}" 
+        tag="{{game.desktop[index].tag}}"
+        poker="{{game.desktop[index].poker}}" 
+        status="{{game.desktop[index].status}}" 
+        vote="{{game.desktop[index].vote}}" 
+        seat="{{game.desktop[index].seat}}" 
+        disconnect="{{game.desktop[index].disconnect}}" />
     </view>
   </view>
 </view>

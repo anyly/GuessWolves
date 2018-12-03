@@ -1,4 +1,11 @@
 /* game/index.wxss */
 .page-body {
   background-color: #fff;
+  height: 100%;
+}
+.seat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }

@@ -91,14 +91,16 @@ Page({
     });
   },
   joinGame() {
+    const that = this;
     this.websocket.http({
       action: 'joinGame',
       data: this.data.no,
       success(res) {
         var game = res.data;
-        this.setData({
+        that.setData({
           game: game
         });
+        console.log(game);
       },
       fail() {
 
