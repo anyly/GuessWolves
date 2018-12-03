@@ -1,0 +1,137 @@
+/* hall/index.wxss */
+.page-body {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+  background-image: url(https://www.idearfly.com/static/image/bg.jpeg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.logo {
+  width: 200px;
+  margin-top: 30px;
+  margin-bottom: 40px;
+}
+.buttons>button {
+  margin-top: 10px;
+}
+.buttons>button:first-child {
+  margin-top: 0;
+}
+.gameSetting {
+  position:absolute;
+  top:0;
+  background-color: aliceblue;
+  border-radius: 4px;
+  
+}
+.gameSetting .pokerCheckbox {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 2px;
+  flex-wrap: wrap;
+}
+.gameSetting checkbox {
+  margin: 2px;
+}
+.gameSetting checkbox .wx-checkbox-input {
+  width:75px;
+  height: 104.779px;
+  padding: 0;
+  margin: 0;
+  mix-blend-mode:luminosity;
+  border: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.gameSetting checkbox .wx-checkbox-input.wx-checkbox-input-checked {
+  mix-blend-mode: normal;
+}
+.gameSetting checkbox .wx-checkbox-input.wx-checkbox-input-checked::before {
+  display: none;
+}
+checkbox[value='化身幽灵'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/化身幽灵.png);
+}
+checkbox[value='狼人'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/狼人.png);
+}
+checkbox[value='狼先知'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/狼先知.png)
+}
+checkbox[value='爪牙'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/爪牙.png)
+}
+checkbox[value='守夜人'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/守夜人.png)
+}
+checkbox[value='预言家'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/预言家.png)
+}
+checkbox[value='见习预言家'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/见习预言家.png)
+}
+checkbox[value='强盗'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/强盗.png)
+}
+checkbox[value='女巫'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/女巫.png)
+}
+checkbox[value='捣蛋鬼'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/捣蛋鬼.png)
+}
+checkbox[value='酒鬼'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/酒鬼.png)
+}
+checkbox[value='失眠者'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/失眠者.png)
+}
+checkbox[value='猎人'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/猎人.png)
+}
+checkbox[value='皮匠'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/皮匠.png)
+}
+checkbox[value='村民'] .wx-checkbox-input {
+  background-image: url(https://www.idearfly.com/static/image/村民.png)
+}
+.pokerNumber {
+  color: brown;
+  font-weight: bold;
+  text-align: center;
+}
+.pokerNumber>.number {
+  color: dodgerblue;
+}
+.gameStart, .gameCancel {
+  margin: 0px 4px 4px 4px;
+}
+
+.gameNumber {
+  width: 300px;
+  height: 100px;
+  background-color: aliceblue;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.gameNumber label {
+  margin-right: 10px;
+}
+.gameNumber input {
+  width: 10em;
+  border-bottom: 1px #000 dashed;
+}
+.gameNumber button {
+  margin-top: 10px;
+}

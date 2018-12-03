@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "dialog": "/component/dialog/index",
+    "disconnect": "/component/dialog/disconnect",
+    "userbar": "/component/siderbar/userbar"
+  }
+}

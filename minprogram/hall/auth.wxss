@@ -1,0 +1,47 @@
+/* hall/auth.wxss */
+.root {
+  padding: 90rpx 0 90rpx 50rpx;
+}
+.header {
+  margin-bottom: 90rpx; 
+  border-bottom: 1px solid #ccc;
+  text-align: center;
+  width: 650rpx;
+  height: 300rpx;
+  line-height: 450rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+ 
+.header .userAvatarUrl {
+  display: block;
+  width: 200rpx;
+  height: 200rpx;
+  transform: translateY(-40rpx); 
+}
+
+.header .userNickName {
+  display: block;
+  line-height: 40rpx;
+  font-size: 40rpx;
+  color: blue;
+  font-weight: bold;
+}
+ 
+.content {
+  margin-bottom: 90rpx;
+}
+ 
+.content text {
+  display: block;
+  color: #9d9d9d;
+  margin-top: 40rpx;
+}
+ 
+.bottom {
+  border-radius: 80rpx;
+  margin: 70rpx 50rpx;
+  font-size: 35rpx;
+}

@@ -1,0 +1,10 @@
+<!--game/index.wxml-->
+<view class="page-body">
+  <navigationBar back='https://www.idearfly.com/static/image/shutdown.svg' title='房间{{no}}'/>
+  <view class='desktop'>
+    <view class='seat' wx:for='{{game.desktop}}' wx:key="seat">
+      <player user="{{item.user}}" img="{{item.img}}" tag="{{item.tag}}" poker="{{item.poker}}" status="{{item.status}}" vote="{{item.vote}}" seat="{{item.seat}}" disconnect="{{item.disconnect}}" />
+    </view>
+  </view>
+</view>
+<disconnect isShow='{{isDisconnect}}' bindReconnect='reconnect'/>

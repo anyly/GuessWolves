@@ -1,0 +1,8 @@
+<!--component/navigationBar/default.wxml-->
+<view class='navigationBar'>
+  <view class='statusBar' style='height:{{statusBarHeight}}px' />
+  <view class='titleBar' style='height:{{titleBarHeight}}px'>
+    <image class='back' mode='aspectFit' src='{{backicon}}' hidden='{{!canBack}}' catchtap='back' />
+    <text class='title' catchtap='config'>{{title}}</text>
+  </view>
+</view>

@@ -1,0 +1,4 @@
+/* game/index.wxss */
+.page-body {
+  background-color: #fff;
+}

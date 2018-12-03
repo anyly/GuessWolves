@@ -1,0 +1,69 @@
+/* component/siderbar/userbar.wxss */
+.sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100px;
+  background-color: aliceblue;
+  color: #282828;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  transform: all 400ms ease;
+}
+.sidebar>.userinfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+  border-bottom: 1rpx #ccc solid;
+}
+.sidebar>.userinfo>image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+.sidebar>.userinfo>text {
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.userbuttons {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.userbuttons>image {
+  width: 50px;
+  height: 50px;
+  background-color:transparent;
+  border:none;
+  border-radius:0;
+  margin: 10px;
+}
+.lighter-warp {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.lighter {
+  width: 60px;
+  height: 60px;
+}
+.sidebar.off {
+  width: 0;
+  display: none;
+}
+.sidebar.on {
+  width: 100px;
+  display: flex;
+}

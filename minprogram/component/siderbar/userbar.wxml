@@ -1,0 +1,14 @@
+<!--component/siderbar/userbar.wxml-->
+<view class="sidebar {{isShow?'on':'off'}}">
+  <view class="userinfo">
+    <image mode='widthFix' src='{{img}}'></image>
+    <text>{{user}}</text>
+  </view>
+  <view class='userbuttons'>
+    <image mode='widthFix' src='https://www.idearfly.com/static/image/refresh.svg'></image>
+    <image mode='widthFix' src='https://www.idearfly.com/static/image/exit.svg'></image>
+  </view>
+  <view class='lighter-warp'>
+    <image class='lighter' src='https://www.idearfly.com/static/image/lighter.svg' catchtap='hideBar'></image>
+  </view>
+</view>

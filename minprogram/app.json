@@ -1,8 +1,8 @@
 {
   "pages":[
+    "game/index",
     "hall/auth",
     "hall/index",
-    "game/index",
     "index/index",
     "webview/index"
   ],
@@ -10,6 +10,10 @@
     "backgroundTextStyle":"light",
     "navigationBarBackgroundColor": "#F8F8F8",
     "navigationBarTitleText": "狼人杀终极夜",
-    "navigationBarTextStyle":"black"
+    "navigationBarTextStyle":"black",
+    "navigationStyle":"custom"
+  },
+  "usingComponents": {
+    "navigationBar": "/component/navigationBar/default"
   }
 }

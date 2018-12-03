@@ -1,0 +1,20 @@
+/* component/dialog/disconnect.wxss */
+.disconnect {
+  background-color:#000000ce;
+  width: 50%;
+  border-radius: 10px;
+  text-align: center;
+}
+.disconnect>.wrap {
+  margin: 10px 10px -10px 10px;
+}
+.disconnect image {
+  width: 100%;
+}
+.disconnect text {
+  font-weight: bold;
+  font-size: 20px;
+  color: yellow;
+  position: relative;
+  top: -15px;
+}

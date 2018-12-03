@@ -1,0 +1,50 @@
+<view class="page-body" bindtouchstart='touchstart' bindtouchend='touchend'>
+  <image class='logo' mode='widthFix' src='https://www.idearfly.com/static/image/logo.png'></image>
+  <view class='buttons'>
+    <button bindtap='newGame' class="newGame large">创建游戏</button>
+    <button bindtap='findGame' class="findGame large">加入游戏</button>
+    <button bindtap='quickPlay' class="quickPlay large">快速游戏</button>
+  </view>
+</view>
+<userbar isShow="{{userbar}}">
+</userbar>
+<dialog isShow="{{dialog.gameSetting}}">
+  <scroll-view class='gameSetting' catchtap='stopPropagation'>
+    <checkbox-group bindchange="changePoker" class='pokerCheckbox'>
+      <checkbox value="化身幽灵"/>
+      <checkbox value='狼人' />
+      <checkbox value='狼人' />
+      <checkbox value='狼先知' />
+      <checkbox value='爪牙' />
+      <checkbox value='守夜人' />
+      <checkbox value='守夜人' />
+      <checkbox value='预言家' />
+      <checkbox value='见习预言家'/>
+      <checkbox value='强盗' />
+      <checkbox value='女巫' />
+      <checkbox value='捣蛋鬼' />
+      <checkbox value='酒鬼' />
+      <checkbox value='失眠者' />
+      <checkbox value='猎人' />
+      <checkbox value='皮匠' />
+      <checkbox value='村民' />
+      <checkbox value='村民' />
+      <checkbox value='村民' />
+    </checkbox-group>
+    <view class="pokerNumber">共<text class="number">{{pokerNumber}}</text>张牌</view>
+    <view class="row-center">
+      <button catchtap='gameStart' class='gameStart large'>开始游戏</button>
+      <button catchtap='gameCancel' class='gameCancel large'>取消游戏</button>
+    </view>
+  </scroll-view>
+</dialog>
+<dialog isShow="{{dialog.gameNumber}}">
+  <view class='gameNumber' catchtap='stopPropagation'>
+    <view class='row-center'>
+      <label>房间号码:</label>
+      <input type='number' placeholder='请输入房间号' bindinput='forNo'></input>
+    </view>
+    <button catchtap='joinGame' class='large'>进入房间</button>
+  </view>
+</dialog>
+<disconnect isShow='{{isDisconnect}}' bindReconnect='reconnect'/>

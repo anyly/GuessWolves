@@ -1,0 +1,19 @@
+/* component/navigationBar/default.wxss */
+.navigationBar {
+  background-color: #F8F8F8;
+}
+.titleBar {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  position: relative;
+}
+.titleBar>.back {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  position: absolute;
+  left: 0;
+}

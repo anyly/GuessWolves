@@ -1,0 +1,4 @@
+<!--component/dialog/index.wxml-->
+<view class="dialog" hidden='{{!isShow}}' catchtap='modalHandler'>
+  <slot/>
+</view>

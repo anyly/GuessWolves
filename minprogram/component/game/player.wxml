@@ -1,0 +1,20 @@
+<!--component/game/player.wxml-->
+<view class='player'>
+  <text>{{user}}</text>
+  <view class='body'>
+    <view class='left'>
+      <view class='face'>
+        <image src='{{img}}'></image>
+        <text>{{status}}</text>
+      </view>
+      <text>{{tag}}</text>
+    </view>
+    <view class='right'>
+      <view class='column'>
+        <text>{{vote}}</text>
+        <text>{{poker}}</text>
+      </view>
+      <text>{{seat}}</text>
+    </view>
+  </view>
+</view>

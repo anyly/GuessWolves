@@ -1,0 +1,9 @@
+<!--component/dialog/disconnect.wxml-->
+<dialog isModal='true' isShow='{{isShow}}'>
+  <view class='disconnect' catchtap='triggerReconnectEvent'>
+    <view class="wrap">
+      <image mode='widthFix' src='https://www.idearfly.com/static/image/blackout.svg'></image>
+      <text>点击重连</text>
+    </view>
+  </view>
+</dialog>

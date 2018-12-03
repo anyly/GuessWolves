@@ -1,0 +1,21 @@
+/* component/game/player.wxss */
+.player {
+  display: flex;
+  flex-direction: column;
+}
+.body {
+  display: flex;
+  flex-direction: row;
+}
+.left, .right {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.face {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
