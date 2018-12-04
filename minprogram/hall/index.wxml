@@ -6,8 +6,8 @@
     <button bindtap='quickPlay' class="quickPlay large">快速游戏</button>
   </view>
 </view>
-<userbar isShow="{{userbar}}">
-</userbar>
+<userbar isShow="{{userbar}}"/>
+
 <dialog isShow="{{dialog.gameSetting}}">
   <scroll-view class='gameSetting' catchtap='stopPropagation'>
     <checkbox-group bindchange="changePoker" class='pokerCheckbox'>

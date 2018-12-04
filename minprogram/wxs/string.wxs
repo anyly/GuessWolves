@@ -1,0 +1,5 @@
+module.exports = {
+  substring: function (string, start, end) {
+    return string.substring(start, end);
+  }
+}

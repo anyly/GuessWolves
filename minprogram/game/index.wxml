@@ -1,27 +1,57 @@
 <!--game/index.wxml-->
-<view class="page-body">
+<view class="page-body"  bindtouchstart='touchstart' bindtouchend='touchend'>
   <navigationBar back='https://www.idearfly.com/static/image/shutdown.svg' title='房间{{no}}'/>
   <view class='desktop'>
-    <view class='seat'>
-    <player
+    <view class='seat.left'>
+    <!-- <player
         user="tony" 
         img="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eoTtHIemT3d7pcB1b0zKWEYr2Zl1OjkVp0hsEWCicKvaHcuiaq6dbnzKd2FSCibKWynYpnb7yBHs33hA/132" 
-        tag="女巫"
+        tag="{{['见习预言家', '强盗']}}"
         poker="见习预言家" 
         status="死亡" 
         vote="3" 
         seat="12" 
-        disconnect="false" />
-      <player wx:for='{{game.playerCount}}' wx:key="seat"
-        user="{{game.desktop[index].user}}" 
-        img="{{game.desktop[index].img}}" 
-        tag="{{game.desktop[index].tag}}"
-        poker="{{game.desktop[index].poker}}" 
-        status="{{game.desktop[index].status}}" 
-        vote="{{game.desktop[index].vote}}" 
-        seat="{{game.desktop[index].seat}}" 
-        disconnect="{{game.desktop[index].disconnect}}" />
+        disconnect="{{true}}"
+        toward='left'
+        speak="{{[1, 2 ,3]}}" /> -->
+      <player wx:for='{{[1, 2, 3, 4, 5, 6, 7]}}' wx:key="seat"
+        user="{{game.desktop[item].user}}" 
+        img="{{game.desktop[item].img}}" 
+        tag="{{game.desktop[item].tag}}"
+        poker="{{game.desktop[item].poker}}" 
+        status="{{game.desktop[item].status}}" 
+        vote="{{game.desktop[item].vote}}" 
+        seat="{{item}}" 
+        disconnect="{{game.desktop[item].disconnect}}"
+        toward='left' />
+    </view>
+    <view class='seat.right'>
+    <!-- <player
+        user="tony" 
+        img="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eoTtHIemT3d7pcB1b0zKWEYr2Zl1OjkVp0hsEWCicKvaHcuiaq6dbnzKd2FSCibKWynYpnb7yBHs33hA/132" 
+        tag="{{['见习预言家', '强盗']}}"
+        poker="见习预言家" 
+        status="死亡" 
+        vote="3" 
+        seat="12" 
+        disconnect="{{true}}"
+        toward='right'
+        speak="{{[1, 2 ,3]}}" /> -->
+      <player wx:for='{{[8, 9, 10, 11, 12, 13, 14]}}' wx:key="seat"
+        user="{{game.desktop[item].user}}" 
+        img="{{game.desktop[item].img}}" 
+        tag="{{game.desktop[item].tag}}"
+        poker="{{game.desktop[item].poker}}" 
+        status="{{game.desktop[item].status}}" 
+        vote="{{game.desktop[item].vote}}" 
+        seat="{{item}}" 
+        disconnect="{{game.desktop[item].disconnect}}"
+        toward='right' />
     </view>
   </view>
+  <view class='footer'>
+    
+  </view>
 </view>
+<userbar isShow="{{userbar}}"/>
 <disconnect isShow='{{isDisconnect}}' bindReconnect='reconnect'/>

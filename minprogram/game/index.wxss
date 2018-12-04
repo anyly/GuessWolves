@@ -3,9 +3,19 @@
   background-color: #fff;
   height: 100%;
 }
+.desktop {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 .seat {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
+}
+.seat.right {
+  flex-direction: column-reverse;
+  align-items: flex-end;
 }

@@ -12,6 +12,7 @@
   justify-content: flex-start;
   align-items: stretch;
   transform: all 400ms ease;
+  z-index: 1000;
 }
 .sidebar>.userinfo {
   display: flex;

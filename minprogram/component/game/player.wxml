@@ -1,20 +1,31 @@
 <!--component/game/player.wxml-->
-<view class='player'>
+<wxs src="../../wxs/string.wxs" module="string" />
+<view class='player {{toward}}'>
   <view class='body'>
     <view class='left'>
-      <text class='user'>{{user}}</text>
       <view class='face'>
-        <image class='img' mode='widthFix' src='{{img}}'></image>
-        <text class='status'>{{status}}</text>
+        <image class='img' mode='widthFix' src="{{(img&&img!='')?img:'https://www.idearfly.com/static/image/img0.jpg'}}"></image>
+        <view class='vote' hidden='{{!vote}}'>
+          {{vote}}
+        </view>
+        <text class='status' hidden='{{!disconnect || !status}}'>{{status}}</text>
       </view>
-      <text class='tag'>{{tag}}</text>
+      <text class='disconnect' hidden="{{!(user && disconnect)}}">暂离</text>
+      <text class='seat'>{{seat}}</text>
+      <text class='poker' hidden='{{!poker}}'>{{string.substring(poker, 0, 2)}}</text>
+      <text class='user'>{{user}}</text>
+
     </view>
     <view class='right'>
-      <view class='buffer'>
-        <text class='vote'>{{vote}}</text>
-        <text class='poker'>{{poker}}</text>
-        <text class='seat'>{{seat}}</text>
+      <view class='tags'>
+        <text class='tag' wx:for='{{tag}}' wx:key='key' style="font-size:{{item.length>3?8:10}}px">{{item}}</text>
+      </view>
+      <view class='speaks'>
+        <view class='speak' wx:for='{{speak}}' wx:key='key'>
+          <text>···</text>
+        </view>
       </view>
     </view>
   </view>
+
 </view>
