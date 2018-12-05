@@ -1,6 +1,6 @@
 <!--game/index.wxml-->
 <view class="page-body"  bindtouchstart='touchstart' bindtouchend='touchend'>
-  <navigationBar back='https://www.idearfly.com/static/image/shutdown.svg' title='房间{{no}}'/>
+  <navigationBar back='https://www.idearfly.com/static/image/shutdown.svg' style='width: 100%;' title='房间{{no}}'/>
   <view class='desktop'>
     <view class='seat.left'>
     <!-- <player
@@ -49,8 +49,10 @@
         toward='right' />
     </view>
   </view>
-  <view class='footer'>
-    
+  <view class='bottombar'>
+    <view class='emoji'/>
+    <view class='mic'/>
+    <view class='enter'/>
   </view>
 </view>
 <userbar isShow="{{userbar}}"/>

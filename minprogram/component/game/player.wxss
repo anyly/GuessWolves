@@ -55,6 +55,7 @@
   font-weight: bold;
   height: 14px;
   margin: 0 4px;
+  z-index: 2;
 }
 .img {
   width: 50px;
@@ -173,6 +174,17 @@
   left: unset;
   top: -4px;
   margin-right: -10px; 
+}
+.host {
+  width: 18px;
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+}
+.player.right .host {
+  bottom: -4px;
+  left: unset;
+  right: -4px;
 }
 .speaks {
   display: flex;

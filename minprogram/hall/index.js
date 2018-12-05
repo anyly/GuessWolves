@@ -190,33 +190,41 @@ Page({
         userbar: false
       });
     } else {
-      this.startX = res.changedTouches[0].clientX;
-      this.startY = res.changedTouches[0].clientY;
+      try {
+        this.startX = res.changedTouches[0].clientX;
+        this.startY = res.changedTouches[0].clientY;
+      } catch(e) {
+
+      }
     }
   },
   touchend(res) {
     if (this.startX == null) {
       return;
     }
-    var endX = res.changedTouches[0].clientX;
-    var endY = res.changedTouches[0].clientY;
+    try {
+      var endX = res.changedTouches[0].clientX;
+      var endY = res.changedTouches[0].clientY;
 
-    if (endX < this.startX) {
+      if (endX < this.startX) {
+        this.startX = null;
+        this.startY = null;
+        return;
+      }
+
+      var absX = Math.abs(endX - this.startX);
+      var absY = Math.abs(endY - this.startY);
+
       this.startX = null;
       this.startY = null;
-      return;
-    }
 
-    var absX = Math.abs(endX - this.startX);
-    var absY = Math.abs(endY - this.startY);
+      if (absX > absY && absX > 60) {
+        this.setData({
+          userbar: true
+        });
+      }
+    } catch(e) {
 
-    this.startX = null;
-    this.startY = null;
-
-    if (absX > absY && absX > 60) {
-      this.setData({
-        userbar: true
-      });
     }
   }
 })

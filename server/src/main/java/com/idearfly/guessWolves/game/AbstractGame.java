@@ -1906,9 +1906,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
      * @param seat
      * @param player
      */
-    public synchronized void sitdown(int seat, Player player) {
+    public synchronized boolean sitdown(int seat, Player player) {
+        Player old = desktop.get(seat);
+        if (old != null) {
+            return false;
+        }
         desktop.put(seat, player);
         player.setSeat(seat);
+        return true;
     }
 
     /**

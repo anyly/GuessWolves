@@ -19,6 +19,10 @@ Component({
     toward: {
       type: String,
       value: 'left'
+    },
+    host: {
+      type: Boolean,
+      value: false
     }
     //emoji: String
   },
@@ -34,6 +38,11 @@ Component({
    * 组件的方法列表
    */
   methods: {
-
+    triggerTapEvent() {
+      this.triggerEvent('tap', this.data.seat);
+    },
+    triggerLongtapEvent() {
+      this.triggerEvent('longtap', this.data.seat);
+    },
   }
 })

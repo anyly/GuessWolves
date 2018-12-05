@@ -43,9 +43,10 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @return
      */
     public void onSitdown(Integer seat){
-        game.sitdown(seat, player);
-        // 换座位,同步给其他人
-        game.syncSeat(player);
+        if (game.sitdown(seat, player)) {
+            // 换座位,同步给其他人
+            game.syncSeat(player);
+        }
     }
 
     public void onReady(Boolean readyStatus) {

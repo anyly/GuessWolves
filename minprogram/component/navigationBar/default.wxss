@@ -1,6 +1,7 @@
 /* component/navigationBar/default.wxss */
 .navigationBar {
   background-color: #F8F8F8;
+  width: 100%;
 }
 .titleBar {
   display: flex;
