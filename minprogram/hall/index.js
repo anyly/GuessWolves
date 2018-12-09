@@ -112,6 +112,7 @@ Page({
 
   },
   gameStart() {
+    var that=this;
     this.websocket.http({
       action: 'newGame',
       data: {
@@ -120,6 +121,7 @@ Page({
       },
       success(res) {
         var no = res.data;
+        that.websocket.close();
         wx.redirectTo({
           url: '/game/index?no='+no,
         })
@@ -160,12 +162,14 @@ Page({
     }
   },
   joinGame() {
+    var that = this;
     var no = this.data.no;
     if (no) {
       this.websocket.http({
         action: 'joinGame',
         data: no,
         success() {
+          that.websocket.close();
           wx.redirectTo({
             url: '/game/index?no=' + no,
           })

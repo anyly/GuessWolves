@@ -12,8 +12,8 @@ public class Game extends AbstractGame {
     public Story story() {
         return storyConfiguration()
                 .timeline()
-                //就位
-                .then("Ready")
+                //就位- 废弃由房主开始
+                //.then("Ready")
                 //系统发牌
                 .then("Shuffle")
                 //化身行动

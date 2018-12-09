@@ -1,5 +1,8 @@
 module.exports = {
-  substring: function (string, start, end) {
-    return string.substring(start, end);
+  shortPoker: function (poker) {
+    if (poker.indexOf('化身') == 0 && poker != '化身幽灵') {
+      return poker.substring(0, 4);
+    }
+    return poker.substring(0, 2);
   }
 }

@@ -2,23 +2,25 @@
 <wxs src="../../wxs/string.wxs" module="string" />
 <view class='player {{toward}}'>
   <view class='body'>
-    <view class='left'>
+    <view class='left' 
+      catchtap='triggerTapEvent'
+      catchlongtap='triggerLongtapEvent'>
       <view class='face'>
         <image 
           class='img' 
           mode='widthFix' 
-          src="{{(img&&img!='')?img:'https://www.idearfly.com/static/image/img0.jpg'}}"
-          catchtap='triggerTapEvent'
-          catchlongtap='triggerLongtapEvent' />
+          src="{{(img&&img!='')?img:'https://www.idearfly.com/static/image/img0.jpg'}}" />
         <view class='vote' hidden='{{!vote}}'>
           {{vote}}
         </view>
         <text class='status' hidden='{{!disconnect || !status}}'>{{status}}</text>
         <image class='host' mode='widthFix' src="https://www.idearfly.com/static/image/host.png" hidden='{{!host}}' />
       </view>
+      <text class='ready' hidden="{{!(user && ready)}}">准备</text>
       <text class='disconnect' hidden="{{!(user && disconnect)}}">暂离</text>
       <text class='seat'>{{seat}}</text>
-      <text class='poker' hidden='{{!poker}}'>{{string.substring(poker, 0, 2)}}</text>
+      <text class='poker' hidden='{{!poker}}'>{{string.shortPoker(poker)}}</text>
+      <text class='count' hidden="{{!(user && count)}}">{{count}}</text>
       <text class='user'>{{user}}</text>
 
     </view>

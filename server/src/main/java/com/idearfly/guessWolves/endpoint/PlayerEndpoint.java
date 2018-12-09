@@ -42,16 +42,21 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
      * @param seat
      * @return
      */
-    public void onSitdown(Integer seat){
+    public Game onSitdown(Integer seat){
         if (game.sitdown(seat, player)) {
             // 换座位,同步给其他人
-            game.syncSeat(player);
+            game.syncGame();
         }
+        return game;
     }
 
     public void onReady(Boolean readyStatus) {
         game.setReadyStatus(player, readyStatus);
-        game.syncStatus(player);
+        game.syncGame();
+    }
+
+    public void onStartGame() {
+        game.startGame();
     }
 
     public void onRestart(Boolean readyStatus) {
@@ -62,15 +67,18 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
     //////////////////////
     /**
      * 化身幽灵行动
-     * @param list
+     * @param target
      * @return
      */
-    public Game onDoppel(List list) {
-        List<Integer> targets = (List<Integer>)list;
-        this.player.setTargets(targets);
+    public Game onDoppel(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
         if (targets.size() > 0) {
             // 通知游戏继续
-            game.doppel(player, targets.get(0));
+            game.doppel(player, target);
             return game;
         }
         return null;
@@ -97,12 +105,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 狼先知
-     * @param list
+     * @param target
      * @return
      */
-    public Game onMysticWolf(List list) {
-        List<Integer> targets = (List<Integer>)list;
-        this.player.setTargets(targets);
+    public Game onMysticWolf(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
         if (targets.size() > 0) {
             // 通知游戏继续
             game.mysticWolf(player);
@@ -128,12 +139,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 见习预言家
-     * @param list
+     * @param target
      * @return
      */
-    public Game onApprenticeSeer(List list) {
-        List<Integer> targets = (List<Integer>) list;
-        this.player.setTargets(targets);
+    public Game onApprenticeSeer(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
         if (targets.size() > 0) {
             // 通知游戏继续
             game.apprenticeSeer(player);
@@ -144,12 +158,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 强盗行动
-     * @param list
+     * @param target
      * @return
      */
-    public Game onRobber(List list) {
-        List<Integer> targets = (List<Integer>) list;
-        this.player.setTargets(targets);
+    public Game onRobber(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
         if (targets.size() > 0) {
             // 通知游戏继续
             game.robber(player);
@@ -195,12 +212,15 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     /**
      * 酒鬼行动
-     * @param list
+     * @param target
      * @return
      */
-    public Game onDrunk(List list) {
-        List<Integer> targets = (List<Integer>) list;
-        this.player.setTargets(targets);
+    public Game onDrunk(Integer target) {
+        if (target == null) {
+            return null;
+        }
+        List<Integer> targets = this.player.getTargets();
+        targets.add(target);
         if (targets.size() > 0) {
             // 通知游戏继续
             game.drunk(player);

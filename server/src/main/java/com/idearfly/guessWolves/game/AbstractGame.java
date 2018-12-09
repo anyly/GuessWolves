@@ -371,12 +371,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     @Override
                     public void doing() {
                         List<String> pool = new LinkedList(setting);
+                        int playerCount = getPlayerCount();
                         Map<Integer, String> newLucky = new LinkedHashMap<>();
 
                         List<Player> wolves = findByPokers();
                         Player cobber = null;
                         Player doppel = null;
-                        for (int seat=1; pool.size()>0; seat++) {
+                        int seat = 0;
+                        for (int no=1; pool.size()>0; no++) {
                             int index = GameCenter.randomInt(pool.size());
                             String poker = pool.get(index);
 
@@ -400,7 +402,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
 //                            if (seat==2)poker = "强盗";
 //                            if (seat==3)poker = "狼先知";
 //                            if (seat==4)poker = "女巫";
-
+                            if (no > playerCount) {// 修正底牌编号,  -1 -2 -3
+                                seat = playerCount - no;
+                            } else {
+                                seat = no;
+                            }
                             Log.debug("发牌", seat+" = "+poker);
                             initial.put(seat, poker);
                             deck.put(seat, poker);
@@ -1177,7 +1183,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
             super.leave(player);
             desktop.removeKey(player);
             ready.remove(player);
-            emitOthers(player, "syncLeave", player.getUser());
+            emitOthers(player, "syncLeave", this);
         }
         // 游戏开始后,离开只当作断线处理
         //syncStatus(player);
@@ -1277,7 +1283,18 @@ public abstract class AbstractGame extends BaseGame<Player> {
         report = new Report();
         logs = new LinkedList<>();
         speakRound = 1;
-        super.reload();
+    }
+
+    @Override
+    public void replay() {
+        for (Player player: desktop.values()) {
+            player.setMission(null);
+            player.setPoker(null);
+            player.getTargets().clear();
+            player.getSpeaks().clear();
+            player.getMovements().clear();
+        }
+        super.replay();
     }
 
     //////////////////////////////////////////////
@@ -1932,6 +1949,15 @@ public abstract class AbstractGame extends BaseGame<Player> {
     }
 
     /**
+     * 房主来开始游戏
+     */
+    public synchronized void startGame() {
+        if (getStage() == null && ready.size() == getPlayerCount()) {
+            replay();
+        }
+    }
+
+    /**
      * 玩家投票
      * @param player
      * @param vote
@@ -1967,20 +1993,9 @@ public abstract class AbstractGame extends BaseGame<Player> {
             ready.remove(player);
         }
 
-        if (getStage() == null && ready.size() == getPlayerCount()) {
-            clearUserData();
-            replay();
-        }
-    }
-
-    private void clearUserData() {
-        for (Player player: desktop.values()) {
-            player.setMission(null);
-            player.setPoker(null);
-            player.getTargets().clear();
-            player.getSpeaks().clear();
-            player.getMovements().clear();
-        }
+//        if (getStage() == null && ready.size() == getPlayerCount()) {
+//            reload();
+//        }
     }
 
 }

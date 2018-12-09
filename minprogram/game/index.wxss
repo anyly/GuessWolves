@@ -1,11 +1,21 @@
 /* game/index.wxss */
-.page-body {
+.page {
   background-color: #fff;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  align-items: stretch;
+  position: relative;
+}
+.page-body {
+  background-color: #fff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
+  position: relative;
 }
 .desktop {
   display: flex;
@@ -26,13 +36,66 @@
 }
 .bottombar {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
   position: absolute;
   bottom: 0;
 }
+.bottombar .start, 
+.bottombar .ready,
+.bottombar .cancel {
+  width:100%;
+  background-color: dodgerblue;
+  color: yellow;
+  box-shadow: 0px 0px 5px #000;
+}
+.confirm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+}
+.confirm .targets {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.confirm .target {
+  background-color: blueviolet;
+  color: yellow;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  font-weight: bold;
+  margin: 2px 2px;
+}
+.confirm .yes,
+.confirm .no {
+  background-color: blueviolet;
+  box-shadow: 0px 0px 5px #000;
+  color: yellow;
+  font-size: 14px;
+  width: 44px;
+  height: 34px;
+  margin: 0 4px;
+}
 .bottombar .emoji {
+  background: url(https://www.idearfly.com/static/image/emoji.png) no-repeat;
+  background-position: center;
+  background-size: 34px 34px;
+  width: 44px;
+  height: 34px;
+  background-color: dodgerblue;
+  margin: 10px 5px;
+  border-radius: 4px;
+  box-shadow: 0px 0px 5px #000;
+}
+.bottombar .cast {
   background: url(https://www.idearfly.com/static/image/emoji.png) no-repeat;
   background-position: center;
   background-size: 34px 34px;
@@ -65,4 +128,59 @@
   margin: 10px 5px;
   border-radius: 4px;
   box-shadow: 0px 0px 5px #000;
+}
+.bottombar .checked {
+  box-shadow:none;
+  border: none;
+  background-color: brown;
+}
+.centerbar {
+  position: absolute;
+  top: 0;
+  text-align: center;
+}
+.camp {
+  border: 1rpx violet dashed;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: aliceblue;
+  color: dodgerblue;
+  font-weight: bold;
+  font-size: 14px;
+  max-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.movement {
+  margin-top: 5px;
+  border: 1rpx violet dashed;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: aliceblue;
+  color: dodgerblue;
+  font-weight: bold;
+  font-size: 14px;
+}
+.tips {
+  margin-top: 5px;
+  border: 1rpx violet dashed;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: aliceblue;
+  color: dodgerblue;
+  font-weight: bold;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.tips>.title {
+  transition: all 2s ease;
+}
+.tips>.description {
+  transition: all 2s ease;
 }

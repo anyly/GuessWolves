@@ -57,7 +57,7 @@ function bindEmit(socketTask) {
 
 function bindAdmit(socketTask) {
   socketTask.admit = function (action, callback) {
-    if (listeners[action]) {
+    if (action) {
       listeners[action] = callback;
     }
   }
@@ -69,12 +69,13 @@ function bindOnMessage(socketTask) {
     if (typeof (data) == 'string') {
       if (data.startsWith('{') || data.startsWith('[')) {
         const json = JSON.parse(data);
-        opt.data = json.data;
+        data = json.data;
 
         var action = json.action;
         if (action) {
           if (listeners[action]) {
-            listeners[action](opt);
+            console.log(action +' receive');
+            listeners[action](data);
           }
         }
       }

@@ -71,6 +71,15 @@
   background-color: grey;
   border-radius: 6px;
 }
+.ready {
+  position: absolute;
+  color: aliceblue;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 0 6px;
+  background-color: grey;
+  border-radius: 6px;
+}
 .status {
   position: absolute;
   bottom: 0px;
@@ -80,6 +89,18 @@
   border: 1px red dashed;
   padding: 0 4px;
   border-radius: 8px;
+}
+.count {
+  position: absolute;
+  right: 0px;
+  bottom: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  color: blueviolet;
+}
+.player.player.right .count {
+  right: unset;
+  left: 0;
 }
 .tags {
   position: relative;

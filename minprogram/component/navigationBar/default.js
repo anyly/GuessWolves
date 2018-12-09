@@ -9,9 +9,11 @@ Component({
       totalTopHeight = 64
     }
 
+    var canBack = this.data.forceBack || getCurrentPages().length > 1;
     this.setData({
       statusBarHeight: sys.statusBarHeight,
-      titleBarHeight: totalTopHeight - sys.statusBarHeight
+      titleBarHeight: totalTopHeight - sys.statusBarHeight,
+      canBack: canBack
     });
   },
   /**
@@ -25,6 +27,10 @@ Component({
     title: {
       type: String,
       value: __wxConfig.global.window.navigationBarTitleText
+    },
+    forceBack: {
+      type: Boolean,
+      value: false
     }
   },
 
@@ -32,7 +38,7 @@ Component({
    * 组件的初始数据
    */
   data: {
-    canBack: getCurrentPages().length > 1
+    
   },
 
   /**
@@ -40,9 +46,6 @@ Component({
    */
   methods: {
     back() {
-      wx.navigateBack({
-        delta: 1
-      });
       this.triggerEvent('back');
     },
     config() {

@@ -9,9 +9,13 @@ Component({
     tag: Array,
     poker: String,
     status: String,
-    vote: String,
-    seat: String,
+    vote: Number,
+    seat: Number,
     disconnect: {
+      type: Boolean,
+      value: false
+    },
+    ready: {
       type: Boolean,
       value: false
     },
@@ -23,7 +27,8 @@ Component({
     host: {
       type: Boolean,
       value: false
-    }
+    },
+    count: Number
     //emoji: String
   },
 
@@ -39,10 +44,10 @@ Component({
    */
   methods: {
     triggerTapEvent() {
-      this.triggerEvent('tap', this.data.seat);
+      this.triggerEvent('Tap', this.data.seat);
     },
     triggerLongtapEvent() {
-      this.triggerEvent('longtap', this.data.seat);
+      this.triggerEvent('Longtap', this.data.seat);
     },
   }
 })

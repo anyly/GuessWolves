@@ -1,9 +1,10 @@
 <!--game/index.wxml-->
-<view class="page-body"  bindtouchstart='touchstart' bindtouchend='touchend'>
-  <navigationBar back='https://www.idearfly.com/static/image/shutdown.svg' style='width: 100%;' title='房间{{no}}'/>
-  <view class='desktop'>
-    <view class='seat.left'>
-    <!-- <player
+<view class="page" bindtouchstart='touchstart' bindtouchend='touchend'>
+  <navigationBar forceBack="{{true}}" backicon='https://www.idearfly.com/static/image/shutdown.svg' bindback="leaveGame" style='width: 100%;' title='房间{{no}}' />
+  <view class='page-body'>
+    <view class='desktop'>
+      <view class='seat.left'>
+        <!-- <player
         user="tony" 
         img="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eoTtHIemT3d7pcB1b0zKWEYr2Zl1OjkVp0hsEWCicKvaHcuiaq6dbnzKd2FSCibKWynYpnb7yBHs33hA/132" 
         tag="{{['见习预言家', '强盗']}}"
@@ -13,20 +14,26 @@
         seat="12" 
         disconnect="{{true}}"
         toward='left'
-        speak="{{[1, 2 ,3]}}" /> -->
-      <player wx:for='{{[1, 2, 3, 4, 5, 6, 7]}}' wx:key="seat"
-        user="{{game.desktop[item].user}}" 
-        img="{{game.desktop[item].img}}" 
-        tag="{{game.desktop[item].tag}}"
-        poker="{{game.desktop[item].poker}}" 
-        status="{{game.desktop[item].status}}" 
-        vote="{{game.desktop[item].vote}}" 
-        seat="{{item}}" 
-        disconnect="{{game.desktop[item].disconnect}}"
-        toward='left' />
-    </view>
-    <view class='seat.right'>
-    <!-- <player
+        speak="{{[1, 2 ,3]}}"
+        count="10" /> -->
+        <player wx:for='{{[1, 2, 3, 4, 5, 6, 7]}}' 
+          wx:key="seat" 
+          user="{{desktop[item].user}}" 
+          img="{{desktop[item].img}}" 
+          tag="{{desktop[item].tag}}" 
+          poker="{{viewport[item]}}" 
+          status="{{desktop[item].status}}" 
+          vote="{{desktop[item].vote}}"
+          seat="{{item}}" 
+          disconnect="{{desktop[item].disconnect}}"
+          ready="{{!stage?desktop[item].ready:false}}" 
+          host="{{host == item}}"
+          toward='left' 
+          bindTap='selectTarget' 
+          bindLongtap='cue' />
+      </view>
+      <view class='seat.right'>
+        <!-- <player
         user="tony" 
         img="https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83eoTtHIemT3d7pcB1b0zKWEYr2Zl1OjkVp0hsEWCicKvaHcuiaq6dbnzKd2FSCibKWynYpnb7yBHs33hA/132" 
         tag="{{['见习预言家', '强盗']}}"
@@ -37,23 +44,64 @@
         disconnect="{{true}}"
         toward='right'
         speak="{{[1, 2 ,3]}}" /> -->
-      <player wx:for='{{[8, 9, 10, 11, 12, 13, 14]}}' wx:key="seat"
-        user="{{game.desktop[item].user}}" 
-        img="{{game.desktop[item].img}}" 
-        tag="{{game.desktop[item].tag}}"
-        poker="{{game.desktop[item].poker}}" 
-        status="{{game.desktop[item].status}}" 
-        vote="{{game.desktop[item].vote}}" 
-        seat="{{item}}" 
-        disconnect="{{game.desktop[item].disconnect}}"
-        toward='right' />
+        <player wx:for='{{[8, 9, 10, 11, 12, 13, 14]}}' 
+          wx:key="seat" user="{{game.desktop[item].user}}" 
+          img="{{desktop[item].img}}" 
+          tag="{{desktop[item].tag}}" 
+          poker="{{viewport[item]}}" 
+          status="{{desktop[item].status}}" 
+          vote="{{desktop[item].vote}}"
+          seat="{{item}}" 
+          disconnect="{{desktop[item].disconnect}}"
+          ready="{{!stage?desktop[item].ready:false}}" 
+          host="{{host == item}}"
+          toward='right' 
+          bindTap='selectTarget' 
+          bindLongtap='cue' />
+      </view>
+    </view>
+    <view class='centerbar'>
+      <text>人数:{{game.playerCount}}</text>
+      <view class='camp'>
+        <view wx:for="{{game.setting}}" wx:key="key">
+          {{item}}
+        </view>
+      </view>
+      <block wx:for="{{movements}}" wx:key="key">
+      <view class='movement' wx:if="{{item.summary}}">
+        {{item.summary}}
+      </view>
+      </block>
+      <view class='tips' hidden='{{!tips}}'>
+        <text class='title'>--{{tips}}--</text>
+        <text class='description'>{{description}}</text>
+      </view>
+    </view>
+    <view class='bottombar'>
+      <button class='start' hidden='{{!(!stage && player.seat == host)}}' bindtap='startGame'>开始</button>
+      <button class='ready' hidden='{{!(!stage && player.seat && player.seat != host && !player.ready)}}' bindtap='ready'>准备</button>
+      <button class='cancel' hidden='{{!(!stage && player.seat && player.seat != host && player.ready)}}' bindtap='cancel'>取消</button>
+      <view class='confirm' hidden='{{!(stage && targets)}}'>
+        <view class='targets'>
+          <text wx:for="{{targets}}" wx:key="key" class='target'>{{item}}</text>
+        </view>
+        <view class='row-center' wx:if="{{stage == 'Vote'}}">
+          <button class='yes' bindtap='voteYes'>投票</button>
+          <button class='no' bindtap='voteNo'>弃权</button>
+        </view>
+        <view class='row-center' wx:else>
+          <button class='yes' bindtap='castYes'>确定</button>
+          <button class='no' bindtap='castNo'>取消</button>
+        </view>
+      </view>
+      <view class='row-center'>
+        <!-- <view class='emoji' /> -->
+        <view class="cast {{cast?'checked':''}}" bindtap='cast' />
+        <view class='mic' />
+        <view class='enter' />
+      </view>
     </view>
   </view>
-  <view class='bottombar'>
-    <view class='emoji'/>
-    <view class='mic'/>
-    <view class='enter'/>
-  </view>
 </view>
-<userbar isShow="{{userbar}}"/>
-<disconnect isShow='{{isDisconnect}}' bindReconnect='reconnect'/>
+<userbar isShow="{{userbar}}" />
+<disconnect isShow='{{isDisconnect}}' bindReconnect='reconnect' />

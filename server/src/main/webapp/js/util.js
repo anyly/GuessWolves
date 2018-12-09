@@ -643,10 +643,10 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 if (isWeiXin()) {
 
 } else {
-    for (;;) {
-        var code = window.prompt('一个不可信的访问源，请输入授权码。');
-        if (code == 'idearfly.com') {
-            break;
-        }
-    }
+    // for (;;) {
+    //     var code = window.prompt('一个不可信的访问源，请输入授权码。');
+    //     if (code == 'idearfly.com') {
+    //         break;
+    //     }
+    // }
 }

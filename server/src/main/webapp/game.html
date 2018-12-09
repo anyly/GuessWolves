@@ -1199,7 +1199,7 @@ end {
         var seat = self.attr('seat');
         seat = parseInt(seat);
 
-        if (Guide.current == 'Ready') {
+        if (!Guide.current) {
             // 就位阶段, 可以换位置
             if (self.attr('value') == null) {
                 if ($('player.ready[value="'+user+'"]').length>0) {
@@ -1273,7 +1273,7 @@ end {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
                     controll.clear();
-                    client.http(stage, [seat], function (data) {
+                    client.http(stage, seat, function (data) {
                         // 动画
                         var jq = $('[seat='+seat+'] poker');
                         var caller_jq = $('player[value='+user+'] poker');
@@ -1370,7 +1370,7 @@ end {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
                     controll.clear();
-                    client.http(stage, [seat], function (data) {
+                    client.http(stage, seat, function (data) {
                         timeline
                             .then(function () {
                                 loadMovement(data);
@@ -1448,7 +1448,6 @@ end {
             tips('见习预言家:点击你要查看的公共牌!');
             var stage = arguments.callee.name;
             var publicPokers = $('discard poker');
-            var targets = [];
             var portrait = $('portrait.myseat');
             var controll;
             timeline.then(function () {
@@ -1457,12 +1456,11 @@ end {
                     var self = $(this);
                     var seat = self.parents('[seat]').attr('seat');
                     seat = parseInt(seat);
-                    targets.push(seat);
 
                     publicPokers.cancelTips();
                     publicPokers.unbind();
                     controll.clear();
-                    client.http(stage, targets, function (data) {
+                    client.http(stage, seat, function (data) {
                         loadMovement(data);
                         tips('等待他人行动...');
                     });
@@ -1490,7 +1488,7 @@ end {
                     playerPokers.cancelTips();
                     playerPokers.unbind();
                     controll.clear();
-                    client.http(stage, [seat], function (data) {
+                    client.http(stage, seat, function (data) {
                         timeline
                             .then(function () {
                                 var myseat = portrait.parents('[seat]').attr('seat');
@@ -1657,7 +1655,7 @@ end {
                     publicPokers.cancelTips();
                     publicPokers.unbind();
                     controll.clear();
-                    client.http(stage, [seat], function (data) {
+                    client.http(stage, seat, function (data) {
                         timeline
                             .then(function () {
                                 WolvesAnimation.swap(self, caller, this.timepoint());
@@ -1769,7 +1767,7 @@ end {
 
     var timestamp = -1;
     var Guide = {
-        current: 'Ready',
+        current: null,
         existUser: function () {
             alert('账号被占用,请重新登录！');
             window.location = 'index.html';
@@ -1973,7 +1971,7 @@ end {
     }
     var client = new WebSocketClient(wsprotocol+':'+window.location.basepath+'/game/'+no);
 
-    client.admit("syncLeave", leaveGame);
+    client.admit("syncLeave", loadGame);
     client.admit("syncGame", loadGame);
     client.admit("syncPoker", loadPoker);
     client.admit("syncStatus", loadStatus);
@@ -2124,21 +2122,12 @@ end {
         var seat = info.seat;
         var domSeat = $('player[seat="'+seat+'"]').get(0);
 
+        Guide.current = stage;
         if (!stage) {
-            if (info.ready) {
-                restartStatus(domSeat);
-            } else {
-                notRestartStatus(domSeat);
-            }
-        } else if (stage == 'Ready') {
             if (info.ready) {
                 readyStatus(domSeat);
             } else {
                 notReadyStatus(domSeat);
-            }
-        } else {
-            if (stage) {
-                Guide.current = stage;
             }
         }
         if (info.disconnect) {
@@ -2271,9 +2260,11 @@ end {
         // 游戏总进度
         var stage = game['stage'];
         if (!stage) {
+            $('page player portrait').click(readySitdown);
             // 游戏结束
             Guide.Result(game);
         } else if (Guide[stage]) {
+            $('page player portrait').unbind('click');
             Guide[stage](game);
         } else {
             tips('等待他人行动...');
@@ -2294,7 +2285,7 @@ end {
                 infoPoker.call(game, info);
             }
         }
-        if (stage && stage != 'Ready' && $('.myseat').length == 0) {
+        if (stage && $('.myseat').length == 0) {
             Guide.God(game);
         }
     }
