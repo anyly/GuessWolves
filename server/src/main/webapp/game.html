@@ -881,6 +881,23 @@ animate {
     width: 56px;
     height: 75px;
 }
+report {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    background-color: #fff;
+    z-index: 1000;
+}
+report>iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+}
 /**/
 end {
 
@@ -895,13 +912,13 @@ end {
         <hidden></hidden>
         <row-center style="margin: 30px 5px 0px 5px;">
             <discard>
-                <column class="poker-parent">
+                <column class="poker-parent" seat="-1">
                     <poker class="no"></poker>
                 </column>
-                <column class="poker-parent">
+                <column class="poker-parent" seat="-2">
                     <poker class="no"></poker>
                 </column>
-                <column class="poker-parent">
+                <column class="poker-parent" seat="-3">
                     <poker class="no"></poker>
                 </column>
             </discard>
@@ -1053,6 +1070,10 @@ end {
     <div class="light"><span class="glow"></span><span class="flare"></span></div>
 
 </levitate>
+<report class="report" style="display: none">
+    <text>返回游戏</text>
+    <iframe></iframe>
+</report>
 
 <template>
     <player>
@@ -1077,6 +1098,7 @@ end {
 <script src="js/jquery-1.12.1-ui.min.js"></script>
 <script src="js/jquery.ui.touch-punch.min.js"></script>
 <script type="text/javascript" src="js/speech.js"></script>
+<script src="js/base64.js"></script>
 <script src="js/game.js"></script>
 <script>
     var no = getAnchor();
@@ -1190,9 +1212,9 @@ end {
             }
         }
         //
-        $('discard poker').each(function (index) {
-            $(this).parent().attr('seat', count+1+index);
-        })
+        // $('discard poker').each(function (index) {
+        //     $(this).parent().attr('seat', count+1+index);
+        // })
     }
     function readySitdown() {
         var self = $(this).parents('player');
@@ -1209,10 +1231,18 @@ end {
                     changeSeat(self.get(0), user, img);
                 });
             } else if (self.attr('value') == user) {
-                var ready = !self.hasClass('ready');
-                client.http('ready',ready, function () {
-                    self.toggleClass('ready');
-                })
+                if (seat == 1) {
+                    client.http('ready',true, function () {
+                        self.toggleClass('ready');
+                        client.emit('startGame');
+                    })
+                } else {
+                    var ready = !self.hasClass('ready');
+                    client.http('ready',ready, function () {
+                        self.toggleClass('ready');
+                    })
+                }
+
             }
         }
 
@@ -1855,7 +1885,7 @@ end {
         Result : function (data) {
             ////加载日志
             $('clue').empty();
-            loadLog(data, true);
+            //loadLog(data, true);
             /// 翻开所有牌
             var deck = data.deck;
             var desktop = data.desktop;
@@ -1883,8 +1913,13 @@ end {
             } else if (mywin == false) {
                 win = '输了!~';
             }
-            var string = '<h3><span style="color: red;">'+win+'</span>'+report.description+'！</h3>';
-            var all = report.all;
+            var string = '<h3 id="resultBtn"><span style="color: red;">'+win+'</span>'+report.description+'！</h3>';
+            tips(string);
+            $('#resultBtn').click(function () {
+                var src =  window.location.basepath+'/playback.html?user='+user+'&no='+no+'&game='+ encodeURI(encodeBase64(JSON.stringify(data)));
+                $('report').css({'display':''}).find('iframe').attr('src', src);
+            });
+            /*var all = report.all;
             var town = report.town;
             var wolves = report.wolves;
             var cobbler = report.cobbler;
@@ -1946,7 +1981,7 @@ end {
                         self.toggleClass('restart');
                     });
                 });
-            });
+            });*/
         }
     };
     function camp(c) {
@@ -1962,7 +1997,6 @@ end {
         }
         return string;
     }
-
 </script>
 <script>
     var wsprotocol = 'ws';
@@ -2260,7 +2294,7 @@ end {
         // 游戏总进度
         var stage = game['stage'];
         if (!stage) {
-            $('page player portrait').click(readySitdown);
+            $('page player portrait').unbind('click').click(readySitdown);
             // 游戏结束
             Guide.Result(game);
         } else if (Guide[stage]) {
@@ -2306,6 +2340,7 @@ end {
             $('[seat] poker').removeAttr('value');
             for (var seat in viewport) {
                 var poker = viewport[seat];
+                seat = parseInt(seat);
                 if (movement.spell == '系统发牌') {
                     window.Animate.Shuffle(seat, poker);
                 } else if (movement.spell == '化身幽灵行动') {
@@ -2316,7 +2351,9 @@ end {
                     window.Animate.Minion(seat, poker, caller, targets);
                 } else if (movement.spell == '守夜人行动') {
                     window.Animate.Mason(seat, poker, caller, targets);
-                } else if (movement.spell == '预言家行动' || movement.spell == '化身预言家行动') {
+                } else if (movement.spell == '预言家行动' || movement.spell == '化身预言家行动'
+                    || movement.spell == '狼先知行动' || movement.spell == '化身狼先知行动'
+                    || movement.spell == '见习预言家行动' || movement.spell == '化身见习预言家行动') {
                     window.Animate.Seer(seat, poker, caller, targets);
                 } else if (movement.spell == '强盗行动' || movement.spell == '化身强盗行动') {
                     window.Animate.Robber(seat, poker, caller, targets);
@@ -2324,6 +2361,8 @@ end {
                     window.Animate.TroubleMarker(seat, poker, caller, targets);
                 } else if (movement.spell == '酒鬼行动' || movement.spell == '化身酒鬼行动') {
                     window.Animate.Drunk(seat, poker, caller, targets);
+                } else if (movement.spell == '女巫行动' || movement.spell == '化身女巫行动') {
+                    window.Animate.Witch(seat, poker, caller, targets);
                 } else if (movement.spell == '失眠者行动') {
                     window.Animate.Insomniac(seat, poker, caller, targets);
                 } else if (movement.spell == '开始发言') {
@@ -2577,7 +2616,9 @@ end {
             tips('等待投票结果...');
         });
     });
-
+    $('report>text').click(function () {
+        $('report').css({'display':'none'});
+    });
 </script>
 </body>
 </html>

@@ -246,6 +246,10 @@ function isWeiXin(){
         document.getElementsByTagName('head')[0].appendChild(script);
 
     };
+    //供使用者调用
+    window.trim = function Trim(str) {
+        return str.replace(/(^[\0\s]*)|([\0\s]*$)/g, "");
+    }
 })();
 /**
  * 动画
@@ -389,6 +393,38 @@ function isWeiXin(){
         } else {
             jq.attr('value', poker);
         }
+    };
+    var witchSeats = [];
+    var witchPokers = [];
+    Animate.Witch = function(seat, poker, caller, targets) {
+        if (seat == caller) {
+            if (targets.indexOf(caller)==-1) {
+                var jq = $('page [seat='+seat+'] poker');
+                WolvesAnimation.bump(jq);
+            }
+        }
+        if (targets.indexOf(seat)==-1) {
+            $('[seat=' + seat + '] poker').attr('value', poker);
+        } else {
+            witchSeats.push(seat);
+            witchPokers.push(poker);
+
+            if (witchSeats.length == 2) {
+                var jq = $('[seat=' + witchSeats[0] + '] poker');
+                var jq1 = $('[seat=' + witchSeats[1] + '] poker');
+                jq.attr('value', witchPokers[1]);
+                jq1.attr('value', witchPokers[0]);
+
+                WolvesAnimation.swap(jq, jq1, function () {
+                    jq.attr('value', witchPokers[0]);
+                    jq1.attr('value', witchPokers[1]);
+                });
+
+                witchSeats = [];
+                witchPokers = [];
+            }
+        }
+
     };
     var drunkSeats = [];
     var drunkPokers = [];

@@ -184,3 +184,42 @@
 .tips>.description {
   transition: all 2s ease;
 }
+.piles {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 120px;
+}
+
+.piles .card {
+  width:50px;
+  height:40px;
+  background-color:blueviolet;
+  color:aliceblue;
+  margin:2px;
+  border-radius:6px;
+  border:2px dodgerblue solid;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  position:relative;
+}
+.card .seat {
+  position: absolute;
+  top: -22px;
+  color: blueviolet;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.card .poker {
+  display:block;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.1em;
+  width: 40px;
+}

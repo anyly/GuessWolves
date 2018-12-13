@@ -101,10 +101,8 @@ Page({
 
     // 上帝视角
     client.admit("God", that.loadGame);
-    /*
-    client.admit("God", Guide.God);
-    client.admit("Result", Guide.Result);
-    */
+    // 结果报告
+    client.admit("Result", that.Result);
   },
   loadGame(game) {
     var stage = game['stage'];
@@ -134,6 +132,9 @@ Page({
       movements: movements,
       viewport: viewport
     });
+  },
+  Result(game) {
+
   },
   tips: {
     Doppel() {
@@ -341,9 +342,10 @@ Page({
       }
       
       if (this.data.player.seat) {
-        this.websocket.emit({
+        this.websocket.http({
           action:'Vote',
-          data: seat
+          data: seat,
+          success: this.loadGame
         });
         this.setData({
           tips: null,
@@ -451,8 +453,15 @@ Page({
 
     }
   },
-  selectTarget(res) {
+  selectPlayer(res) {
     var seat = res.detail;
+    this.selectTarget(seat);
+  },
+  selectPoker(event) {
+    var seat = event.currentTarget.dataset.seat;
+    this.selectTarget(seat);
+  },
+  selectTarget(seat) {
     const that = this;
 
     var stage = this.data.stage;
@@ -497,8 +506,7 @@ Page({
     });
   },
   castYes() {
-    if (this.data.game.deck[seat] &&
-      this.data.cast &&
+    if (this.data.cast &&
       this.mission &&
       this.spell[this.mission]) {
       this.spell[this.mission].call(this);

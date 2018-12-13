@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="shortcut icon" href="img/favicon.ico" />
+    <meta name="renderer" content="webkit">
+    <title>狼人杀终极夜</title>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <!--<script src="js/jquery.mobile-1.4.5.min.js"></script>-->
+    <script src="js/websocket-client.js"></script>
+    <script src="js/timeline.js"></script>
+    <script src="js/css-animation.js"></script>
+    <script src="js/util.js"></script>
+    <link rel="stylesheet" href="css/base.css" type="text/css"/>
+    <style>
+        body{
+            background-color: white;
+        }
+        page {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        game {
+            flex:1 0 0;
+            max-width :100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+        hr {
+            width: 100%;
+            border: none;
+            border-bottom: 1px #ccc solid;
+        }
+        discard {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+        }
+        discard>column {
+
+        }
+        poker {
+            background: url('img/default.png') no-repeat;
+            background-size: 100%;
+            background-position: center;
+            width: 48px;
+            height: 67px;
+            border: 1px #ccc solid;
+            margin: 3px;
+
+            color: white;
+            line-height: 23px;
+            text-align: center;
+        }
+        seat {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            flex-direction: row;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        player {
+            display: flex;
+            flex-direction: row;
+            /*flex-wrap: wrap;*/
+            justify-content: center;
+            align-items: stretch;
+
+            color: darkblue;
+            font-weight: bold;
+
+        }
+        seat>.left>player {
+            flex-direction: row;
+        }
+        seat>.left>player no {
+            left: 0;
+        }
+        seat>.left>player buf {
+            right: -10px;
+        }
+        seat>.middle {
+            flex: 1 1 0;
+            align-items: stretch;
+        }
+        seat>.right>player {
+            flex-direction: row-reverse;
+        }
+        seat>.right>player no {
+            right: 0;
+        }
+        seat>.right>player buf {
+            left: -10px;
+        }
+        portrait {
+            display: block;
+            width: 45px;
+            height: 45px;
+            color: #222;;
+            font-weight: bold;
+            margin: 3px 0;
+            border: 1px #ccc solid;
+            background-image: url("img/img0.jpg");
+            background-size: contain;
+            background-position: center;
+            position: relative;
+        }
+        portrait.myseat {
+            border: 1px solid rgb(255, 100, 131);
+        }
+        no {
+            z-index: 200;
+            position: absolute;
+            top:0;
+            color: darkorange;
+        }
+        buf {
+            z-index: 200;
+            position: absolute;
+            top: -8px;
+            display: block;
+            width: 24px;
+            height: 24px;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        buf.first {
+            background-image: url("img/first.svg");
+        }
+        [seat='1'] .no:before {
+            content: '1';
+        }
+        [seat='2'] .no:before {
+            content: '2';
+        }
+        [seat='3'] .no:before {
+            content: '3';
+        }
+        [seat='4'] .no:before {
+            content: '4';
+        }
+        [seat='5'] .no:before {
+            content: '5';
+        }
+        [seat='6'] .no:before {
+            content: '6';
+        }
+        [seat='7'] .no:before {
+            content: '7';
+        }
+        [seat='8'] .no:before {
+            content: '8';
+        }
+        [seat='9'] .no:before {
+            content: '9';
+        }
+        [seat='10'] .no:before {
+            content: '10';
+        }
+        [seat='11'] .no:before {
+            content: '11';
+        }
+        [seat='12'] .no:before {
+            content: '12';
+        }
+        [seat='13'] .no:before {
+            content: '13';
+        }
+        [seat='14'] .no:before {
+            content: '14';
+        }
+        [seat='15'] .no:before {
+            content: '15';
+        }
+        [seat='16'] .no:before {
+            content: '16';
+        }
+        ready {
+            position: absolute;
+            left: 0;
+            top:0;
+            right: 0;
+            bottom: 0;
+
+            /*display: flex;*/
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: snow;
+            font-size: 12px;
+            text-align: center;
+        }
+        ready>span {
+            z-index: 100;
+            margin-top: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        cover {
+            z-index: 50;
+            position: absolute;
+            left: 0;
+            top:0;
+            right: 0;
+            bottom: 0;
+            background-color: black;
+            opacity: 0.5;
+        }
+        player.disconnect portrait ready,
+        player.ready portrait ready,
+        player.speak portrait ready,
+        player.dead portrait ready,
+        player.restart portrait ready,
+        player.hunt portrait ready
+        {
+            display: flex;
+        }
+        /* restart > hunt > dead > speak > ready */
+        player.ready portrait ready span:before {
+            content: '就绪';
+            color: white;
+        }
+        player.speak portrait ready span:before
+        {
+            content: '发言中';
+            color: white;
+        }
+        player.dead portrait ready span:before
+        {
+            content: '死亡';
+            color: yellow;
+        }
+        player.hunt portrait ready span:before
+        {
+            content: '猎杀';
+            color: orange;
+        }
+        player.restart portrait ready span:before
+        {
+            content: '重开';
+            color: white;
+        }
+        /**/
+        player.disconnect portrait ready span:after {
+            content: '断线';
+            color: white;
+        }
+        name {
+            font-size: 10px;
+            max-width: 47px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            display:-webkit-box;
+            -webkit-box-orient:vertical;
+            -webkit-line-clamp:2;
+            text-align: center;
+        }
+        message {
+            overflow-y: auto;
+            margin: 0 3px;
+            flex: 1 1 0;
+            border: 1px blueviolet dashed;
+            border-radius: 8px;
+            background-color: aliceblue;
+            padding: 4px 10px;
+            max-height: 410px;
+        }
+        message::-webkit-scrollbar {
+            width:0;
+            height:0;
+        }
+        tag {
+            display: block;
+            color: blueviolet;
+            font-size: 14px;
+            font-weight: bold;
+            position: relative;
+        }
+        tag:before {
+            content: "-";
+            position: absolute;
+            left: -5px;
+        }
+        tag:after {
+            content: ";";
+        }
+        concern {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin: 10px 20px 0 20px;
+        }
+        help {
+            display: inline;
+        }
+        help:before {
+            content: '小贴士：';
+        }
+        round {
+            margin: 10px 0;
+        }
+        template {
+            display: none;
+        }
+        sidecover {
+            z-index: 2000;
+            position: absolute;
+            left:0;
+            right: 0;
+            top:0;
+            bottom: 0;
+            /*display: flex;*/
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: stretch;
+            display: none;
+        }
+        sidecover.show {
+            display: flex;
+        }
+        sideslip.show {
+            opacity: 1;
+            width: 120px;
+            overflow: visible;
+        }
+        sideslip {
+            position: absolute;
+            right: 0;
+            top:0;
+            bottom:0;
+
+            width:0;
+            opacity: 1;
+            transition: all 0.6s ease;
+            background-color: #202828;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 5000;
+        }
+        sideslip>hr {
+            width: 100px;
+        }
+        mine {
+            margin-top: 40px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        myimg {
+            display: block;
+            width: 60px;
+            height: 60px;
+
+            background-position: center;
+            background-size: contain;
+        }
+        mynuser {
+            display: block;
+            width: 100%;
+            height: 20px;
+            color: white;
+            line-height: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        mymenu {
+            margin: 20px 0 20px 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        myaction {
+            position: absolute;
+            display: flex;
+            flex-direction: row;
+            justify-content: right;
+            right: 100%;
+            top: 0;
+            background-color: #202828;
+            height: 58px;
+            align-items: center;
+            border-radius: 2px;
+            border: 1px white solid;
+        }
+        mymenu>*, myaction>* {
+            display: block;
+            width: 50px;
+            height: 50px;
+        }
+        log {
+            background: url("img/message.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        exit{
+            background: url("img/exit.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        reset {
+            background: url("img/refresh.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        restart {
+            background: url("img/restart.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        settings {
+            background: url("img/settings.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        myseat {
+            background: url("img/myseat.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        room {
+            height: 30px;
+            display: block;
+            line-height: 30px;
+            color: snow;
+            font-size: 14px;
+            transition: all 0.6s ease;
+        }
+        sideslip.show room {
+            margin-bottom: 80px;
+        }
+        logger {
+            position: absolute;
+            top: 10px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+        }
+        logger bar {
+            display: flex;
+            flex-direction: row;
+            font-size: 16px;
+            background-color: #202828;
+            color: white;
+        }
+        logger select {
+            background-color: #202828;
+            color: white;
+        }
+        logger prev {
+            display: block;
+            width: 31px;
+            height: 31px;
+            background: url("img/prev.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+            border-left: 1px white solid;
+            border-right: 1px white solid;
+        }
+        logger next {
+            display: block;
+            width: 31px;
+            height: 31px;
+            background: url("img/next.svg") no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+
+        /**/
+        sideslip.show + levitate {
+            right: 60px;
+            bottom: 40px;
+        }
+        levitate {
+            position: absolute;
+            right: 28px;
+            bottom: 28px;
+            transition: all 600ms;
+            z-index: 6000;
+        }
+
+        levitate .bulb {
+            width: 48px;
+            height: 48px;
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
+        sideslip.show + levitate .bulb {
+            width: 64px;
+            height: 64px;
+        }
+
+        levitate #s-bulb {
+            stroke: #262832;
+            fill: #262832;
+            stroke-width: 0;
+            transition: 300ms;
+        }
+
+        levitate #s-bulb {
+            stroke: #262832;
+            fill: #262832;
+            transition: 1500ms;
+        }
+
+        sideslip.show + levitate #s-bulb {
+            fill: #c4d8d9;
+            stroke: #c4d8d9;
+            stroke-width: 2;
+            transition: 100ms;
+        }
+
+        levitate #www-filament {
+            stroke-width: 0;
+            stroke-width: 0;
+            transition: 300ms;
+        }
+
+        levitate #www-filament {
+            fill: #333542;
+            stroke: #333542;
+            transition: 1500ms;
+        }
+
+        sideslip.show + levitate #www-filament {
+            stroke: #ffdf43;
+            stroke-width: 3;
+            fill: #ffdf43;
+            transition: all 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+
+        levitate .light {
+            width: 48px;
+            height: 48px;
+            margin-top: -7px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+
+        }
+        sideslip.show + levitate .light {
+            width: 64px;
+            height: 64px;
+            margin-top: -10px;
+        }
+
+        levitate .light .glow {
+            width: 0px;
+            height: 0px;
+            border-radius: 50%;
+            opacity: 0;
+            background: -webkit-radial-gradient(rgba(255,223,67,1), rgba(255,223,67,0) 70%);
+            position: absolute;
+            display: block;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1000ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        sideslip.show + levitate .light .glow {
+            width: 50px;
+            height: 50px;
+            opacity: 0.2;
+            background: -webkit-radial-gradient(rgba(255,223,67,1), rgba(255,223,67,0) 70%);
+            transition: all 800ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        levitate .light .flare {
+            width: 0px;
+            height: 0px;
+            border-radius: 50%;
+            opacity: 0;
+            background: rgba(255,223,67,0);
+            position: absolute;
+            display: block;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 1000ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        sideslip.show + levitate .light .flare {
+            width: 50px;
+            height: 50px;
+            opacity: 0.5;
+            background: rgba(255,223,67,1);
+            transition: all 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        config {
+            display: block;
+            color: darkorange;
+            font-size: 16px;
+            width: 52px;
+            background-color: #2028280a;
+        }
+        config img {
+            width: 60px;
+            height: 60px;
+        }
+
+        @keyframes act {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        pop {
+            position: absolute;
+            bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            opacity: 0.9;
+            z-index: 200;
+            width: 100%;
+            height: 0;
+        }
+        tips {
+            text-align: center;
+            font-size: 14px;
+            color: #cccccc;
+        }
+        tips>min {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            display: flex;
+            width: 20px;
+            height: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        min>icon {
+            display: block;
+            background-color: white;
+            width: 8px;
+            height: 2px;
+            border-radius: 2px;
+        }
+        tips>content {
+            max-width: 300px;
+            max-height: 500px;
+            overflow: auto;
+            background-color: black;
+            padding: 0 20px;
+            border-radius: 8px;
+            min-width: 160px;
+        }
+        tips>content.text-ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-height: 30px;
+            line-height: 30px;
+        }
+        tips>content.text-ellipsis + min {
+            width: 30px;
+            height: 30px;
+        }
+        tips>content.text-ellipsis + min>icon {
+            width: 6px;
+            height: 6px;
+            border-radius: 0px;
+            border: 2px solid white;
+            border-bottom-width: 0;
+            border-left-width: 0;
+            background-color: transparent;
+            margin-top: 2px;
+            transform: rotate(-45deg);
+        }
+        tips>content {
+            display: block;
+        }
+        tips h2 {
+            font-size: 14px;
+            line-height: 30px;
+        }
+        tips h3 {
+            font-size: 14px;
+            border-bottom: 1px #cccccc dashed;
+            line-height: 30px;
+        }
+        tips h4 {
+            font-size: 14px;
+            border-top: 1px #cccccc dashed;
+            border-bottom: 1px #cccccc dashed;
+            line-height: 30px;
+        }
+        tips p {
+            display: block;
+            width: 100%;
+        }
+        svg[name=tips] {
+            position: absolute;
+            margin-top: 1px;
+            margin-left: 1px;
+            z-index: -2;
+            width: 54px;
+            height: 73px;
+        }
+        mic {
+            display: table;
+            background: url("img/mic.png") no-repeat;
+            background-position: center;
+            background-size: contain;
+            width:40px;
+            height:40px;
+        }
+        mic.quiet {
+            background-image: url("img/mic_quiet.gif");
+        }
+        mic.noisy {
+            background-image: url("img/mic_noisy.gif");
+        }
+
+        vote, giveup {
+            display: block;
+            border: 1px #ccc solid;
+            border-radius: 6px;
+            background-color: #efefef;
+            width: 60px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            color: tomato;
+            margin-top: 4px;
+        }
+
+        poker[value=''] {
+            background-image: none;
+        }
+        poker[value=化身幽灵] {
+            background-image: url('img/化身幽灵.png');
+        }
+        poker[value=狼人], poker[value=化身狼人] {
+            background-image: url('img/狼人.png');
+        }
+        poker[value=爪牙], poker[value=化身爪牙] {
+            background-image: url('img/爪牙.png');
+        }
+        poker[value=守夜人], poker[value=化身守夜人] {
+            background-image: url('img/守夜人.png');
+        }
+        poker[value=预言家], poker[value=化身预言家] {
+            background-image: url('img/预言家.png');
+        }
+        poker[value=强盗], poker[value=化身强盗] {
+            background-image: url('img/强盗.png');
+        }
+        poker[value=捣蛋鬼], poker[value=化身捣蛋鬼] {
+            background-image: url('img/捣蛋鬼.png');
+        }
+        poker[value=酒鬼], poker[value=化身酒鬼] {
+            background-image: url('img/酒鬼.png');
+        }
+        poker[value=失眠者], poker[value=化身失眠者] {
+            background-image: url('img/失眠者.png');
+        }
+        poker[value=猎人], poker[value=化身猎人] {
+            background-image: url('img/猎人.png');
+        }
+        poker[value=皮匠], poker[value=化身皮匠] {
+            background-image: url('img/皮匠.png');
+        }
+        poker[value=村民], poker[value=化身村民] {
+            background-image: url('img/村民.png');
+        }
+        /*破晓扩展*/
+        poker[value=狼先知], poker[value=化身狼先知] {
+            background-image: url('img/狼先知.png');
+        }
+        poker[value=见习预言家], poker[value=化身见习预言家] {
+            background-image: url('img/见习预言家.png');
+        }
+        poker[value=女巫], poker[value=化身女巫]  {
+            background-image: url('img/女巫.png');
+        }
+        poker[value^=化身]:not([value=化身幽灵]):after {
+            font-size: 14px;
+            line-height: 14px;
+            color: white;
+            content: '化身';
+            display: block;
+            font-weight: bold;
+        }
+
+        toolbar {
+            height: 30px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: stretch;
+        }
+        toolbar>* {
+            height: 30px;
+            width: 30px;
+            display: block;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        hidden {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 30px;
+            width: 30px;
+            display: block;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url("img/show.svg");
+            z-index: 1;
+        }
+        hidden.hide {
+            background-image: url("img/hide.svg");
+        }
+        toolbar>speak {
+            background-image: url("img/speak.svg");
+        }
+        toolbar>setting {
+            background-image: url("img/setting.svg");
+        }
+        toolbar>info {
+            background-image: url("img/info.svg");
+        }
+        speech {
+            font-size: 14px;
+            color: #282828;
+        }
+        speech>p {
+            /*display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;*/
+        }
+        speech>p>i {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background-image: url("img/speak.svg");
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        animate {
+            position: absolute;
+            z-index: 1;
+        }
+        .poker-parent {
+            position: relative;
+            width: 56px;
+            height: 75px;
+        }
+        /**/
+        end {
+
+        }
+    </style>
+
+
+</head>
+<body>
+<page>
+    <game>
+        <row-center style="margin: 30px 5px 0px 5px;">
+            <discard>
+                <column class="poker-parent" seat="-1">
+                    <poker class="no"></poker>
+                </column>
+                <column class="poker-parent" seat="-2">
+                    <poker class="no"></poker>
+                </column>
+                <column class="poker-parent" seat="-3">
+                    <poker class="no"></poker>
+                </column>
+            </discard>
+
+        </row-center>
+        <seat>
+            <column class="left"></column>
+            <column class="middle">
+                <toolbar style="display: none;">
+                    <info></info>
+                    <setting></setting>
+                    <speak></speak>
+                </toolbar>
+                <message>
+                    <clue></clue>
+                    <config style="display: none;">
+
+                    </config>
+                    <speech style="display: none;"></speech>
+                </message>
+
+            </column>
+            <column class="right"></column>
+        </seat>
+
+    </game>
+    <pop>
+        <tips>
+            <content>选择座位后,请就绪!</content>
+            <min>
+                <icon></icon>
+            </min>
+        </tips>
+        <mic style="display: none;"></mic>
+        <vote style="display: none;">投票</vote>
+        <giveup style="display: none;">弃权</giveup>
+    </pop>
+</page>
+<logger style="display: none;">
+    <bar>
+        <select id="filter">
+            <option>全部</option>
+            <option>与我有关</option>
+            <option>只看换牌</option>
+        </select>
+        <select id="stage">
+
+        </select>
+        <prev></prev>
+        <next></next>
+    </bar>
+
+</logger>
+<sideslip>
+    <mine>
+        <myaction style="display: none;">
+            <!--<myseat></myseat>-->
+            <!--<settings></settings>-->
+        </myaction>
+        <myimg></myimg>
+        <mynuser></mynuser>
+    </mine>
+    <hr>
+    <mymenu>
+        <reset></reset>
+        <log></log>
+        <restart style="opacity: 0.5;"></restart>
+        <exit></exit>
+    </mymenu>
+    <room></room>
+</sideslip>
+<levitate>
+    <svg class="bulb" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="64px" height="64px" viewBox="0 0 128 128" enable-background="new 0 0 128 128" xml:space="preserve">
+<g id="s-bulb">
+	<g>
+		<path fill-rule="evenodd" clip-rule="evenodd" d="M104.145,42.922c-0.258-9.541-3.436-19.458-10.576-27.913
+			C88.695,9.245,82.706,5.05,75.47,2.746c-3.798-1.209-7.682-1.965-11.683-1.916c-3.553,0.043-7.022,0.693-10.406,1.747
+			c-9.279,2.88-16.414,8.597-21.776,16.625C28.182,24.328,26.107,29.98,24.958,36c-0.742,3.904-1.014,7.844-0.657,11.804
+			c0.858,9.513,4,18.144,10.17,25.542c2.009,2.413,4.117,4.748,5.545,7.566c1.062,2.094,1.989,4.256,2.942,6.4
+			c1.076,2.427,2.774,4.205,5.371,4.859c1.925,0.485,3.702,1.281,5.499,2.063c2.902,1.265,5.809,2.526,8.709,3.795
+			c2.195,0.955,4.388,1.918,6.581,2.884c2.589,1.138,5.17,2.287,7.762,3.413c1.31,0.57,2.841,0.235,3.577-0.708
+			c1.095-1.397,0.673-3.48-1.087-4.271c-1.669-0.753-3.345-1.488-5.019-2.222c-2.038-0.891-4.08-1.776-6.12-2.666
+			c-2.604-1.136-5.216-2.268-7.821-3.411c-2.003-0.878-4-1.771-6.005-2.644c-1.102-0.479-2.207-0.95-3.326-1.39
+			c-0.417-0.161-0.891-0.179-1.308-0.344c-0.764-0.298-1.278-0.869-1.553-1.646c-1.768-4.971-4.392-9.464-7.759-13.508
+			c-1.509-1.809-3.09-3.554-4.336-5.57c-3.335-5.383-5.46-11.171-6.052-17.516c-0.915-9.789,1.291-18.79,6.863-26.889
+			c4.957-7.208,11.708-12.015,20.204-14.157c6.392-1.611,12.689-1.011,18.773,1.573c9.279,3.942,15.587,10.785,19.488,19.984
+			c2.296,5.405,3.22,11.05,3.011,16.889c-0.317,8.925-3.272,16.896-8.946,23.792c-2.068,2.513-4.124,5.015-5.803,7.807
+			c-1.402,2.332-2.552,4.787-3.472,7.349c-0.474,1.314-1.366,2.028-2.757,2.188c-0.928,0.106-1.761,0.435-2.275,1.309
+			c-0.89,1.508-0.273,3.811,1.588,4.196c1.883,0.39,3.575-0.188,5.144-1.113c1.738-1.026,2.893-2.557,3.605-4.471
+			c1.734-4.653,4.226-8.836,7.528-12.581c4.964-5.618,8.227-12.141,9.869-19.48C103.665,51.369,104.143,47.883,104.145,42.922z"></path>
+		<path fill-rule="evenodd" clip-rule="evenodd" d="M77.257,116.188c0.884,0.346,1.702,0.202,2.46-0.188
+			c0.947-0.494,1.366-1.401,1.348-2.405c-0.02-1.136-0.615-2.013-1.687-2.491c-1.944-0.869-3.899-1.721-5.848-2.575
+			c-1.709-0.747-3.419-1.491-5.13-2.234c-2.676-1.171-5.354-2.338-8.028-3.509c-2.347-1.031-4.684-2.087-7.038-3.102
+			c-0.792-0.343-1.614-0.626-2.435-0.891c-0.897-0.287-2.432,0.154-2.961,1.172c-0.715,1.37-0.362,3.355,1.264,4.016
+			c2.498,1.021,4.943,2.155,7.415,3.23c2.935,1.281,5.875,2.56,8.81,3.84c2.003,0.878,3.997,1.774,6.002,2.646
+			c0.324,0.139,0.452,0.309,0.4,0.68c-0.46,3.388-2.759,5.917-6.027,6.749c-3.471,0.886-7.294-1.126-8.787-4.443
+			c-0.481-1.063-0.592-2.182-0.792-3.296c-0.254-1.407-1.227-2.001-2.529-2.222c-0.908-0.151-2.159,0.46-2.663,1.422
+			c-0.438,0.83-0.415,1.74-0.272,2.663c0.696,4.489,2.935,7.963,6.953,10.109c3.115,1.666,6.446,2.109,9.915,1.108
+			c5.003-1.449,8.154-4.682,9.476-9.707C77.146,116.592,77.19,116.428,77.257,116.188z"></path>
+	</g>
+</g>
+<g id="www-filament">
+	<path fill-rule="evenodd" clip-rule="evenodd" d="M82.985,29.716c0.897-0.62,1.849-0.822,2.957-0.547
+		c1.471,0.363,2.109,1.95,1.953,3.176c-0.134,1.05-0.666,1.823-1.564,2.383c-0.25,0.155-0.498,0.438-0.585,0.712
+		c-0.553,1.734-1.059,3.483-1.584,5.222c-1.027,3.403-2.059,6.806-3.089,10.205c-0.604,1.997-1.211,3.989-1.814,5.985
+		c-1.007,3.331-2.012,6.67-3.021,10.001c-0.741,2.449-1.484,4.895-2.227,7.345c-1.016,3.353-2.025,6.708-3.051,10.062
+		c-0.217,0.716-0.948,1.105-1.604,0.909c-0.719-0.215-1.057-0.821-0.822-1.608c1.04-3.506,2.104-7.005,3.151-10.508
+		c0.364-1.205,0.724-2.423,1.126-3.771c-0.78,0.522-1.44,0.955-2.093,1.4c-0.971,0.659-2.496,0.685-3.463-0.059
+		c-1.034-0.789-2.072-1.576-3.105-2.36c-1.011,0.771-2.009,1.495-2.968,2.274c-1.044,0.847-2.709,0.815-3.751,0.048
+		c-0.78-0.574-1.604-1.091-2.516-1.7c0.321,1.07,0.595,2.012,0.879,2.952c1.155,3.807,2.311,7.614,3.46,11.425
+		c0.084,0.283,0.161,0.6,0.131,0.887c-0.055,0.601-0.562,1.034-1.146,1.081c-0.543,0.045-1.157-0.374-1.344-0.949
+		c-0.223-0.688-0.418-1.38-0.628-2.069c-1.357-4.498-2.712-8.995-4.074-13.494c-2.142-7.073-4.292-14.143-6.432-21.218
+		c-0.945-3.118-1.818-6.26-2.834-9.356c-0.494-1.505-0.604-3.163-1.934-4.375c-0.766-0.701-0.747-1.802-0.425-2.832
+		c0.275-0.885,0.818-1.444,1.703-1.732c1.167-0.381,2.189-0.102,3.155,0.579c0.963,0.675,1.942,1.331,2.909,2.001
+		c1.774,1.23,3.548,2.467,5.34,3.713c0.854-0.667,1.69-1.326,2.526-1.98c2.092-1.639,4.174-3.288,6.276-4.914
+		c0.789-0.609,2.453-0.664,3.224-0.089c1.265,0.942,2.491,1.93,3.729,2.9c1.731,1.358,3.462,2.715,5.197,4.082
+		C77.429,33.558,80.204,31.632,82.985,29.716z M76.578,46.931c0.969-0.69,1.972-1.112,3.223-0.72
+		c0.871-2.883,1.733-5.738,2.598-8.592c-0.037-0.027-0.071-0.052-0.107-0.082c-0.538,0.37-1.078,0.729-1.615,1.101
+		c-1.452,1.002-2.898,2.017-4.356,3.011c-1.11,0.759-2.634,0.747-3.716-0.083c-1.969-1.515-3.91-3.071-5.864-4.604
+		c-0.852-0.669-1.703-1.334-2.583-2.02c-1.043,0.813-2.09,1.621-3.129,2.439c-1.82,1.425-3.612,2.896-5.469,4.276
+		c-0.99,0.738-2.432,0.763-3.523,0.02c-1.913-1.306-3.813-2.632-5.719-3.947c-0.295-0.206-0.593-0.406-1.044-0.714
+		c0.96,3.179,1.871,6.201,2.794,9.26c0.205-0.032,0.395-0.032,0.566-0.086c1.027-0.336,1.94-0.049,2.781,0.529
+		c1.647,1.127,3.29,2.26,4.912,3.415c0.35,0.255,0.56,0.217,0.875-0.037c1.671-1.344,3.368-2.654,5.042-3.993
+		c1.141-0.916,2.937-0.785,4.069,0.181c1.643,1.404,3.388,2.689,5.091,4.024c0.042,0.033,0.102,0.047,0.187,0.083
+		C73.242,49.245,74.926,48.105,76.578,46.931z M58.842,56.22c-1.109,0.887-2.681,0.887-3.8,0.103
+		c-1.462-1.027-2.936-2.034-4.404-3.048c-0.141-0.099-0.283-0.189-0.567-0.375c0.981,3.251,1.921,6.36,2.869,9.502
+		c0.791-0.181,1.538-0.45,2.304-0.103c0.256,0.118,0.54,0.186,0.773,0.334c0.95,0.628,1.891,1.271,2.826,1.924
+		c0.253,0.175,0.43,0.189,0.693-0.025c0.866-0.709,1.776-1.363,2.642-2.074c1.126-0.928,2.846-0.918,3.977,0.019
+		c0.864,0.716,1.772,1.371,2.641,2.077c0.246,0.201,0.415,0.177,0.647,0.017c0.734-0.512,1.478-1,2.207-1.517
+		c0.595-0.423,1.191-0.828,1.945-0.873c0.422-0.024,0.845-0.004,1.382-0.004c0.854-2.827,1.741-5.768,2.629-8.712
+		c-0.035-0.022-0.074-0.045-0.11-0.066c-1.198,0.829-2.402,1.652-3.601,2.488c-0.624,0.432-1.232,0.851-2.021,0.982
+		c-0.781,0.128-1.497-0.009-2.094-0.452c-1.885-1.412-3.73-2.875-5.633-4.353C62.366,53.453,60.59,54.814,58.842,56.22z
+		 M49.028,49.956c2.344,1.648,4.709,3.274,7.077,4.887c0.628,0.428,1.043,0.387,1.659-0.094c1.708-1.326,3.414-2.657,5.121-3.987
+		c0.839-0.653,1.699-0.653,2.537,0c1.704,1.331,3.409,2.661,5.121,3.987c0.615,0.481,1.028,0.522,1.658,0.094
+		c2.369-1.613,4.725-3.247,7.086-4.874c0.473-0.325,0.651-0.772,0.525-1.338c-0.091-0.433-0.369-0.79-0.793-0.757
+		c-0.429,0.026-0.88,0.21-1.245,0.443c-0.899,0.564-1.756,1.198-2.628,1.804c-0.794,0.555-1.589,1.109-2.388,1.659
+		c-0.772,0.534-1.678,0.551-2.419-0.02c-1.791-1.381-3.56-2.781-5.33-4.185c-0.543-0.429-1.167-0.429-1.71,0
+		c-1.771,1.404-3.541,2.804-5.328,4.181c-0.742,0.575-1.648,0.562-2.425,0.024c-1.653-1.146-3.304-2.295-4.958-3.439
+		c-0.204-0.143-0.413-0.278-0.636-0.376c-0.814-0.355-1.507,0.114-1.61,1.089C48.567,49.361,48.733,49.747,49.028,49.956z
+		 M69.706,69.17c1.593-1.068,3.174-2.148,4.762-3.23c0.433-0.293,0.533-0.718,0.451-1.198c-0.075-0.439-0.348-0.77-0.781-0.783
+		c-0.331-0.012-0.712,0.114-0.997,0.293c-0.946,0.599-1.859,1.252-2.787,1.878c-0.884,0.597-1.77,0.554-2.615-0.106
+		c-0.926-0.729-1.854-1.457-2.781-2.18c-0.52-0.405-1.094-0.403-1.619,0.008c-0.927,0.722-1.851,1.449-2.779,2.176
+		c-0.841,0.661-1.728,0.694-2.615,0.096c-0.913-0.617-1.818-1.245-2.732-1.857c-0.725-0.484-1.3-0.452-1.658,0.066
+		c-0.386,0.562-0.22,1.265,0.432,1.712c1.502,1.037,3.008,2.06,4.521,3.081c0.596,0.396,1.035,0.381,1.624-0.062
+		c0.955-0.717,1.889-1.463,2.849-2.173c0.768-0.572,1.585-0.569,2.355,0.003c0.96,0.716,1.895,1.462,2.854,2.174
+		c0.232,0.173,0.526,0.271,0.787,0.399C69.262,69.355,69.511,69.304,69.706,69.17z"></path>
+</g>
+</svg>
+    <div class="light"><span class="glow"></span><span class="flare"></span></div>
+
+</levitate>
+
+<template>
+    <player>
+        <column-center>
+            <portrait>
+                <no class="no"></no>
+                <buf></buf>
+                <ready>
+                    <cover></cover>
+                    <span class="state"></span>
+                </ready>
+            </portrait>
+            <name></name>
+
+        </column-center>
+        <column class="poker-parent">
+            <poker></poker>
+        </column>
+    </player>
+</template>
+<audio id="audio" style="display: none;" controls autoplay></audio>
+<script src="js/jquery-1.12.1-ui.min.js"></script>
+<script src="js/jquery.ui.touch-punch.min.js"></script>
+<script type="text/javascript" src="js/speech.js"></script>
+<script type="text/javascript" src="js/base64.js"></script>
+<script src="js/game.js"></script>
+<script>
+    var params = urlparams();
+    var no = params['no'];
+    var game = params['game'];
+    var user = params['user'];
+    game = decodeURI(game);
+    game = decodeBase64(game);
+    game = trim(game);
+    game = JSON.parse(game);
+    console.log(game);
+
+    var playerCount = game.playerCount;
+    buildSeat(playerCount);
+    ///
+    $('room').html('No.'+no);
+
+    function sitdown(seat, user, img) {
+        var self = $(seat);
+        self.find('name').html(user);
+        var portrait = self.find('portrait');
+        portrait.css('background-image', 'url('+img+')');
+        if (user == window.user) {
+            portrait.toggleClass('myseat', true);
+        }
+        self.attr('value', user);
+    }
+    function leaveSeat(seat) {
+        var self = $(seat);
+        self.find('name').html('');
+        self.find('portrait').removeAttr('style').removeAttr('class');
+        self.removeAttr('value');
+    }
+    function changeSeat(seat, user, img) {
+        $('page player portrait').parents('player').each(function () {
+            if (this == seat) {
+                sitdown(this, user, img);
+            } else if (this.getAttribute("value") == user) {
+                leaveSeat(this);
+            }
+        });
+    }
+    function readyStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('ready', true);
+    }
+    function notReadyStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('ready', false);
+    }
+    function restartStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('restart', true);
+    }
+    function notRestartStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('restart', false);
+    }
+    function deadStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('dead', true);
+    }
+    function notDeadStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('dead', false);
+    }
+    function disconnectStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('disconnect', true);
+    }
+    function connectStatus(seat) {
+        var self = $(seat);
+        self.toggleClass('disconnect', false);
+    }
+    function template_node(selector) {
+        var jq = $('template');
+        var template = jq.prop('content');
+        if (template) {
+            return $(template).find(selector).get(0);
+        } else {
+            return jq.find(selector).get(0);
+        }
+    }
+    function buildSeat(count) {
+        var node = template_node('player');
+        var seatCount = count;
+        if (count == 13) {
+            var newNode = document.importNode(node, true);
+            $(newNode).attr('seat', 13);
+            $('discard').after(newNode);//.parent().append(newNode);
+            seatCount = 12;
+        }
+        var jq_seat = $('seat');
+        var i;
+        var leftCount = Math.ceil(seatCount/2);
+        var rightCount = seatCount - leftCount;
+
+        var leftColumn = jq_seat.find('.left');
+        var rightColumn = jq_seat.find('.right');
+        for (i=1; i<=leftCount; i++) {
+            var newNode = document.importNode(node, true);
+            $(newNode).attr('seat', i);
+            leftColumn.append(newNode);
+
+            if (i<=rightCount) {
+                var newNode = document.importNode(node, true);
+                $(newNode).attr('seat', seatCount-i+1);
+                rightColumn.append(newNode);
+            }
+        }
+        //
+        // $('discard poker').each(function (index) {
+        //     $(this).parent().attr('seat', count+1+index);
+        // })
+    }
+    function readySitdown() {
+        var self = $(this).parents('player');
+        var seat = self.attr('seat');
+        seat = parseInt(seat);
+
+        if (!Guide.current) {
+            // 就位阶段, 可以换位置
+            if (self.attr('value') == null) {
+                if ($('player.ready[value="'+user+'"]').length>0) {
+                    return;
+                }
+                client.http('sitdown', seat, function () {
+                    changeSeat(self.get(0), user, img);
+                });
+            } else if (self.attr('value') == user) {
+                if (seat == 1) {
+                    client.http('ready',true, function () {
+                        self.toggleClass('ready');
+                        client.emit('startGame');
+                    })
+                } else {
+                    var ready = !self.hasClass('ready');
+                    client.http('ready',ready, function () {
+                        self.toggleClass('ready');
+                    })
+                }
+
+            }
+        }
+
+    }
+    function tips(text) {
+        $('tips>content').html(text);
+    }
+    $('tips>min').on('click', function () {
+        var jq = $('tips>content');
+        if (jq.hasClass('text-ellipsis')) {
+            jq.removeClass('text-ellipsis');
+            $('tips').draggable({disabled:true});
+        } else {
+            jq.addClass('text-ellipsis');
+            $('tips').draggable({disabled:false});
+        }
+    });
+    $('tips').draggable({
+        containment: "page",
+        scroll:false,
+        axis: 'x',
+        disabled:false
+    });
+
+    var timeline = new Timeline();
+
+    function Result() {
+        var data = game;
+        ////加载日志
+        $('clue').empty();
+        loadLog(data, true);
+        /// 翻开所有牌
+        var deck = data.deck;
+        var desktop = data.desktop;
+        var myseat;
+        var mywin = false;
+        for (var seat in deck) {
+            var poker = deck[seat];
+
+            // 翻牌
+            $('[seat='+seat+'] poker').prop('value', poker).attr('value', poker);
+            // 行动步骤
+            var info = desktop[seat];
+            if (info) {
+                var domSeat = $('player[seat="'+seat+'"]').get(0);
+                changeSeat(domSeat, info.user, info.img);
+                if (info.user == user) {
+                    myseat = seat;
+                    mywin = info.win;
+                }
+            }
+        }
+        ///
+        var report = data.report;
+        var win = '';
+        if (mywin == true) {
+            win = '赢了!~';
+        } else if (mywin == false) {
+            win = '输了!~';
+        }
+        var string = '<h3><span style="color: red;">'+win+'</span>'+report.description+'！</h3>';
+        var all = report.all;
+        var town = report.town;
+        var wolves = report.wolves;
+        var cobbler = report.cobbler;
+        /// 胜败
+        string += '<p>'+camp(all) + '</p>';
+        string += '<p>'+camp(town) + '</p>';
+        string += '<p>'+camp(wolves) + '</p>';
+        string += '<p>'+camp(cobbler)+'</p>';
+        /// 死亡情况
+        var deadth = data.deadth;
+        deadth = Object.keys(deadth);
+        string += '<h4>死亡:</h4>';
+        if (deadth.length == 0) {
+            string += '无人死亡';
+        } else if (deadth.length == data.playerCount) {
+            string += '平票，无人死亡';
+        } else {
+            for(var i=0;i<deadth.length;i++){
+                var d = deadth[i];
+                string += d + '号';
+                $('player[seat='+d+']').addClass('dead');
+            }
+        }
+
+        /// 猎人权力
+        var hunterKill = data.hunterKill;
+        if (Object.keys(hunterKill).length > 0) {
+            string += '<h4>猎人权力:</h4>';
+            for (var seat in hunterKill) {
+                var kill = hunterKill[seat];
+                string += seat+'号 kill '+kill+'号<br>';
+                $('player[seat='+kill+']').addClass('hunt');
+            }
+        }
+
+        /// 投票
+        string += '<h4>投票情况:</h4>';
+        var votes = data.votes;
+        for (var seat in votes) {
+            var vote = votes[seat];
+            var red = '';
+            if (seat == myseat) {
+                red = ' style="color:red;"';
+            }
+            if (vote) {
+                string += '<p'+red+'>'+seat+'号 =>'+vote+'号</p>';
+            } else {
+                string += '<p'+red+'>'+seat+'号弃权票</p>';
+            }
+        }
+        ///
+        tips(string);
+        //// 可重新开始
+        setTimeout(function () {
+            var self = $('player[value="'+user+'"]');
+            self.find('portrait').click(function () {
+                var ready = !self.hasClass('restart');
+                client.http('restart', ready, function (data) {
+                    self.toggleClass('restart');
+                });
+            });
+        });
+    }
+
+    function camp(c) {
+        if (!c) return '';
+        var string = '<p style="margin: 3px 0;"># '+c.name+':'+(c.win?'获胜':'落败')+'</p>';
+        for (var i=0;i<c.members.length;i++) {
+            var member = c.members[i];
+            if (user == member.user) {
+                string += '<p style="color:red;">'+member.seat+'号'+member.user+' ['+member.pokerDesc+']</p>';
+            } else {
+                string += '<p>'+member.seat+'号'+member.user+' ['+member.pokerDesc+']</p>';
+            }
+        }
+        return string;
+    }
+
+    Result();
+
+
+    function loadLog(data, needClue) {
+        if (data['cache']) {
+            return;
+        }
+        $('logger').fadeIn();
+        var logs = data.logs;
+        $('#stage').prop('data', data).empty();
+        var clue = $('clue');
+        for (var i=0; i<logs.length; i++) {
+            var movement = logs[i];
+            $('<option value="'+movement.spell+'">'+movement.spell+'</option>').prop('movement', movement).appendTo('#stage');
+            if (needClue) {
+                if (movement.description) {
+                    clue.append('<tag>'+movement.description+'</tag>');
+                }
+            }
+        }
+        $('#stage option:last-child').prop('selected', true);
+    }
+
+    ///上帝视角
+    $('#stage').change(function () {
+        var option = $(this).children('option:selected');
+        var movement = option.prop('movement');
+        if (movement.spell == '游戏结果') {
+            var data = $(this).prop('data');
+            data['cache'] = true;
+            Guide.Result(data);
+        } else {
+            $('player.dead').toggleClass('dead', false);
+            tips(movement.description);
+            var caller = movement.caller;
+            var targets = movement.targets;
+            var viewport = movement.viewport;
+            $('[seat] poker').removeAttr('value');
+            for (var seat in viewport) {
+                var poker = viewport[seat];
+                seat = parseInt(seat);
+                if (movement.spell == '系统发牌') {
+                    window.Animate.Shuffle(seat, poker);
+                } else if (movement.spell == '化身幽灵行动') {
+                    window.Animate.Doppel(seat, poker, caller, targets[0]);
+                } else if (movement.spell == '狼人行动') {
+                    window.Animate.Wolves(seat, poker, caller, targets);
+                }else if(movement.spell == '爪牙行动') {
+                    window.Animate.Minion(seat, poker, caller, targets);
+                } else if (movement.spell == '守夜人行动') {
+                    window.Animate.Mason(seat, poker, caller, targets);
+                } else if (movement.spell == '预言家行动' || movement.spell == '化身预言家行动'
+                    || movement.spell == '狼先知行动' || movement.spell == '化身狼先知行动'
+                    || movement.spell == '见习预言家行动' || movement.spell == '化身见习预言家行动') {
+                    window.Animate.Seer(seat, poker, caller, targets);
+                } else if (movement.spell == '强盗行动' || movement.spell == '化身强盗行动') {
+                    window.Animate.Robber(seat, poker, caller, targets);
+                } else if (movement.spell == '捣蛋鬼行动' || movement.spell == '化身捣蛋鬼行动') {
+                    window.Animate.TroubleMarker(seat, poker, caller, targets);
+                } else if (movement.spell == '酒鬼行动' || movement.spell == '化身酒鬼行动') {
+                    window.Animate.Drunk(seat, poker, caller, targets);
+                } else if (movement.spell == '女巫行动' || movement.spell == '化身女巫行动') {
+                    window.Animate.Witch(seat, poker, caller, targets);
+                } else if (movement.spell == '失眠者行动') {
+                    window.Animate.Insomniac(seat, poker, caller, targets);
+                } else if (movement.spell == '开始发言') {
+                    window.Animate.Speak(seat, poker, caller);
+                } else {
+                    $('[seat='+seat+'] poker').attr('value', poker);// 清空牌面, 新写视角
+                }
+            }
+        }
+    });
+    $('prev').click(function () {
+        var option = $('#stage').children('option:selected');
+        var prev = option.prev();
+        if (prev.length >0) {
+            prev.prop('selected', true);
+            $('#stage').trigger('change');
+        }
+    });
+    $('next').click(function () {
+        var option = $('#stage').children('option:selected');
+        var next = option.next();
+        if (next.length > 0) {
+            next.prop('selected', true);
+            $('#stage').trigger('change');
+        }
+    });
+
+    $('seat>.middle').click(function () {
+        $('seat toolbar').toggle(400);
+    });
+    function info() {
+        $('message>*').each(function () {
+            if (this.tagName.toLowerCase() == 'clue') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+    $('toolbar>info').click(info);
+    function setting() {
+        $('message>*').each(function () {
+            if (this.tagName.toLowerCase() == 'config') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+    $('toolbar>setting').click(setting);
+    $('speak').click(function () {
+        $('message>*').each(function () {
+            if (this.tagName.toLowerCase() == 'speech') {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+    $('mine').click(function () {
+        $('myaction').fadeToggle();
+        return false;
+    });
+    $('myseat').click(function () {
+        $('page player[value='+user+'] portrait').each(function () {
+            var self = $(this);
+            //setTimeout(function () {
+            var portrait = self.toggleClass('shake', true);
+            //setTimeout(function () {
+            //portrait.toggleClass('shake', false);
+            //     }, 1000);
+            // }, 200);
+        });
+        closeMenu();
+    });
+    $('settings').click(function () {
+        $('config').fadeToggle();
+        closeMenu();
+    });
+    $('log').click(function () {
+        $('logger').fadeToggle();
+    });
+    $('exit').click(function (event) {
+        if (client.readyState>1) {
+            window.location = 'index.html#login';
+        } else {
+            client.leaveGame(function () {
+                //client.disconnect();
+                window.location = 'index.html#login';
+            });
+        }
+        event.stopPropagation();
+    });
+    $('reset').click(function (event) {
+        // $('tips').css({
+        //     left: '',
+        //     top: ''
+        // });
+        window.location.reload(true);
+        event.stopPropagation();
+    });
+    // $('restart').click(function () {
+    //     if ($(this).css('opacity') != 1) {
+    //         return;
+    //     }
+    //     var self = $('player[value="'+user+'"]');
+    //     var ready = !self.hasClass('restart');
+    //     client.http('restart', ready, function (data) {
+    //         self.toggleClass('dead', false);
+    //         self.toggleClass('restart');
+    //     })
+    // });
+    function openMenu() {
+        $('sideslip').toggleClass('show', true);
+        $('myaction').hide();
+        $(document.body).click(closeMenu);
+    }
+    //$(document.body).bind('swipeleftdown', openMenu);
+    function closeMenu() {
+        $('sideslip').toggleClass('show', false);
+        $(document.body).unbind('click');
+    }
+    //$(document.body).bind('swiperightdown', closeMenu);
+    $('levitate').click(function () {
+        var jq = $('sideslip');
+        if (jq.hasClass('show')) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+        return false;
+    });
+    var audio = document.querySelector('#audio');
+    function playAudio(index) {
+        var src = window.location.basepath+'/pcm/'+no+'/'+index;
+        if (isWeiXin()) {
+            src += '.mp3';
+        } else {
+            src += '.wav';
+        }
+        audio.src = src;
+    }
+
+</script>
+</body>
+</html>

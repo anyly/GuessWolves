@@ -195,18 +195,19 @@ public abstract class AbstractGame extends BaseGame<Player> {
             "系统发牌",
             "化身幽灵行动",
             // 化身立刻行动
-            "化身预言家行动", "化身强盗行动", "化身女巫","化身捣蛋鬼行动", "化身酒鬼行动",
+            "化身预言家行动", "化身见习预言家行动", "化身强盗行动", "化身女巫行动","化身捣蛋鬼行动", "化身酒鬼行动",
             // 并行看牌
-            "狼人行动", "狼先知行动", "爪牙行动", "守夜人行动", "预言家行动",
+            "狼人行动", "狼先知行动", "爪牙行动", "守夜人行动", "预言家行动", "见习预言家行动",
             // 串行换牌
             "强盗行动",
+            "女巫行动",
             "捣蛋鬼行动",
             "酒鬼行动",
             "失眠者行动",
             "化身失眠者行动",
             "开始发言",
-            "化身猎人行动",
             "投票结果",
+            "化身猎人行动",
             "猎人行动",
             "游戏结果"
     };
@@ -397,16 +398,19 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             }
                             pool.remove(index);
 
-                            // 测试
-//                            if (seat==1)poker = "化身幽灵";
-//                            if (seat==2)poker = "强盗";
-//                            if (seat==3)poker = "狼先知";
-//                            if (seat==4)poker = "女巫";
                             if (no > playerCount) {// 修正底牌编号,  -1 -2 -3
                                 seat = playerCount - no;
                             } else {
                                 seat = no;
                             }
+
+                            // 测试
+                            if (seat==1)poker = "见习预言家";
+                            if (seat==2)poker = "女巫";
+//                            if (seat==3)poker = "狼先知";
+//                            if (seat==4)poker = "女巫";
+
+
                             Log.debug("发牌", seat+" = "+poker);
                             initial.put(seat, poker);
                             deck.put(seat, poker);
