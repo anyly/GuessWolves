@@ -1,0 +1,2 @@
+<!--playback/index.wxml-->
+<web-view bindload="webLoad" binderror="webError" bindmessage="webMessage" src="{{url}}" />

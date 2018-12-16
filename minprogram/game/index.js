@@ -1,6 +1,7 @@
 // game/index.js
 const websocket = require('../js/websocket');
 const app = getApp();
+const encoder = require('../js/encoder');
 
 Page({
 
@@ -8,18 +9,23 @@ Page({
    * 页面的初始数据
    */
   data: {
-    no: 1001,
     isDisconnect: true,
     host: 1,
     user: wx.getStorageSync('user'),
-    img: wx.getStorageSync('img')
+    img: wx.getStorageSync('img'),
+    tips: '准备开始',
+    description: '选择座位并就绪',
+    targetCount: 0
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function(options) {
-
+    var no = parseInt(options.no);
+    this.setData({
+      no: no
+    })
   },
 
   /**
@@ -73,7 +79,7 @@ Page({
     client.admit('syncPoker', that.loadGame);
     client.admit('syncStatus', that.loadGame);
     client.admit('syncSeat', that.loadGame);
-    client.admit("GameStart", that.loadGame);
+    client.admit("GameStart", that.GameStart);
     client.admit("syncHunter", that.loadGame);
     // 游戏中
     client.admit("Doppel", that.loadGame);
@@ -102,14 +108,15 @@ Page({
     // 上帝视角
     client.admit("God", that.loadGame);
     // 结果报告
-    client.admit("Result", that.Result);
+    client.admit("Result", that.loadGame);
   },
   loadGame(game) {
-    var stage = game['stage'];
-    if (!stage) {
+    var stage = game.stage;
+    if (!stage || stage == 'Result') {
       stage = null;
     }
-    var player = game['allPlayers'][this.data.user];
+    
+    var player = game.allPlayers[this.data.user];
     var movements = player.movements;
     var viewport = {};
     if (movements.length>0) {
@@ -120,21 +127,63 @@ Page({
       if (this.mission.indexOf('As') == 0) {
         this.mission = this.mission.substring(2);
       }
-      if(this.tips[this.mission]) {// 当前有任务
-        this.tips[this.mission].call(this);
-      }
     }
     this.setData({
       game: game,
       stage: stage,
       player: player,
-      desktop: game['desktop'],
+      desktop: game.desktop,
       movements: movements,
       viewport: viewport
     });
+
+    if (this.mission) {
+      if (this.tips[this.mission]) {// 当前有任务
+        this.tips[this.mission].call(this);
+      }
+    }
+
+    if (!stage && game.playback && game.playback.allPlayers[this.data.user]) {
+      // 回放
+      this.Result.call(this, game);
+    }
+  },
+  GameStart(game) {
+    this.loadGame(game);
+    this.setData({
+      tips: '游戏开始',
+      description: '耐心等待行动',
+    })
+    this.playback = null;
   },
   Result(game) {
-
+    var playback = game.playback;
+    var player = playback.allPlayers[this.data.user];
+    
+    var win = player.win;
+    var report = playback.report;
+    var text = report.description;
+    if (win == true) {
+      text = '赢了！' + text;
+    } else if (win == false) {
+      text = '输了！' + text;
+    }
+    this.setData({
+      tips: text,
+      description: '点击查看回放',
+      targetCount: 0
+    });
+    
+    this.playback = {
+      playerCount: playback.playerCount,
+      deck: playback.deck,
+      desktop: playback.desktop,
+      report: playback.report,
+      deadth: playback.deadth,
+      hunterKill: playback.hunterKill,
+      votes: playback.votes,
+      logs: playback.logs
+    }
   },
   tips: {
     Doppel() {
@@ -502,7 +551,7 @@ Page({
     }
     this.setData({
       cast: cast,
-      targets: null
+      targets: []
     });
   },
   castYes() {
@@ -522,6 +571,10 @@ Page({
     })
   },
   voteYes() {
+    if (!this.data.targets || this.data.targets.length == 0) {
+      return;
+    }
+    var seat = this.data.targets[0];
     if (this.data.game.deck[seat] &&
       this.data.cast) {
       this.spell.Vote.call(this);
@@ -601,5 +654,29 @@ Page({
       action: 'ready',
       data: false
     });
+  },
+  tipsTap() {
+    if (this.playback) {
+      var json = encoder.encodeBase64(JSON.stringify(this.playback));
+      var url = app.https + '/playback.html?user=' + this.data.user + '&no=' + this.data.no + '&game=' + json;
+      url = encodeURIComponent(url);
+      wx.navigateTo({
+         url: '/playback/index?url=' + url+'&game='+json,
+      })
+    }
+  },
+  showSetting() {
+    if (this.data.movements) {
+      this.setData({
+        showSetting: true
+      });
+    }
+  },
+  hideSetting() {
+    if (this.data.movements) {
+      this.setData({
+        showSetting: false
+      });
+    }
   }
 })

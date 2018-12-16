@@ -353,7 +353,7 @@ sideslip {
     align-items: center;
     flex-direction: column;
     overflow: hidden;
-    z-index: 5000;
+    z-index: 100;
 }
 sideslip>hr {
     width: 100px;
@@ -496,7 +496,7 @@ levitate {
     right: 28px;
     bottom: 28px;
     transition: all 600ms;
-    z-index: 6000;
+    z-index: 100;
 }
 
 levitate .bulb {
@@ -1916,8 +1916,13 @@ end {
             var string = '<h3 id="resultBtn"><span style="color: red;">'+win+'</span>'+report.description+'！</h3>';
             tips(string);
             $('#resultBtn').click(function () {
-                var src =  window.location.basepath+'/playback.html?user='+user+'&no='+no+'&game='+ encodeURI(encodeBase64(JSON.stringify(data)));
+                var src =  window.location.basepath+'/playback.html?user='+user+'&no='+no+'&game='+ encodeBase64(JSON.stringify(data));
                 $('report').css({'display':''}).find('iframe').attr('src', src);
+            });
+            var self = $('player[value="'+user+'"]');
+            self.find('portrait').unbind('click').click(function () {
+                var ready = !self.hasClass('ready');
+                client.emit('ready', ready);
             });
             /*var all = report.all;
             var town = report.town;

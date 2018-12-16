@@ -108,6 +108,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
     private LinkedHashMap<Integer, String> deck;// 牌面, <座位, 身份>
 
     /**
+     * 上一局的回放
+     */
+    private JSONObject playback;
+
+    /**
      * 发言
      * seat = [String]
      */
@@ -332,6 +337,14 @@ public abstract class AbstractGame extends BaseGame<Player> {
         this.speak = speak;
     }
 
+    public JSONObject getPlayback() {
+        return playback;
+    }
+
+    public void setPlayback(JSONObject playback) {
+        this.playback = playback;
+    }
+
     /**
      * 玩家数量
      * @return
@@ -405,8 +418,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             }
 
                             // 测试
-                            if (seat==1)poker = "见习预言家";
-                            if (seat==2)poker = "女巫";
+//                            if (seat==1)poker = "见习预言家";
+//                            if (seat==2)poker = "女巫";
 //                            if (seat==3)poker = "狼先知";
 //                            if (seat==4)poker = "女巫";
 
@@ -1153,12 +1166,16 @@ public abstract class AbstractGame extends BaseGame<Player> {
                             }
                         }
                         logs = newLogs;
-                        ///
-                        result();
+                        // 设置回放
+                        JSONObject playback = (JSONObject) JSON.toJSON(AbstractGame.this);
+                        setPlayback(playback);
                         // 清除就位，用于重新开始
                         for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
                             entry.getValue().setReady(false);
                         }
+                        reload();
+                        //
+                        result();
                     }
                 })
                 ;
@@ -1183,10 +1200,11 @@ public abstract class AbstractGame extends BaseGame<Player> {
     @Override
     public synchronized void leave(Player player) {
         // 游戏未开始前,离开房间,清空数据
-        if ("Ready".equals(getStage())) {
+        if (getStage() == null) {
             super.leave(player);
             desktop.removeKey(player);
             ready.remove(player);
+            player.clear();
             emitOthers(player, "syncLeave", this);
         }
         // 游戏开始后,离开只当作断线处理
@@ -1287,17 +1305,15 @@ public abstract class AbstractGame extends BaseGame<Player> {
         report = new Report();
         logs = new LinkedList<>();
         speakRound = 1;
+        if (desktop != null){
+            for (Player player : desktop.values()) {
+                player.clear();
+            }
+        }
     }
 
     @Override
     public void replay() {
-        for (Player player: desktop.values()) {
-            player.setMission(null);
-            player.setPoker(null);
-            player.getTargets().clear();
-            player.getSpeaks().clear();
-            player.getMovements().clear();
-        }
         super.replay();
     }
 

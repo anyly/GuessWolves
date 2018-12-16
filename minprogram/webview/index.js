@@ -3,7 +3,6 @@ Page({
     var that = this;
 
     var url = 'https://www.idearfly.com/GuessWolves/index.html';
-    //var url = 'https://www.idearfly.com/server-1.0.war/index.html';
     if (option) {
       if (option.user) {
         url += '?user=' + option.user + '&img=' + option.img +'#login';

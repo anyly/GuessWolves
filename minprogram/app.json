@@ -3,6 +3,7 @@
     "hall/auth",
     "hall/index",
     "game/index",
+    "playback/index",
     "index/index",
     "webview/index"
   ],

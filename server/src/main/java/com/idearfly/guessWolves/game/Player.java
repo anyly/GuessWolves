@@ -96,6 +96,15 @@ public class Player extends BasePlayer {
     public void setMovements(List<Movement> movements) {
         this.movements = movements;
     }
+
+    public void clear() {
+        setMission(null);
+        setPoker(null);
+        setVote(null);
+        getTargets().clear();
+        getSpeaks().clear();
+        getMovements().clear();
+    }
 /**
      * 当前视线
      * @return

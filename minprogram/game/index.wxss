@@ -138,21 +138,29 @@
   position: absolute;
   top: 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  max-height:317px;
 }
 .camp {
   border: 1rpx violet dashed;
-  padding: 5px 10px;
   border-radius: 4px;
   background-color: aliceblue;
   color: dodgerblue;
   font-weight: bold;
   font-size: 14px;
-  max-height: 180px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
+  flex: 1;
+  position: absolute;
+  width: 100%;
+  max-height:317px;
+  top: 20px;
 }
 .movement {
   margin-top: 5px;
@@ -177,6 +185,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  animation: gleam 1.5s ease-out both alternate infinite;
 }
 .tips>.title {
   transition: all 2s ease;
@@ -222,4 +231,9 @@
   font-weight: bold;
   line-height: 1.1em;
   width: 40px;
+}
+
+.setting {
+  width: 18px;
+  margin: 0 4px;
 }

@@ -119,8 +119,7 @@ Page({
         poker: this.data.poker,
         unlucky: true
       },
-      success(res) {
-        var no = res.data;
+      success(no) {
         that.websocket.close();
         wx.redirectTo({
           url: '/game/index?no='+no,

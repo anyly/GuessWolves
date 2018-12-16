@@ -237,11 +237,13 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
         game.speak(player, speek);
     }
 
-    public void onVote(Integer vote){
+    public Game onVote(Integer vote){
         game.vote(player, vote);
+        return game;
     }
 
-    public void onHunter(Integer target) {
+    public Game onHunter(Integer target) {
         game.hunter(player, target);
+        return game;
     }
 }

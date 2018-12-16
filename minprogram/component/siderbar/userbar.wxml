@@ -6,6 +6,8 @@
   </view>
   <view class='userbuttons'>
     <image mode='widthFix' src='https://www.idearfly.com/static/image/refresh.svg'></image>
+    <button open-type='share'><image mode='widthFix' src='https://www.idearfly.com/static/image/share.svg'></image></button>
+    
     <image mode='widthFix' src='https://www.idearfly.com/static/image/exit.svg'></image>
   </view>
   <view class='lighter-warp'>

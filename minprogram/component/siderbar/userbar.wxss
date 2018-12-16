@@ -22,14 +22,14 @@
   margin: 10px;
   border-bottom: 1rpx #ccc solid;
 }
-.sidebar>.userinfo>image {
+.sidebar>.userinfo image {
   width: 60px;
   height: 60px;
   border-radius: 50%;
   margin-top: 10px;
   margin-bottom: 5px;
 }
-.sidebar>.userinfo>text {
+.sidebar>.userinfo text {
   text-align: center;
   font-size: 14px;
   font-weight: bold;
@@ -42,7 +42,7 @@
   justify-content: flex-start;
   align-items: center;
 }
-.userbuttons>image {
+.userbuttons image {
   width: 50px;
   height: 50px;
   background-color:transparent;
@@ -67,4 +67,13 @@
 .sidebar.on {
   width: 100px;
   display: flex;
+}
+.sidebar button {
+  border: none;
+  background-color: transparent;
+  line-height: unset;
+}
+.sidebar button::after {
+  border: none;
+  background-color: transparent;
 }

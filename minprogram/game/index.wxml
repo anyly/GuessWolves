@@ -16,7 +16,8 @@
         toward='left'
         speak="{{[1, 2 ,3]}}"
         count="10" /> -->
-        <player wx:for='{{[1, 2, 3, 4, 5, 6, 7]}}' 
+        <player style="z-index: 1;"
+          wx:for='{{[1, 2, 3, 4, 5, 6, 7]}}' 
           wx:key="seat" 
           user="{{desktop[item].user}}" 
           img="{{desktop[item].img}}" 
@@ -44,7 +45,8 @@
         disconnect="{{true}}"
         toward='right'
         speak="{{[1, 2 ,3]}}" /> -->
-        <player wx:for='{{[8, 9, 10, 11, 12, 13, 14]}}' 
+        <player style="z-index: 1;" 
+          wx:for='{{[8, 9, 10, 11, 12, 13, 14]}}' 
           wx:key="seat" user="{{game.desktop[item].user}}" 
           img="{{desktop[item].img}}" 
           tag="{{desktop[item].tag}}" 
@@ -61,8 +63,12 @@
       </view>
     </view>
     <view class='centerbar'>
-      <text>人数:{{game.playerCount}}</text>
-      <view class='camp'>
+      <view class='relative'>
+        <view class='row-center'>
+        <text>人数:{{game.playerCount}}</text>
+        <image class='setting' catchtouchstart='showSetting' catchtouchend='hideSetting' mode='widthFix' src="https://www.idearfly.com/static/image/setting.svg" />
+      </view>
+      <view class="camp" hidden='{{!showSetting}}'>
         <view wx:for="{{game.setting}}" wx:key="key">
           {{item}}
         </view>
@@ -72,9 +78,10 @@
         {{item.summary}}
       </view>
       </block>
-      <view class='tips' hidden='{{!tips}}'>
+      <view class='tips' hidden='{{!tips}}' catchtap='tipsTap'>
         <text class='title'>--{{tips}}--</text>
         <text class='description'>{{description}}</text>
+      </view>
       </view>
     </view>
     <view class='piles'>

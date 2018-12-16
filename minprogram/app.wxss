@@ -44,3 +44,13 @@ button.large {
   justify-content: center;
   align-items: center;
 }
+.relative {
+  position: relative;
+  width:100%;
+  height:100%;
+}
+
+@keyframes gleam {
+  0% { opacity:1; }
+  100% { opacity:0; }
+}
