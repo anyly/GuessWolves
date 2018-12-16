@@ -136,7 +136,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
         animate.css({
             'width': '100%',
             'height': '100%',
-            'background': 'url("img/boom.png") no-repeat',
+            'background': 'url("https://www.idearfly.com/static/image/boom.png") no-repeat',
             'background-size': 'cover',
             'background-position-x': '0px',
             'z-index': 100
@@ -331,7 +331,7 @@ var castSpell = function (callback, callerfilter, targetfilter) {
             '0.4s ease',
             function () {
                 a.css({
-                    'background-image': 'url(img/'+poker+'.png)',
+                    'background-image': 'url(https://www.idearfly.com/static/image/'+poker+'.png)',
                     'transform': 'rotateY(270deg)'
                 });
                 createAnimation(

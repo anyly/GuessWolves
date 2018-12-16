@@ -143,7 +143,7 @@ Page({
       }
     }
 
-    if (!stage && game.playback && game.playback.allPlayers[this.data.user]) {
+    if (!stage && game.prevGame && game.prevGame.allPlayers[this.data.user]) {
       // 回放
       this.Result.call(this, game);
     }
@@ -154,14 +154,16 @@ Page({
       tips: '游戏开始',
       description: '耐心等待行动',
     })
+    this.prevGame = null;
     this.playback = null;
   },
   Result(game) {
-    var playback = game.playback;
-    var player = playback.allPlayers[this.data.user];
+    this.prevGame = game.prevGame;
+    this.playback = game.playback;
+    var player = this.prevGame.allPlayers[this.data.user];
     
     var win = player.win;
-    var report = playback.report;
+    var report = this.prevGame.report;
     var text = report.description;
     if (win == true) {
       text = '赢了！' + text;
@@ -173,17 +175,6 @@ Page({
       description: '点击查看回放',
       targetCount: 0
     });
-    
-    this.playback = {
-      playerCount: playback.playerCount,
-      deck: playback.deck,
-      desktop: playback.desktop,
-      report: playback.report,
-      deadth: playback.deadth,
-      hunterKill: playback.hunterKill,
-      votes: playback.votes,
-      logs: playback.logs
-    }
   },
   tips: {
     Doppel() {
@@ -657,11 +648,9 @@ Page({
   },
   tipsTap() {
     if (this.playback) {
-      var json = encoder.encodeBase64(JSON.stringify(this.playback));
-      var url = app.https + '/playback.html?user=' + this.data.user + '&no=' + this.data.no + '&game=' + json;
-      url = encodeURIComponent(url);
+      var url = app.https + '/playback/' + this.playback;
       wx.navigateTo({
-         url: '/playback/index?url=' + url+'&game='+json,
+         url: '/playback/index?url=' + url,
       })
     }
   },

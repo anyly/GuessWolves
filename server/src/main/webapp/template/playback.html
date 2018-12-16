@@ -3,16 +3,16 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="shortcut icon" href="img/favicon.ico" />
+    <link rel="shortcut icon" href="../img/favicon.ico" />
     <meta name="renderer" content="webkit">
     <title>狼人杀终极夜</title>
-    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="../js/jquery-3.3.1.min.js"></script>
     <!--<script src="js/jquery.mobile-1.4.5.min.js"></script>-->
-    <script src="js/websocket-client.js"></script>
-    <script src="js/timeline.js"></script>
-    <script src="js/css-animation.js"></script>
-    <script src="js/util.js"></script>
-    <link rel="stylesheet" href="css/base.css" type="text/css"/>
+    <script src="../js/websocket-client.js"></script>
+    <script src="../js/timeline.js"></script>
+    <script src="../js/css-animation.js"></script>
+    <script src="../js/util.js"></script>
+    <link rel="stylesheet" href="../css/base.css" type="text/css"/>
     <style>
         body{
             background-color: white;
@@ -50,7 +50,7 @@
 
         }
         poker {
-            background: url('img/default.png') no-repeat;
+            background: url('../img/default.png') no-repeat;
             background-size: 100%;
             background-position: center;
             width: 48px;
@@ -113,7 +113,7 @@
             font-weight: bold;
             margin: 3px 0;
             border: 1px #ccc solid;
-            background-image: url("img/img0.jpg");
+            background-image: url("../img/img0.jpg");
             background-size: contain;
             background-position: center;
             position: relative;
@@ -139,7 +139,7 @@
             background-position: center;
         }
         buf.first {
-            background-image: url("img/first.svg");
+            background-image: url("../img/first.svg");
         }
         [seat='1'] .no:before {
             content: '1';
@@ -369,7 +369,7 @@
             display: block;
             width: 100px;
             height: 100px;
-            background-image: url("img/coder.jpg");
+            background-image: url("../img/coder.jpg");
             background-position: center;
             background-size: contain;
         }
@@ -408,32 +408,32 @@
             height: 50px;
         }
         log {
-            background: url("img/message.svg") no-repeat;
+            background: url("../img/message.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
         exit{
-            background: url("img/exit.svg") no-repeat;
+            background: url("../img/exit.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
         reset {
-            background: url("img/refresh.svg") no-repeat;
+            background: url("../img/refresh.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
         restart {
-            background: url("img/restart.svg") no-repeat;
+            background: url("../img/restart.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
         settings {
-            background: url("img/settings.svg") no-repeat;
+            background: url("../img/settings.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
         myseat {
-            background: url("img/myseat.svg") no-repeat;
+            background: url("../img/myseat.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
@@ -475,7 +475,7 @@
             display: block;
             width: 31px;
             height: 31px;
-            background: url("img/prev.svg") no-repeat;
+            background: url("../img/prev.svg") no-repeat;
             background-size: contain;
             background-position: center;
             border-left: 1px white solid;
@@ -485,7 +485,7 @@
             display: block;
             width: 31px;
             height: 31px;
-            background: url("img/next.svg") no-repeat;
+            background: url("../img/next.svg") no-repeat;
             background-size: contain;
             background-position: center;
         }
@@ -732,17 +732,17 @@
         }
         mic {
             display: table;
-            background: url("img/mic.png") no-repeat;
+            background: url("../img/mic.png") no-repeat;
             background-position: center;
             background-size: contain;
             width:40px;
             height:40px;
         }
         mic.quiet {
-            background-image: url("img/mic_quiet.gif");
+            background-image: url("../img/mic_quiet.gif");
         }
         mic.noisy {
-            background-image: url("img/mic_noisy.gif");
+            background-image: url("../img/mic_noisy.gif");
         }
 
         vote, giveup {
@@ -762,50 +762,50 @@
             background-image: none;
         }
         poker[value=化身幽灵] {
-            background-image: url('img/化身幽灵.png');
+            background-image: url('../img/化身幽灵.png');
         }
         poker[value=狼人], poker[value=化身狼人] {
-            background-image: url('img/狼人.png');
+            background-image: url('../img/狼人.png');
         }
         poker[value=爪牙], poker[value=化身爪牙] {
-            background-image: url('img/爪牙.png');
+            background-image: url('../img/爪牙.png');
         }
         poker[value=守夜人], poker[value=化身守夜人] {
-            background-image: url('img/守夜人.png');
+            background-image: url('../img/守夜人.png');
         }
         poker[value=预言家], poker[value=化身预言家] {
-            background-image: url('img/预言家.png');
+            background-image: url('../img/预言家.png');
         }
         poker[value=强盗], poker[value=化身强盗] {
-            background-image: url('img/强盗.png');
+            background-image: url('../img/强盗.png');
         }
         poker[value=捣蛋鬼], poker[value=化身捣蛋鬼] {
-            background-image: url('img/捣蛋鬼.png');
+            background-image: url('../img/捣蛋鬼.png');
         }
         poker[value=酒鬼], poker[value=化身酒鬼] {
-            background-image: url('img/酒鬼.png');
+            background-image: url('../img/酒鬼.png');
         }
         poker[value=失眠者], poker[value=化身失眠者] {
-            background-image: url('img/失眠者.png');
+            background-image: url('../img/失眠者.png');
         }
         poker[value=猎人], poker[value=化身猎人] {
-            background-image: url('img/猎人.png');
+            background-image: url('../img/猎人.png');
         }
         poker[value=皮匠], poker[value=化身皮匠] {
-            background-image: url('img/皮匠.png');
+            background-image: url('../img/皮匠.png');
         }
         poker[value=村民], poker[value=化身村民] {
-            background-image: url('img/村民.png');
+            background-image: url('../img/村民.png');
         }
         /*破晓扩展*/
         poker[value=狼先知], poker[value=化身狼先知] {
-            background-image: url('img/狼先知.png');
+            background-image: url('../img/狼先知.png');
         }
         poker[value=见习预言家], poker[value=化身见习预言家] {
-            background-image: url('img/见习预言家.png');
+            background-image: url('../img/见习预言家.png');
         }
         poker[value=女巫], poker[value=化身女巫]  {
-            background-image: url('img/女巫.png');
+            background-image: url('../img/女巫.png');
         }
         poker[value^=化身]:not([value=化身幽灵]):after {
             font-size: 14px;
@@ -840,7 +840,7 @@
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
-            background-image: url("img/share.svg");
+            background-image: url("../img/share.svg");
             z-index: 1;
         }
         back {
@@ -865,20 +865,20 @@
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
-            background-image: url("img/show.svg");
+            background-image: url("../img/show.svg");
             z-index: 1;
         }
         hidden.hide {
-            background-image: url("img/hide.svg");
+            background-image: url("../img/hide.svg");
         }
         toolbar>speak {
-            background-image: url("img/speak.svg");
+            background-image: url("../img/speak.svg");
         }
         toolbar>setting {
-            background-image: url("img/setting.svg");
+            background-image: url("../img/setting.svg");
         }
         toolbar>info {
-            background-image: url("img/info.svg");
+            background-image: url("../img/info.svg");
         }
         speech {
             font-size: 14px;
@@ -894,7 +894,7 @@
             display: inline-block;
             width: 14px;
             height: 14px;
-            background-image: url("img/speak.svg");
+            background-image: url("../img/speak.svg");
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
@@ -1122,21 +1122,22 @@
     </player>
 </template>
 <audio id="audio" style="display: none;" controls autoplay></audio>
-<script src="js/jquery-1.12.1-ui.min.js"></script>
-<script src="js/jquery.ui.touch-punch.min.js"></script>
-<script type="text/javascript" src="js/speech.js"></script>
-<script type="text/javascript" src="js/base64.js"></script>
-<script src="js/game.js"></script>
+<script src="../js/jquery-1.12.1-ui.min.js"></script>
+<script src="../js/jquery.ui.touch-punch.min.js"></script>
+<script type="text/javascript" src="../js/speech.js"></script>
+<script type="text/javascript" src="../js/base64.js"></script>
+<script src="../js/game.js"></script>
+<!--  {{game}}  -->
 <script>
     var params = urlparams();
     var no = params['no'];
-    var game = params['game'];
     var user = params['user'];
-    game = decodeURI(game);
-    game = decodeBase64(game);
-    game = trim(game);
-    game = JSON.parse(game);
-    console.log(game);
+    // var game = params['game'];
+    // game = decodeURI(game);
+    // game = decodeBase64(game);
+    // game = trim(game);
+    // game = JSON.parse(game);
+    // console.log(game);
 
     var playerCount = game.playerCount;
     buildSeat(playerCount);

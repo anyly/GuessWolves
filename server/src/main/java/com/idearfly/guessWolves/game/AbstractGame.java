@@ -3,6 +3,7 @@ package com.idearfly.guessWolves.game;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.idearfly.collection.CoherentMap;
 import com.idearfly.guessWolves.game.entity.Camp;
 import com.idearfly.guessWolves.game.entity.Movement;
@@ -15,6 +16,7 @@ import com.idearfly.timeline.Story;
 import com.idearfly.timeline.websocket.BaseGame;
 import com.idearfly.timeline.websocket.Log;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -110,7 +112,8 @@ public abstract class AbstractGame extends BaseGame<Player> {
     /**
      * 上一局的回放
      */
-    private JSONObject playback;
+    private JSONObject prevGame;
+    private String playback;
 
     /**
      * 发言
@@ -337,12 +340,20 @@ public abstract class AbstractGame extends BaseGame<Player> {
         this.speak = speak;
     }
 
-    public JSONObject getPlayback() {
+    public String getPlayback() {
         return playback;
     }
 
-    public void setPlayback(JSONObject playback) {
+    public void setPlayback(String playback) {
         this.playback = playback;
+    }
+
+    public JSONObject getPrevGame() {
+        return prevGame;
+    }
+
+    public void setPrevGame(JSONObject prevGame) {
+        this.prevGame = prevGame;
     }
 
     /**
@@ -1167,8 +1178,7 @@ public abstract class AbstractGame extends BaseGame<Player> {
                         }
                         logs = newLogs;
                         // 设置回放
-                        JSONObject playback = (JSONObject) JSON.toJSON(AbstractGame.this);
-                        setPlayback(playback);
+                        writeFile();
                         // 清除就位，用于重新开始
                         for (Map.Entry<Integer, Player> entry : desktop.entrySet()) {
                             entry.getValue().setReady(false);
@@ -1179,6 +1189,77 @@ public abstract class AbstractGame extends BaseGame<Player> {
                     }
                 })
                 ;
+    }
+    //[写入记录]
+    private void writeFile() {
+        String webinf = this.getClass().getClassLoader().getResource("../../").getPath();
+        String savePath = webinf + "/playback";
+        String template = webinf + "/template/playback.html";
+
+        File dir = new File(savePath);
+        if (!dir.exists() && !dir.isDirectory()) {
+            dir.mkdir();
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        FileInputStream inputStream = null;
+        InputStreamReader inputStreamReader = null;
+        BufferedReader bufferedReader = null;
+
+        FileOutputStream outputStream = null;
+        OutputStreamWriter outputStreamWriter = null;
+        BufferedWriter bufferedWriter = null;
+        try {
+            this.prevGame = null;// 避免递归
+            String game =  JSON.toJSONString(this,
+                    SerializerFeature.WriteNonStringKeyAsString,
+                    SerializerFeature.DisableCircularReferenceDetect,
+                    SerializerFeature.PrettyFormat
+            );
+            this.prevGame = JSON.parseObject(game);
+            inputStream = new FileInputStream(template);
+            inputStreamReader = new InputStreamReader(inputStream, "UTF-8");
+            bufferedReader = new BufferedReader(inputStreamReader);
+            String line= null;
+            while ((line= bufferedReader.readLine()) != null) {
+                if (stringBuilder.length()>0) {
+                    stringBuilder.append('\n');
+                }
+                line = line.replace("<!--  {{game}}  -->", "<script>\nvar game = "+ game +";\n</script>");
+                stringBuilder.append(line);
+            }
+
+
+            this.playback = getNo() + "-" + System.currentTimeMillis()+".html";
+            String file = savePath + "/" + this.playback;
+            outputStream = new FileOutputStream(file);
+            outputStreamWriter = new OutputStreamWriter(outputStream, "UTF-8");
+            bufferedWriter = new BufferedWriter(outputStreamWriter);
+            bufferedWriter.write(stringBuilder.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (outputStream != null) {
+                try {
+                    bufferedWriter.close();
+                    outputStreamWriter.close();
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (inputStream != null) {
+                try {
+                    bufferedReader.close();
+                    inputStreamReader.close();
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
     //[被动类方法:供外部调用]
     /**
