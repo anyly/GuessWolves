@@ -102,7 +102,7 @@
       <button class='start' hidden='{{!(!stage && player.seat == host)}}' bindtap='startGame'>开始</button>
       <button class='ready' hidden='{{!(!stage && player.seat && player.seat != host && !player.ready)}}' bindtap='ready'>准备</button>
       <button class='cancel' hidden='{{!(!stage && player.seat && player.seat != host && player.ready)}}' bindtap='cancel'>取消</button>
-      <view class='confirm' hidden='{{!(stage && targets)}}'>
+      <view class='confirm' hidden='{{!(stage && targets && cast)}}'>
         <view class='targets'>
           <text wx:for="{{targets}}" wx:key="key" class='target'>{{item}}</text>
         </view>

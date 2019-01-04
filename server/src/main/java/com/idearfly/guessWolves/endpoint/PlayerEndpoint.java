@@ -52,7 +52,9 @@ public class PlayerEndpoint extends GameEndpoint<GameCenter, Game, Player> {
 
     public void onReady(Boolean readyStatus) {
         game.setReadyStatus(player, readyStatus);
-        game.syncGame();
+        if (!game.startGame()) {
+            game.syncGame();
+        }
     }
 
     public void onStartGame() {

@@ -1221,7 +1221,7 @@ end {
         var seat = self.attr('seat');
         seat = parseInt(seat);
 
-        if (!Guide.current) {
+        if (!Guide.current || Guide.current == 'Result') {
             // 就位阶段, 可以换位置
             if (self.attr('value') == null) {
                 if ($('player.ready[value="'+user+'"]').length>0) {
@@ -1231,17 +1231,11 @@ end {
                     changeSeat(self.get(0), user, img);
                 });
             } else if (self.attr('value') == user) {
-                if (seat == 1) {
-                    client.http('ready',true, function () {
-                        self.toggleClass('ready');
-                        client.emit('startGame');
-                    })
-                } else {
                     var ready = !self.hasClass('ready');
                     client.http('ready',ready, function () {
-                        self.toggleClass('ready');
+                        self.toggleClass('ready', ready);
+                        //client.emit('startGame');
                     })
-                }
 
             }
         }
@@ -1882,10 +1876,11 @@ end {
                 }
             }
         },
-        Result : function (data) {
+        Result : function (game) {
             ////加载日志
             $('clue').empty();
             //loadLog(data, true);
+            var data = game.prevGame;
             /// 翻开所有牌
             var deck = data.deck;
             var desktop = data.desktop;
@@ -1916,77 +1911,11 @@ end {
             var string = '<h3 id="resultBtn"><span style="color: red;">'+win+'</span>'+report.description+'！</h3>';
             tips(string);
             $('#resultBtn').click(function () {
-                var src =  window.location.basepath+'/playback.html?user='+user+'&no='+no+'&game='+ encodeBase64(JSON.stringify(data));
+                var src =  window.location.basepath+'/playback/'+ game.playback;
                 $('report').css({'display':''}).find('iframe').attr('src', src);
             });
-            var self = $('player[value="'+user+'"]');
-            self.find('portrait').unbind('click').click(function () {
-                var ready = !self.hasClass('ready');
-                client.emit('ready', ready);
-            });
-            /*var all = report.all;
-            var town = report.town;
-            var wolves = report.wolves;
-            var cobbler = report.cobbler;
-            /// 胜败
-            string += '<p>'+camp(all) + '</p>';
-            string += '<p>'+camp(town) + '</p>';
-            string += '<p>'+camp(wolves) + '</p>';
-            string += '<p>'+camp(cobbler)+'</p>';
-            /// 死亡情况
-            var deadth = data.deadth;
-            deadth = Object.keys(deadth);
-            string += '<h4>死亡:</h4>';
-            if (deadth.length == 0) {
-                string += '无人死亡';
-            } else if (deadth.length == data.playerCount) {
-                string += '平票，无人死亡';
-            } else {
-                for(var i=0;i<deadth.length;i++){
-                    var d = deadth[i];
-                    string += d + '号';
-                    $('player[seat='+d+']').addClass('dead');
-                }
-            }
 
-            /// 猎人权力
-            var hunterKill = data.hunterKill;
-            if (Object.keys(hunterKill).length > 0) {
-                string += '<h4>猎人权力:</h4>';
-                for (var seat in hunterKill) {
-                    var kill = hunterKill[seat];
-                    string += seat+'号 kill '+kill+'号<br>';
-                    $('player[seat='+kill+']').addClass('hunt');
-                }
-            }
-
-            /// 投票
-            string += '<h4>投票情况:</h4>';
-            var votes = data.votes;
-            for (var seat in votes) {
-                var vote = votes[seat];
-                var red = '';
-                if (seat == myseat) {
-                    red = ' style="color:red;"';
-                }
-                if (vote) {
-                    string += '<p'+red+'>'+seat+'号 =>'+vote+'号</p>';
-                } else {
-                    string += '<p'+red+'>'+seat+'号弃权票</p>';
-                }
-            }
-            ///
-            tips(string);
-            //// 可重新开始
-            setTimeout(function () {
-                var self = $('player[value="'+user+'"]');
-                self.find('portrait').click(function () {
-                    var ready = !self.hasClass('restart');
-                    client.http('restart', ready, function (data) {
-                        self.toggleClass('restart');
-                    });
-                });
-            });*/
+            $('page player portrait').unbind('click').click(readySitdown);
         }
     };
     function camp(c) {
@@ -2037,7 +1966,7 @@ end {
     client.admit("Speak", Story.Speak);
     client.admit("Vote", Story.Vote);
     client.admit("Hunter", Story.Hunter);
-    client.admit("Result", Guide.Result);
+    client.admit("Result", loadGame);
 
     client.onConnect(function () {
         client
@@ -2300,8 +2229,10 @@ end {
         var stage = game['stage'];
         if (!stage) {
             $('page player portrait').unbind('click').click(readySitdown);
-            // 游戏结束
-            Guide.Result(game);
+            if (game.prevGame) {
+                // 回放
+                Guide.Result(game);
+            }
         } else if (Guide[stage]) {
             $('page player portrait').unbind('click');
             Guide[stage](game);

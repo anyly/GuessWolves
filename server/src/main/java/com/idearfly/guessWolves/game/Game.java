@@ -13,7 +13,7 @@ public class Game extends AbstractGame {
         return storyConfiguration()
                 .timeline()
                 //就位- 废弃由房主开始
-                //.then("Ready")
+                .then("Ready")
                 //系统发牌
                 .then("Shuffle")
                 //化身行动

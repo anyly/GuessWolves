@@ -110,6 +110,12 @@ Page({
     // 结果报告
     client.admit("Result", that.loadGame);
   },
+  wairForResult() {
+    this.setData({
+      tips: '等待操作结果',
+      description: '请耐心等待操作结果'
+    });
+  },
   loadGame(game) {
     var stage = game.stage;
     if (!stage || stage == 'Result') {
@@ -143,6 +149,9 @@ Page({
       }
     }
 
+    if (stage && !this.mission) {
+      wairForResult();
+    }
     if (!stage && game.prevGame && game.prevGame.allPlayers[this.data.user]) {
       // 回放
       this.Result.call(this, game);
@@ -180,72 +189,92 @@ Page({
     Doppel() {
       this.setData({
         tips: '化身幽灵行动',
-        description: '你要复制谁？',
-        targetCount: 1
-      })
+        description: '你要复制谁？'
+      });
+      this.playerTarget = 1;
+      this.coexist = false;
+      this.pokerTarget = 0;
     },
     Wolf() {
       this.setData({
         tips: '狼人行动',
-        description: '你可以查看底牌！',
-        targetCount: 1
+        description: '你可以查看底牌！'
       })
+      this.playerTarget = 0;
+      this.coexist = false;
+      this.pokerTarget = 1;
     },
     MysticWolf() {
       this.setData({
         tips: '狼先知行动',
-        description: '你可以查看一个人！',
-        targetCount: 1
+        description: '你可以查看一个人！'
       })
+      this.playerTarget = 1;
+      this.coexist = false;
+      this.pokerTarget = 0;
     },
     Seer() {
       this.setData({
         tips: '预言家行动',
-        description: '你看一个人或两张底牌！',
-        targetCount: 2
-      })
+        description: '你看一个人或两张底牌！'
+      });
+      this.playerTarget = 1;
+      this.coexist = false;
+      this.pokerTarget = 2;
     },
     ApprenticeSeer() {
       this.setData({
         tips: '见习预言家行动',
-        description: '你要看哪张底牌？',
-        targetCount: 1
-      })
+        description: '你要看哪张底牌？'
+      });
+      this.playerTarget = 0;
+      this.coexist = false;
+      this.pokerTarget = 1;
     },
     Robber() {
       this.setData({
         tips: '强盗行动',
-        description: '告诉我，你要抢谁的牌？',
-        targetCount: 1
+        description: '告诉我，你要抢谁的牌？'
       })
+      this.playerTarget = 1;
+      this.coexist = false;
+      this.pokerTarget = 0;
     },
     Witch() {
       this.setData({
         tips: '女巫行动',
-        description: '一张底牌还给一个人，你决定了吗？',
-        targetCount: 2
+        description: '一张底牌还给一个人，你决定了吗？'
       })
+      this.playerTarget = 1;
+      this.coexist = true;
+      this.pokerTarget = 1;
     },
     TroubleMarker() {
       this.setData({
         tips: '捣蛋鬼行动',
-        description: '对调两个人的身份，你心中有人选吗？',
-        targetCount: 2
+        description: '对调两个人的身份，你心中有人选吗？'
       })
+      this.playerTarget = 2;
+      this.coexist = false;
+      this.pokerTarget = 0;
     },
     Drunk() {
       this.setData({
         tips: '捣蛋鬼行动',
-        description: '稀里糊涂，随便拿张底牌吧',
-        targetCount: 2
+        description: '稀里糊涂，随便拿张底牌吧'
       })
+      this.playerTarget = 0;
+      this.coexist = false;
+      this.pokerTarget = 1;
     },
     Vote() {
       this.setData({
         tips: '开始投票了',
-        description: '你想投给谁？',
-        targetCount: 1
+        description: '你想投给谁？'
       })
+      this.playerTarget = 1;
+      this.coexist = false;
+      this.pokerTarget = 0;
     }
   },
   spell: {
@@ -501,6 +530,22 @@ Page({
     var seat = event.currentTarget.dataset.seat;
     this.selectTarget(seat);
   },
+  forPlayertarget(seat) {
+    if (seat>0) {
+
+    }
+    var targets = [];
+    var ori = this.data.targets;
+
+    for (let i = 0; i < ori.length; i++) {
+      var s = ori[i];
+      if (s != seat) {
+        if (s > 0) {
+          targets.push(s);
+        }
+      }
+    }
+  },
   selectTarget(seat) {
     const that = this;
 
@@ -512,16 +557,68 @@ Page({
         this.data.cast && 
         this.mission &&
         this.spell[this.mission]) {
-
+        //
+        var playerNumber = 0;
+        var firstPlayer = -1;
+  
+        var pokerNumber = 0;
+        var firstPoker = -1;
+        
         var targets = [];
         var ori = this.data.targets;
+
+        if (this.playerTarget) {
+
+        }
+        if (this.pokerTarget) {
+
+        }
+
+        if (this.coexist) {// 并存
+          // 合并两个数量
+        } else {// 排他
+          // 以第一个类型决定选项
+          if (ori.length == 0) {
+            
+          }
+        }
+
+        // 满足大小限制要求
+        if (seat > 0) {
+          if (playerNumber > 0 && playerNumber + 1 > this.playerTarget) {
+            targets.splice(firstPlayer, 1);
+          }
+        } else {
+          if (pokerNumber > 0 && pokerNumber + 1 > this.pokerTarget) {
+            targets.splice(firstPoker, 1);
+          }
+        }
+
+
         if (ori) {
+          if (ori.length == 0) {
+            this.playerTarget
+          }
           for (let i = 0; i < ori.length; i++) {
-            if (ori[i] != seat) {
-              targets.push(ori[i]);
+            var s = ori[i];
+            if (s != seat) {
+              if (s > 0) {
+                if (firstPlayer<0) {
+                  firstPlayer = i;
+                }
+                playerNumber++;
+              } else {
+                if (firstPoker<0) {
+                  firstPoker = i;
+                }
+                pokerTarget++;
+              }
+              targets.push(s);
             }
           }
         }
+        
+        
         targets.push(seat);
         if (targets.length>this.data.targetCount) {
           targets.shift();
@@ -549,6 +646,7 @@ Page({
     if (this.data.cast &&
       this.mission &&
       this.spell[this.mission]) {
+      wairForResult();
       this.spell[this.mission].call(this);
       this.setData({
         cast: false,
@@ -568,6 +666,7 @@ Page({
     var seat = this.data.targets[0];
     if (this.data.game.deck[seat] &&
       this.data.cast) {
+      wairForResult();
       this.spell.Vote.call(this);
       this.setData({
         cast: false,

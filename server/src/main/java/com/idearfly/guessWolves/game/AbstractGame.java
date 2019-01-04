@@ -2052,10 +2052,12 @@ public abstract class AbstractGame extends BaseGame<Player> {
     /**
      * 房主来开始游戏
      */
-    public synchronized void startGame() {
+    public synchronized boolean startGame() {
         if (getStage() == null && ready.size() == getPlayerCount()) {
             replay();
+            return true;
         }
+        return false;
     }
 
     /**
